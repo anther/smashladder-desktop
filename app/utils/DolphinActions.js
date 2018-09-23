@@ -1,0 +1,57 @@
+import {DolphinPlayer} from './DolphinPlayer';
+
+export default class DolphinActions
+{
+	static call(name, build, message) {
+		if (DolphinActions.isCallable(name)) {
+			return DolphinActions.callableActions[name](build, message);
+		}
+		else {
+			throw 'Invalid Call to ' + name;
+		}
+	}
+
+	static isCallable(name) {
+		return typeof DolphinActions.callableActions[name] === "function";
+	}
+
+}
+DolphinActions.lastHostCode = null;
+DolphinActions.callableActions = {
+	host_code: function(build, value){
+		if(build && build.ignoreNextHostMessage)
+		{
+			console.log('Ignoring host because attempting to join!');
+			build.ignoreNextHost(false);
+			return;
+		}
+		if(value == DolphinActions.lastHostCode)
+		{
+			return;
+		}
+		DolphinActions.lastHostCode = value;
+		SmashladderApi.apiv1Post(constants.apiv1Endpoints.DOLPHIN_HOST, {host_code: value});
+	},
+
+	joining: function(build, value){
+		build.ignoreNextHost(true);
+	},
+
+	player_list_info: function(build, value){
+		if(constants.debuggingMatchInputs)
+		{
+			value = `Antherpzy[1] : 727(0b00f1f) Win | 1------- |
+Ping: 53ms
+Status: ready
+[2] : 727(0b00f1f) Win | -2------- |
+Ping: 23ms
+Status: ready
+`;
+		}
+		return DolphinPlayer.parseDolphinPlayerList(value);
+	},
+
+	dolphin: function(value){
+		console.log('Yay');
+	}
+};
