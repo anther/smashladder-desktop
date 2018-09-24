@@ -3,3 +3,63 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 @import '~@fortawesome/fontawesome-free/css/all.css';
+@import '~materialize-css/sass/materialize';
+
+#main-heading {
+  background-color: white;
+  text-align: center;
+}
+
+#main-heading .front-logo {
+  max-width: 85%;
+  opacity: 0;
+}
+
+.build {
+  @extend .collection-item;
+}
+
+.builds {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  border: none;
+
+  .build {
+    padding-left: 0;
+    padding-right: 0;
+
+    .path_button {
+      flex: 0 0 auto;
+      width: 144px;
+    }
+
+    .badge {
+      flex: 1;
+      text-align: right;
+    }
+
+    .build_heading {
+      display: flex;
+
+      .build_name {
+        margin-left: 16px;
+        font-size: 19px;
+      }
+
+      .has_path i,
+      .no_path i {
+      }
+      .has_path {
+        .btn {
+          @extend .green, .lighten-2;
+        }
+      }
+      .no_path {
+        .btn {
+          @extend .red, .lighten-2;
+        }
+      }
+    }
+  }
+}

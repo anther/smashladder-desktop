@@ -7,6 +7,7 @@ import {BuildLaunchAhk} from "../utils/BuildLaunchAhk";
 import {ReplaySync} from "../components/ReplaySync";
 
 import {BuildComponent} from "./BuildComponent";
+import Layout from "./common/Layout";
 
 export default class Builds extends Component {
 	constructor(props){
@@ -34,25 +35,26 @@ export default class Builds extends Component {
 		const { builds } = this.props;
 		const buildData = BuildData.create({builds});
 		return (
-			<div className='builds'>
-				<h1>Builds</h1>
-				<ReplaySync
-					replayPath={this.props.replayPath}
-					setReplayPath={this.props.setReplayPath}
-				/>
-				{buildData.hasBuilds() &&
-					buildData.getBuilds().map((build)=>
-						<BuildComponent 
-							key={build.dolphin_build_id}
-							authentication={this.authentication}
-							build={build}
-							setBuildPath={this.onSetBuildPath}
-							buildLauncher={this.buildLauncher}
-							
-						/>
-					)
-				}
-			</div>
+			<Layout
+				authentication={this.props.authentication}
+			>
+				<div className='builds collection'>
+					{buildData.hasBuilds() &&
+						<div className=''>
+							{buildData.getBuilds().map((build)=>
+								<BuildComponent
+									key={build.dolphin_build_id}
+									authentication={this.authentication}
+									build={build}
+									setBuildPath={this.onSetBuildPath}
+									buildLauncher={this.buildLauncher}
+
+								/>
+							)}
+						</div>
+					}
+				</div>
+			</Layout>
 		);
 	}
 }

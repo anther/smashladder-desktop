@@ -5,6 +5,7 @@ import Root from './containers/Root';
 import { configureStore, history } from './store/configureStore';
 import 'typeface-roboto';
 import './app.global.scss';
+import 'materialize-css/dist/js/materialize.js';
 
 
 const store = configureStore();

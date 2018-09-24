@@ -22,8 +22,10 @@ export default class DolphinLauncher{
 					throw new Error('Dolphin is already opened. Please close all instances of dolphin!');
 				}
 			}
-			return this.killChild()
-				.then(this.launchChild.bind(this, build, parameters))
+			return this.close()
+				.then(()=>{
+					return this.launchChild(build, parameters)
+				})
 		}
 		else
 		{
@@ -31,12 +33,30 @@ export default class DolphinLauncher{
 		}
 	}
 
-	host(build: Build){
+	async host(build: Build){
 		return this.launchChild(build);
 	}
 
-	join(build: Build){
+	async join(build: Build){
 		return this.launchChild(build);
+	}
+
+	async close(){
+		if(this.child)
+		{
+			const killPromise = new Promise((resolve, reject) => {
+				this.child.on('close', (e)=>{
+					this.child = null;
+					resolve();
+				});
+			});
+			this.child.kill();
+			return killPromise;
+		}
+		else
+		{
+			return Promise.resolve();
+		}
 	}
 
 	launchChild(build: Build, parameters = []){
@@ -71,6 +91,7 @@ export default class DolphinLauncher{
 				return;
 			}
 			const strings = data.toString().split(/\r?\n/);
+			console.log(data);
 			for(let i in strings)
 			{
 				if(!strings.hasOwnProperty(i))
@@ -98,26 +119,7 @@ export default class DolphinLauncher{
 				}
 			}
 		});
-		this.childKilled = new Promise((resolve, reject) => {
-			this.child.on('close', (e)=>{
-				this.child = null;
-				resolve();
-			});
-		});
-
 		return Promise.resolve(this.child);
-	}
-
-	killChild(){
-		if(this.child)
-		{
-			this.child.kill();
-			return this.childKilled;
-		}
-		else
-		{
-			return Promise.resolve();
-		}
 	}
 
 }

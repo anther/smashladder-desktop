@@ -59,6 +59,18 @@ export class Build extends CacheableDataObject
 	addLaunch(){
 
 	}
+
+	hasDownload(){
+		const acceptableExtensions = {'.zip':1};
+		if(!this.download_file)
+		{
+			return false;
+		}
+		const extension = require('path').extname(this.download_file).toLowerCase();
+		console.log(extension);
+		return !!acceptableExtensions[extension];
+	}
+
 }
 Build.prototype.serializeFields = [
 		'active',

@@ -1,14 +1,13 @@
 "use strict";
 
 import child from 'child_process';
-import path from 'path';
 const { app } = require('electron').remote;
-app.getAppPath();
 import DolphinResponse from "./DolphinResponse.js";
 import DolphinActions from "./DolphinActions.js";
 
 import BuildLauncher from './BuildLauncher';
 import {Build} from "./BuildData";
+import {Files} from "./Files";
 
 export class BuildLaunchAhk
 {
@@ -18,17 +17,12 @@ export class BuildLaunchAhk
 		// require ('hazardous');
 		// const electron = require('electron');
 		console.log(app.getAppPath());
-		let appPath = app.getAppPath();
 
-		const isDev = process.env.NODE_ENV === "development";
-		appPath = './app';
-		console.log(appPath);
-		this.hotkeyLocation = path.join(appPath,'./external/ahk/NetPlayHotkeySL.exe');
+		this.hotkeyLocation = Files.createApplicationPath('./external/ahk/NetPlayHotkeySL.exe');
 		console.log('hotkey location', this.hotkeyLocation);
 	}
 
-	async launchHotKey(command, build){
-		console.log(command);
+	async launchHotKey(command, build, successOnAction = ''){
 		return new Promise((resolve,reject)=>{
 			this.killHotkey()
 				.then(()=>{
@@ -51,7 +45,7 @@ export class BuildLaunchAhk
 					console.log('Opening Smash Quick Play SL', parameters);
 					this.hotkey = child.spawn(this.hotkeyLocation, parameters);
 					this.hotkey.on('error', function(err) {
-						console.log('Hotkey Error: ' + err);
+						reject(`Hotkey Error: ${err}`);
 					});
 					this.hotkey.stdout.on('data', (data) => {
 						if(!data)
@@ -60,40 +54,35 @@ export class BuildLaunchAhk
 							return;
 						}
 						var strings = data.toString().split(/\r?\n/);
-						for(var i in strings)
+						for(const string of strings)
 						{
-							if(!strings.hasOwnProperty(i))
+							if(!string)
 							{
 								continue;
 							}
-							var stdout = strings[i];
-							if(!stdout)
-							{
-								continue;
-							}
-							// console.log(stdout);
-							stdout = JSON.parse(stdout);
+							const stdout = JSON.parse(string);
+							console.log(stdout);
 
 							var result = DolphinResponse.ahkResponse(stdout);
 							// console.log(result);
 							if(DolphinActions.isCallable(result.action))
 							{
-								DolphinActions.call(result.action, build, result.value)
-							}
-							else
-							{
+								const callResult = DolphinActions.call(result.action, build, result.value)
+								if(result.action === 'host_code' && callResult)
+								{
+									resolve(callResult);
+								}
 							}
 						}
 					});
 					if(!this.hotkey.pid)
 					{
-						throw 'Error loading up SmashQuickPlay';
+						throw new Error('Error loading up SmashQuickPlay, never received a process id');
 					}
 					this.hotkey.on('close', (e)=>{
 						this.hotkey = null;
+						reject('AutoHotKey Attempt Closed');
 					});
-
-					resolve(true);
 				})
 		})
 	}
@@ -158,37 +147,51 @@ export class BuildLaunchAhk
 			});
 	}
 
-	host(build: Build, gameLaunch){
-		return this.buildLauncher
+	async close(){
+		return this.buildLauncher.close();
+	}
+
+	async host(build: Build, gameLaunch){
+		let outerDolphinProcess = null;
+		if(!gameLaunch)
+		{
+			throw new Error('A Game is Required to host!');
+		}
+		const dolphinPromise = this.buildLauncher
 			.launch(build, null, true)
-			.then((dolphinProcess)=>{
-				console.log('adding launch?');
+			.then((dolphinProcess)=> {
 				build.addLaunch();
 				if(dolphinProcess)
 				{
-					dolphinProcess.on('close', ()=>{
+					dolphinProcess.on('close', () => {
 						this.killHotkey();
 					});
 				}
-				var parameters = ['host'];
-				parameters.push('Username');
-				console.log('game launch?', gameLaunch);
-				if(gameLaunch)
-				{
-					if(gameLaunch.id)
-					{
-						build.addGameLaunch(gameLaunch.id);
-					}
-					parameters.push(gameLaunch.dolphin_game_id_hint);
-					parameters.push(gameLaunch.name);
-					parameters.push(build.name);
-				}
-				this.launchHotKey(parameters, build)
 				return dolphinProcess;
 			});
+		const hotkeyPromise = dolphinPromise.then(()=>{
+			const parameters = ['host'];
+			parameters.push('Username');
+			if(gameLaunch)
+			{
+				if(gameLaunch.id)
+				{
+					build.addGameLaunch(gameLaunch.id);
+				}
+				parameters.push(gameLaunch.dolphin_game_id_hint);
+				parameters.push(gameLaunch.name);
+				parameters.push(build.name);
+			}
+			return this.launchHotKey(parameters, build, 'host_code');
+		});
+		return Promise.all([dolphinPromise, hotkeyPromise]);
 	}
 
-	join(build, hostCode){
+	async join(build, hostCode){
+		if(!hostCode)
+		{
+			throw new Error('IP Address or Host code is required to join!');
+		}
 		return this.buildLauncher
 			.launch(build, null, this.closePrevious)
 			.then((newChild)=>{

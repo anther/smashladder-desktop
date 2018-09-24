@@ -14,7 +14,6 @@ class BuildsPage extends Component<Props> {
 	}
 
 	render() {
-		console.log('updat buildspage');
 		return <Builds
 			{...this.props}
 		/>;

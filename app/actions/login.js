@@ -42,7 +42,8 @@ export const setLoginKey = (loginKey) =>{
 					payload: {
 						...state,
 						player: null,
-						loginErrors: response
+						loginErrors: response,
+						isLoggingIn: false,
 					}
 				});
 			});

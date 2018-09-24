@@ -30,7 +30,7 @@ DolphinActions.callableActions = {
 			return;
 		}
 		DolphinActions.lastHostCode = value;
-		SmashladderApi.apiv1Post(constants.apiv1Endpoints.DOLPHIN_HOST, {host_code: value});
+		return value;
 	},
 
 	joining: function(build, value){
@@ -38,7 +38,7 @@ DolphinActions.callableActions = {
 	},
 
 	player_list_info: function(build, value){
-		if(constants.debuggingMatchInputs)
+		if(false && constants.debuggingMatchInputs)
 		{
 			value = `Antherpzy[1] : 727(0b00f1f) Win | 1------- |
 Ping: 53ms

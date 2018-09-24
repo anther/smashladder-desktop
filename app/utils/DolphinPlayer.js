@@ -51,7 +51,7 @@ export class DolphinPlayer
 		}
 		this.name = username;
 		// console.trace('Dolphin player', this.getAliasName(), this.slot);
-		this.element.findCache('.username').cacheText(this.getAliasName());
+		// this.element.findCache('.username').cacheText(this.getAliasName());
 	}
 
 	usernameIs(username){

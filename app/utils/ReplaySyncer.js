@@ -6,6 +6,7 @@ import { SmashLadderAuthentication, SUBMIT_REPLAY_URL} from '../utils/SmashLadde
 import fs from 'fs';
 import multitry from '../utils/multitry'
 import {endpoints} from "./SmashLadderAuthentication";
+import {Files} from "./Files";
 
 export default class ReplaySyncer {
 	constructor(settings) {
@@ -151,7 +152,7 @@ export default class ReplaySyncer {
 		const fileName = `${hour}${forceTwoDigits(date.getMinutes())}${usernameList}.slp`;
 		const newName = `${folder}/${fileName}`;
 
-		this.ensureExists(folder, 0o755, (error) => {
+		Files.ensureDirectoryExists(folder, 0o755, (error) => {
 			if (!error) {
 				fs.rename(originalFile, newName, (error) => {
 					if (error) {
@@ -161,16 +162,6 @@ export default class ReplaySyncer {
 			}
 		})
 	}
-
-	ensureExists(path, mask, cb) {
-		fs.mkdir(path, mask, function (err) {
-			if (err) {
-				if (err.code == 'EEXIST') cb(null); // ignore the error if the folder already exists
-				else cb(err); // something else went wrong
-			} else cb(null); // successfully created folder
-		});
-	}
-
 
 	loadGame(file) {
 		return multitry(500, 5, () => {
