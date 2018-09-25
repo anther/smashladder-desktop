@@ -51,6 +51,7 @@ export class BuildComponent extends Component {
 		this.onCloseClick = this.closeClick.bind(this);
 		this.onJoinClick = this.joinClick.bind(this);
 		this.onLaunchClick = this.launchClick.bind(this);
+		this.onStartGameClick = this.startGameClick.bind(this);
 
 		this.onJoinCodeChange = this.joinCodeChange.bind(this);
 		this.onJoinKeyPress = this.joinKeyPress.bind(this);
@@ -218,6 +219,10 @@ export class BuildComponent extends Component {
 		this.props.hostBuild(this.props.build, this._getSelectedGame());
 	}
 
+	startGameClick(){
+		this.props.startGame(this.props.build);
+	}
+
 	render(){
 		const {build, buildOpen, buildOpening, hostCode, buildError} = this.props;
 		const error = this.state.error || buildError;
@@ -228,10 +233,10 @@ export class BuildComponent extends Component {
 						{build.path &&
 						<span className='has_path'>
 								<Button
+									title={build.path}
 									onClick={this.onSetBuildPathClick.bind(null, build)}
 									onContextMenu={this.unsetBuildPath.bind(null, build)}
 									className='btn-small'>Path Set <i className="fa fa-check"/></Button>
-							{build.path}
 							</span>
 
 						}
@@ -263,7 +268,12 @@ export class BuildComponent extends Component {
 								</React.Fragment>
 							}
 							{buildOpen &&
-								<Button onClick={this.onCloseClick}>Close</Button>
+								<React.Fragment>
+									<Button onClick={this.onCloseClick}>Close</Button>
+									{hostCode &&
+										<Button onClick={this.onStartGameClick}>Start Game</Button>
+									}
+								</React.Fragment>
 							}
 						</div>
 						{buildOpen && hostCode &&

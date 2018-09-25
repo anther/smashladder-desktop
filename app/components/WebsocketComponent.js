@@ -45,11 +45,11 @@ export class WebsocketComponent extends Component
 			},
 
 			quitDolphin: () => {
-				this.browserWindow.webContents.send('quitDolphin');
+				this.props.closeDolphin();
 			},
 
 			startGame: (message) => {
-				this.browserWindow.webContents.send('startGame', message);
+				this.props.startGame();
 			},
 
 			disableConnection: (message) => {
@@ -73,6 +73,12 @@ export class WebsocketComponent extends Component
 				//After a minute or so, goes back to disable connection
 			}
 		};
+	}
+
+	fetchBuildFromDolphinVersion(dolphinVersion){
+		return this.props.builds.find((build) => {
+			return build.id === dolphinVersion.id
+		});
 	}
 
 	componentDidMount(){
@@ -142,6 +148,20 @@ export class WebsocketComponent extends Component
 				if(this.websocketCommands.hasOwnProperty(message.functionCall))
 				{
 					console.log('payload', message.data);
+					if(message.data)
+					{
+						if(message.data.dolphin_version)
+						{
+							message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
+						}
+						if(message.data.game_launch_name)
+						{
+							const gameInfo = message.data.game_launch_name;
+
+							gameInfo.dolphin_game_id_hint = gameInfo.launch;
+							gameInfo.name = gameInfo.game;
+						}
+					}
 					this.websocketCommands[message.functionCall](message.data);
 				}
 				else

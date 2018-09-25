@@ -30,6 +30,7 @@ select.browser-default {
 
 .page-title {
   user-select: none;
+  pointer-events: none;
   font-weight: 200;
 
   .site_name {
@@ -95,7 +96,7 @@ select.browser-default {
       flex-direction: row;
       flex-wrap: wrap;
     }
-    .host_code{
+    .host_code {
       flex: 1;
       text-align: right;
       align-self: center;

@@ -203,6 +203,7 @@ retrieveHostCode(){
         }
         lastHostCode := roomId
 
+
         return roomId
     }
     return false
@@ -245,7 +246,7 @@ GetAndSendHostCode(joinGameUsername){
         AppendTextToNetplayLobbyChat( "--- Sending Host Code (" . hostCode . ") to SmashLadder ---")
     }
 
-    SendToParent("host_code", hostCode "")
+    SendToParent("host_code", "" hostCode "")
     GetPlayerList()
 
     return true

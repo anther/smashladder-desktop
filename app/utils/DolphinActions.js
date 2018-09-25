@@ -27,10 +27,10 @@ DolphinActions.callableActions = {
 		}
 		if(value == DolphinActions.lastHostCode)
 		{
-			return;
+			return null;
 		}
 		DolphinActions.lastHostCode = value;
-		return value;
+		return String(value).padStart(8, '0');
 	},
 
 	joining: function(build, value){

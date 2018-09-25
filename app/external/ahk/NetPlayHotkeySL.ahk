@@ -109,8 +109,10 @@ else if (parameter == "launch")
 
     if(ErrorLevel == 1)
     {
-        SendToParent("launch_error", "Could not find start button")
+        SendToParent("start_game_error", "Could not find start button")
+        return
     }
+    SendToParent("start_game_success", "Tapped Start Button")
 }
 else if (parameter == "open")
 {

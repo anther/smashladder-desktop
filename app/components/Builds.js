@@ -46,7 +46,6 @@ export default class Builds extends Component {
 
 	render(){
 		const { builds, buildError} = this.props;
-		const buildData = BuildData.create({builds});
 		return (
 			<Layout
 				setReplayPath={this.props.setReplayPath}
@@ -56,12 +55,14 @@ export default class Builds extends Component {
 				launchBuild={this.props.launchBuild}
 				hostBuild={this.props.hostBuild}
 				joinBuild={this.props.joinBuild}
+				startGame={this.props.startGame}
 				closeDolphin={this.props.closeDolphin}
+				builds={this.props.builds}
 			>
 				<div className='builds collection'>
-					{buildData.hasBuilds() &&
+					{builds.length > 0 &&
 						<div className=''>
-							{buildData.getBuilds().map((build)=>
+							{builds.map((build)=>
 								<BuildComponent
 									key={build.dolphin_build_id}
 									authentication={this.authentication}
@@ -73,6 +74,7 @@ export default class Builds extends Component {
 									launchBuild={this.props.launchBuild}
 									hostBuild={this.props.hostBuild}
 									joinBuild={this.props.joinBuild}
+									startGame={this.props.startGame}
 									closeDolphin={this.props.closeDolphin}
 									buildOpen={this.isActiveBuild(build) && this.props.buildOpen}
 									buildOpening={this.isActiveBuild(build) && this.props.buildOpening}

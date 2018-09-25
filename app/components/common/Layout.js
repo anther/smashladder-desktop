@@ -31,9 +31,11 @@ export default class Layout extends Component {
 						<WebsocketComponent
 							authentication={this.props.authentication}
 
+							builds={this.props.builds}
 							launchBuild={this.props.launchBuild}
 							hostBuild={this.props.hostBuild}
 							joinBuild={this.props.joinBuild}
+							startGame={this.props.startGame}
 							closeDolphin={this.props.closeDolphin}
 						/>
 					</div>

@@ -2,6 +2,7 @@ import {SmashLadderAuthentication, endpoints} from "../utils/SmashLadderAuthenti
 import electronSettings from 'electron-settings';
 import {Build} from "../utils/BuildData";
 import {BuildLaunchAhk} from "../utils/BuildLaunchAhk";
+import _ from "lodash";
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -24,6 +25,10 @@ export const LAUNCH_BUILD_FAIL = 'LAUNCH_BUILD_FAIL';
 export const BUILD_CLOSED = 'BUILD_CLOSED';
 export const CLOSE_BUILD = 'CLOSE_BUILD';
 
+export const START_GAME_BEGIN = 'START_GAME';
+export const START_GAME_SUCCESS = 'START_GAME_SUCCESS';
+export const START_GAME_FAIL = 'START_GAME_FAIL';
+
 const buildLauncher = new BuildLaunchAhk();
 
 const retrieveAuthentication = (getState) => {
@@ -36,12 +41,14 @@ export const retrieveBuilds = () => {
 			type: FETCH_BUILDS_BEGIN,
 		});
 		retrieveAuthentication(getState).apiGet(endpoints.DOLPHIN_BUILDS)
-			.then(builds => {
-				console.log(builds.builds);
+			.then(response => {
+				console.log('retrieved build response', response)
+				const builds = organizeFetchedBuilds(response.builds);
+
 				dispatch({
 					type: FETCH_BUILDS_SUCCESS,
 					payload: {
-						builds: builds.builds
+						builds: builds
 					}
 				})
 			}).catch(response => {
@@ -53,6 +60,33 @@ export const retrieveBuilds = () => {
 	}
 };
 
+const organizeFetchedBuilds = (rawBuildData) =>{
+	const buildList = new Map();
+	const savedBuildData = electronSettings.get('builds') || {};
+	_.forEach(rawBuildData, (buildData) =>{
+		for(let build of buildData.builds){
+			if(savedBuildData[build.dolphin_build_id])
+			{
+				build = Object.assign(savedBuildData[build.dolphin_build_id], build);
+			}
+			build = buildList.get(build.dolphin_build_id) || Build.create(build);
+			buildList.set(build.dolphin_build_id, build);
+			build.addLadder(buildData.ladder);
+		}
+	});
+	return Array.from(buildList.values()).sort((a,b)=>{
+		if(a.path && !b.path)
+		{
+			return -1;
+		}
+		if(b.path && !a.path)
+		{
+			return 1;
+		}
+		return 0;
+	});
+};
+
 const saveBuild = (build: Build) => {
 	const builds = electronSettings.get('builds') || {};
 	if(!builds[build.dolphin_build_id]){
@@ -60,6 +94,13 @@ const saveBuild = (build: Build) => {
 	}
 	builds[build.dolphin_build_id] = build.serialize();
 	electronSettings.set('builds', builds);
+};
+
+const retrieveSavedBuildFromBuild = (build) => {
+	const builds = electronSettings.get('builds') || {};
+	if(builds[build.dolphin_build_id]){
+		builds[build.dolphin_build_id] = {};
+	}
 };
 
 export const setBuildPath = (build: Build, path) => {
@@ -70,6 +111,24 @@ export const setBuildPath = (build: Build, path) => {
 		payload: {
 			build
 		}
+	}
+};
+
+export const startGame = () =>{
+	return(dispatch) => {
+		dispatch({
+			type: START_GAME_BEGIN
+		});
+		buildLauncher.startGame().then(() => {
+			dispatch({
+				type: START_GAME_SUCCESS
+			});
+		}).catch((error)=>{
+			dispatch({
+				type: START_GAME_FAIL,
+			});
+
+		});
 	}
 };
 

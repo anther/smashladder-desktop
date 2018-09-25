@@ -22,7 +22,15 @@ export class BuildLaunchAhk
 		console.log('hotkey location', this.hotkeyLocation);
 	}
 
-	async launchHotKey(command, build, successOnAction = '', failOnActions = []){
+	async launchHotKey(command, build, successOnAction = [], failOnActions = []){
+		if(typeof successOnAction === 'string')
+		{
+			successOnAction = [successOnAction];
+		}
+		if(typeof failOnActions === 'string')
+		{
+			failOnActions = [failOnActions];
+		}
 		return new Promise((resolve,reject)=>{
 			this.killHotkey()
 				.then(()=>{
@@ -67,8 +75,7 @@ export class BuildLaunchAhk
 							if(DolphinActions.isCallable(result.action))
 							{
 								const callResult = DolphinActions.call(result.action, build, result.value)
-								result.dolphinAction = true;
-								if(result.action === successOnAction && callResult)
+								if(successOnAction.includes(result.action))
 								{
 									resolve(callResult);
 								}
@@ -121,7 +128,7 @@ export class BuildLaunchAhk
 
 	async startGame(){
 		console.log('command to start game');
-		return this.launchHotKey('launch');
+		return this.launchHotKey('launch', null, 'start_game_success','start_game_error');
 	}
 
 	async launch(build: Build){
@@ -129,9 +136,11 @@ export class BuildLaunchAhk
 		{
 			throw new Error('Build is required!');
 		}
+		console.log('1');
 		return this.buildLauncher
 			.launch(build, null, true)
 			.then((dolphinProcess)=>{
+				console.log('2');
 				if(dolphinProcess)
 				{
 					dolphinProcess.on('close', ()=>{
@@ -145,6 +154,7 @@ export class BuildLaunchAhk
 				return dolphinProcess;
 			})
 			.catch((error)=>{
+				console.log('3');
 				throw error;
 			});
 	}
