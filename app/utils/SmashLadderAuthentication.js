@@ -1,3 +1,5 @@
+import CacheableDataObject from "./CacheableDataObject";
+
 const request = require('request-promise-native');
 const ClientOAuth2 = require('client-oauth2');
 
@@ -21,18 +23,9 @@ export const endpoints = {
 	LOGOUT:                     'player/logout',
 };
 
-export class SmashLadderAuthentication {
-
-	constructor(loginCode){
-		this.loginCode = loginCode;
-	}
-
+export class SmashLadderAuthentication extends CacheableDataObject{
 	static fullEndpointUrl(endpoint){
 		return `${API_URL}/${endpoint}`;
-	}
-
-	static create(loginCode){
-		return new SmashLadderAuthentication(loginCode);
 	}
 
 	_parseCredentials(){
@@ -73,7 +66,7 @@ export class SmashLadderAuthentication {
 		});
 	}
 
-	request(requestData){
+	async request(requestData){
 		if(!this._getAccessCode())
 		{
 			throw new Error('Invalid Login Credentials');

@@ -1,17 +1,31 @@
-import {SET_LOGIN_KEY, LOGIN_FAILED, LOGIN_VERIFIED, VERIFY_LOGIN, INVALID_LOGIN_KEY} from '../actions/login';
+import {
+	SET_LOGIN_KEY,
+	LOGIN_FAILED,
+	LOGIN_VERIFIED,
+	VERIFY_LOGIN,
+	INVALID_LOGIN_KEY,
+	LOGOUT_BEGIN
+} from '../actions/login';
 
 import electronSettings from 'electron-settings';
 
+const loginDatas = electronSettings.get('login');
 const initialState = {
 	player: null,
 	loginErrors: [],
-	loginCode: electronSettings.get('login.loginCode')
+	loginCode: loginDatas.loginCode || null,
+	sessionId: loginDatas.sessionId || null,
 };
 
 export default (state = initialState, action) =>{
 	switch(action.type){
+		case LOGOUT_BEGIN:
+			return{
+				...state,
+				loginCode: null,
+				sessionId: null,
+			};
 		case LOGIN_VERIFIED:
-			electronSettings.set('login.loginCode', state.loginCode)
 		case SET_LOGIN_KEY:
 		case LOGIN_FAILED:
 		case INVALID_LOGIN_KEY:
@@ -19,7 +33,7 @@ export default (state = initialState, action) =>{
 			return {
 				...state,
 				...action.payload,
-			}
+			};
 		default:
 			return state;
 	}

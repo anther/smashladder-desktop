@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import { setReplayPath } from '../actions/replays';
+import { logout } from '../actions/login';
 
 import {connect} from "react-redux";
 import {bindActionCreators} from "redux";
@@ -30,7 +31,7 @@ const mapStateToProps = state => {
 };
 
 function mapDispatchToProps(dispatch) {
-	return bindActionCreators({ setReplayPath, ...BuildActions}, dispatch);
+	return bindActionCreators({ setReplayPath, ...BuildActions, logout}, dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(BuildsPage);

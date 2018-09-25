@@ -1,20 +1,18 @@
 import React, {Component} from 'react';
 
 import {SmashLadderAuthentication} from "../utils/SmashLadderAuthentication";
-import {BuildData} from "../utils/BuildData";
 import {Files} from "../utils/Files";
-import {BuildLaunchAhk} from "../utils/BuildLaunchAhk";
 
 import {BuildComponent} from "./BuildComponent";
 import Layout from "./common/Layout";
+import {Redirect} from "react-router";
 
 export default class Builds extends Component {
 	constructor(props){
 		super(props);
 		this.onSetBuildPath = this.setBuildPath.bind(this);
 		this.onUnsetBuildPath = this.unsetBuildPath.bind(this);
-		this.buildLauncher = new BuildLaunchAhk();
-		this.authentication = SmashLadderAuthentication.create(this.props.loginCode);
+		this.authentication = SmashLadderAuthentication.create({loginCode:this.props.loginCode});
 	}
 
 	unsetBuildPath(build, event){
@@ -22,7 +20,7 @@ export default class Builds extends Component {
 		this.props.setBuildPath(build, null);
 	}
 
-	setBuildPath(build, event){
+	setBuildPath(build){
 		Files.selectFile(build.path)
 			.then((path)=>{
 				if(path)
@@ -46,8 +44,14 @@ export default class Builds extends Component {
 
 	render(){
 		const { builds, buildError} = this.props;
+		if(!this.authentication || !this.authentication._getAccessCode())
+		{
+			return <Redirect to={'/'} />
+		}
 		return (
 			<Layout
+				logout={this.props.logout}
+
 				setReplayPath={this.props.setReplayPath}
 				authentication={this.authentication}
 				replayPath={this.props.replayPath}

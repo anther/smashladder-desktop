@@ -1,6 +1,4 @@
 import CacheableDataObject from "./CacheableDataObject"
-import _ from 'lodash';
-import electronSettings from 'electron-settings';
 
 export class Build extends CacheableDataObject
 {

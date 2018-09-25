@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import {ReplaySync} from "../ReplaySync";
 import {WebsocketComponent} from "../WebsocketComponent";
+import Button from "../elements/Button";
+import {Redirect} from "react-router";
 
 export default class Layout extends Component {
 	render(){
@@ -40,6 +42,7 @@ export default class Layout extends Component {
 						/>
 					</div>
 				</div>
+				<Button onClick={this.props.logout} >Logger Out</Button>
 			</div>
 		)
 	}

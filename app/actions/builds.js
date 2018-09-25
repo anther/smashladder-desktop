@@ -3,6 +3,7 @@ import electronSettings from 'electron-settings';
 import {Build} from "../utils/BuildData";
 import {BuildLaunchAhk} from "../utils/BuildLaunchAhk";
 import _ from "lodash";
+import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -31,16 +32,15 @@ export const START_GAME_FAIL = 'START_GAME_FAIL';
 
 const buildLauncher = new BuildLaunchAhk();
 
-const retrieveAuthentication = (getState) => {
-	return SmashLadderAuthentication.create(getState().login.loginCode);
-};
+
 
 export const retrieveBuilds = () => {
 	return (dispatch, getState) => {
 		dispatch({
 			type: FETCH_BUILDS_BEGIN,
 		});
-		retrieveAuthentication(getState).apiGet(endpoints.DOLPHIN_BUILDS)
+		getAuthenticationFromState(getState)
+			.apiGet(endpoints.DOLPHIN_BUILDS)
 			.then(response => {
 				console.log('retrieved build response', response)
 				const builds = organizeFetchedBuilds(response.builds);
@@ -134,7 +134,7 @@ export const startGame = () =>{
 
 export const closeDolphin = () =>{
 	return(dispatch, getState) => {
-		const authentication = retrieveAuthentication(getState);
+		const authentication = getAuthenticationFromState(getState);
 		buildLauncher.close().then(() => {
 			dispatch({
 				type: CLOSE_BUILD
@@ -192,7 +192,7 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
 };
 
 export const hostBuild = (build, game) => (dispatch, getState) => {
-	const authentication = retrieveAuthentication(getState);
+	const authentication = getAuthenticationFromState(getState);
 	dispatch({
 		type: HOST_BUILD_BEGIN,
 		payload: {

@@ -35,8 +35,8 @@ export default class Login extends Component {
 				<form className='login_form'>
 					{!player &&
 						<React.Fragment>
-							{isLoggingIn && <h2>Logging In</h2>}
-							{!isLoggingIn && <h2>Logged Out</h2>}
+							{isLoggingIn && <h6>Logging In</h6>}
+							{!isLoggingIn && <h6>Logged Out</h6>}
 						</React.Fragment>
 					}
 					{player &&
@@ -50,8 +50,7 @@ export default class Login extends Component {
 									disabled={this.props.isLoggingIn}
 									onChange={this.onLadderCodeChange}
 									type="password" name='ladder_code'
-									value={this.props.loginCode}
-									placeholder='Paste Retrieved Code Here'
+									value={this.props.loginCode || ''}
 									autoFocus={true}
 								/>
 							</div>

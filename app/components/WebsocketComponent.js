@@ -37,11 +37,7 @@ export class WebsocketComponent extends Component
 				this.browserWindow.webContents.send('sendChatMessage' , message)
 			},
 			startNetplay: (message) => {
-				//This only happens if dolphin is not already launched...
-				if (!message.data || !message.data.dolphin_version || !message.data.dolphin_version.id) {
-					throw 'Dolphin Data not included';
-				}
-				this.browserWindow.webContents.send('startNetplay' , message);
+				this.props.joinBuild(message.dolphin_version, message.game_launch_name);
 			},
 
 			quitDolphin: () => {
