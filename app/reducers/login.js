@@ -9,10 +9,10 @@ import {
 
 import electronSettings from 'electron-settings';
 
-const loginDatas = electronSettings.get('login');
+const loginDatas = electronSettings.get('login') || {};
 const initialState = {
-	player: null,
 	loginErrors: [],
+	player: loginDatas.player || null,
 	loginCode: loginDatas.loginCode || null,
 	sessionId: loginDatas.sessionId || null,
 };

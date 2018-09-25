@@ -2,8 +2,9 @@ import React, {Component} from 'react';
 
 import { Redirect } from 'react-router'
 
-import Heading from './common/Heading';
 import {endpoints, SmashLadderAuthentication} from '../utils/SmashLadderAuthentication';
+import Layout from "./common/Layout";
+import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 type Props = {};
 
@@ -29,23 +30,14 @@ export default class Login extends Component {
 		{
 			return <Redirect to={'/builds'} />
 		}
+		console.log(loginErrors);
 		return (
-			<React.Fragment>
-				<Heading/>
+			<Layout>
 				<form className='login_form'>
 					{!player &&
 						<React.Fragment>
-							{isLoggingIn && <h6>Logging In</h6>}
-							{!isLoggingIn && <h6>Logged Out</h6>}
-						</React.Fragment>
-					}
-					{player &&
-						<h2>Logged In as {player.username}!</h2>
-					}
-					{!player &&
-						<React.Fragment>
 							<div className="input-field">
-								<label htmlFor="ladder_code" className="">Ladder Code</label>
+								<label htmlFor="ladder_code" className="">Paste Login Code Here</label>
 								<input
 									disabled={this.props.isLoggingIn}
 									onChange={this.onLadderCodeChange}
@@ -58,33 +50,20 @@ export default class Login extends Component {
 						</React.Fragment>
 					}
 
-					{isLoggingIn &&
-						<div>LOADING</div>
-					}
 
 					{loginErrors.length > 0 &&
 						loginErrors.map((error, index)=>{
 							return (
-								<div key={index}>{error}</div>
+								<div className='error' key={index}>{error}</div>
 							)
 						})
 					}
 
-					<div className="preloader-wrapper small ">
-						<div className="spinner-layer spinner-blue-only">
-							<div className="circle-clipper left">
-								<div className="circle"></div>
-							</div>
-							<div className="gap-patch">
-								<div className="circle"></div>
-							</div>
-							<div className="circle-clipper right">
-								<div className="circle"></div>
-							</div>
-						</div>
-					</div>
+					{isLoggingIn &&
+						<ProgressIndeterminate />
+					}
 				</form>
-			</React.Fragment>
+			</Layout>
 		);
 	}
 }

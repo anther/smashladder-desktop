@@ -17,6 +17,10 @@ $ladder-highlight: #ff6c60;
   opacity: 0;
 }
 
+.error {
+  @extend .red-text, .lighten-2;
+}
+
 .error_button {
   @extend .red, .lighten-2;
 }
@@ -28,6 +32,44 @@ select.browser-default {
   border-color: black;
 }
 
+.progress_status{
+  .connection_state{
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+}
+
+.websocket{
+  margin-bottom: 240px;
+}
+
+.login_information{
+  position: fixed;
+  top: 0;
+  right: 0;
+  .logged_in_as{
+    .fluff{
+    }
+    .username{
+      font-weight: 700;
+    }
+    &:after{
+      content: "|";
+      margin: 0 8px;
+    }
+  }
+  .logout{
+  }
+}
+
+.login_form{
+  .error, .retrieve_code{
+    user-select: none;
+  }
+  .error{
+    pointer-events: none;
+  }
+}
 .page-title {
   user-select: none;
   pointer-events: none;
@@ -68,10 +110,6 @@ select.browser-default {
   .build {
     padding-left: 0;
     padding-right: 0;
-
-    .error {
-      @extend .red-text, .lighten-2;
-    }
 
     .enter_join_code {
       display: flex;
@@ -152,5 +190,4 @@ select.browser-default {
 
 .replays {
   margin-top: 10px;
-  height: 320px;
 }

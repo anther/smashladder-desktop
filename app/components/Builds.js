@@ -51,6 +51,7 @@ export default class Builds extends Component {
 		return (
 			<Layout
 				logout={this.props.logout}
+				player={this.props.player}
 
 				setReplayPath={this.props.setReplayPath}
 				authentication={this.authentication}

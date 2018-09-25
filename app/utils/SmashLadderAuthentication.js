@@ -24,6 +24,13 @@ export const endpoints = {
 };
 
 export class SmashLadderAuthentication extends CacheableDataObject{
+
+	beforeConstruct(){
+		this.player = null;
+		this.loginCode = null;
+		this.session_id = null;
+	}
+
 	static fullEndpointUrl(endpoint){
 		return `${API_URL}/${endpoint}`;
 	}

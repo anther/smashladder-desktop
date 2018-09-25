@@ -7,6 +7,8 @@ import fs from "fs";
 import Numbers from "../utils/Numbers";
 import multitry from "../utils/multitry";
 import SlippiGame from "slp-parser-js";
+import ProgressDeterminate from "./elements/ProgressDeterminate";
+import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 export class ReplaySync extends Component {
 	constructor(props){
@@ -212,20 +214,16 @@ export class ReplaySync extends Component {
 						{' '}<i className='fa fa-check'/>
 					</Button>
 
-					<h6 className='words'>
-						{this.getSyncStatusStatement()}
-					</h6>
-					<div className='sync_status'>
+					<div className='progress_status'>
 						{!this.state.sending &&
-						<div className="progress">
-							<div className="determinate" style={{width: "100%"}}/>
-						</div>
+							<ProgressDeterminate/>
 						}
 						{this.state.sending &&
-						<div className="progress">
-							<div className="indeterminate"/>
-						</div>
+							<ProgressIndeterminate />
 						}
+						<h6 className='connection_state'>
+							{this.getSyncStatusStatement()}
+						</h6>
 					</div>
 					{this.state.sentGame &&
 					<h6 className='sent_game'>

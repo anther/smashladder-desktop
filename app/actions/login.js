@@ -33,24 +33,45 @@ export const setLoginKey = (loginCode) =>{
 			.isAuthenticated()
 			.then((authentication) => {
 				console.log(authentication);
-				electronSettings.set('login.loginCode', loginCode)
-				electronSettings.set('login.sessionId', authentication.session_id);
+				const saveDatas = {};
+				saveDatas.loginCode = loginCode;
+				saveDatas.sessionId = authentication.session_id;
+				saveDatas.player  = authentication.player;
+				electronSettings.set('login', saveDatas);
 				dispatch({
 					type: LOGIN_VERIFIED,
 					payload: {
 						...state,
 						player: authentication.player,
-						isLoggingIn: false
+						isLoggingIn: false,
+						sessionId: authentication.session_id
 					},
 				});
 			})
 			.catch(response => {
+				let error = null;
+				if(response.statusCode === 401)
+				{
+					error = 'Invalid Code, Maybe it expired?';
+				}
+				else
+				{
+					error = JSON.parse(response.error);
+					if(error.error)
+					{
+						error = error.error;
+					}
+				}
+				if(typeof error === 'string')
+				{
+					error = [error];
+				}
 				dispatch({
 					type: LOGIN_FAILED,
 					payload: {
 						...state,
 						player: null,
-						loginErrors: response,
+						loginErrors: error,
 						isLoggingIn: false,
 					}
 				});
@@ -72,8 +93,7 @@ export const logout = () => (dispatch, getState) => {
 	dispatch({
 		type: LOGOUT_BEGIN
 	});
-	electronSettings.set('login.loginCode', null)
-	electronSettings.set('login.sessionId', null);
+	electronSettings.set('login', null)
 	authentication.apiPost(endpoints.LOGOUT).then(()=>{
 		dispatch({
 			type: LOGOUT_SUCCESS

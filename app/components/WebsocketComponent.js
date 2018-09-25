@@ -197,7 +197,7 @@ export class WebsocketComponent extends Component
 			case 0:
 				return 'Connecting...';
 			case 1:
-				return 'Connected To SmashLadder';
+				return 'Connection Active';
 			case 2:
 				return 'Closing';
 			case 3:
@@ -210,13 +210,15 @@ export class WebsocketComponent extends Component
 	render(){
 		return (
 			<div className='websocket'>
-				<h6>{this.websocketState()}</h6>
-				{this.websocket.readyState === 1 &&
-					<ProgressDeterminate />
-				}
-				{this.websocket.readyState !== 1 &&
-					<ProgressIndeterminate />
-				}
+				<div class='progress_status'>
+					{this.websocket.readyState === 1 &&
+						<ProgressDeterminate />
+					}
+					{this.websocket.readyState !== 1 &&
+						<ProgressIndeterminate />
+					}
+					<h6 className='connection_state'>{this.websocketState()}</h6>
+				</div>
 			</div>
 		)
 	}
