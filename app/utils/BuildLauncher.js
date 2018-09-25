@@ -5,7 +5,7 @@ import DolphinActions from "./DolphinActions.js";
 import DolphinChecker from "./DolphinChecker";
 import {Build} from "./BuildData";
 import child from 'child_process';
-
+import path from 'path';
 
 export default class DolphinLauncher{
 	constructor(){
@@ -59,67 +59,88 @@ export default class DolphinLauncher{
 		}
 	}
 
-	launchChild(build: Build, parameters = []){
-		if(!parameters)
-		{
-			parameters = [];
-		}
-
-		if(!build.executablePath())
-		{
-			throw new Error('Attempted to launch '+ build.name + ' but the path is not set!');
-		}
-
-		if(this.child)
-		{
-			//Only one child allowed at a time, may consider throwing an error instead
-			return Promise.resolve(this.child);
-		}
-
-
-		this.child = child.spawn(build.executablePath(), parameters, {
-			cwd: require('path').dirname(build.executablePath())
-		});
-
-		console.log('[PID]',this.child.pid);
-
-		this.child.stdout.on('data', (data) => {
-			console.log('stdout: ' + data);
-			if(!data)
+	async launchChild(build: Build, parameters = []){
+		return new Promise((resolve, reject)=>{
+			if(!parameters)
 			{
-				console.log('Empty?');
+				parameters = [];
+			}
+
+			if(!build.executablePath())
+			{
+				reject('Attempted to launch '+ build.name + ' but the path is not set!');
 				return;
 			}
-			const strings = data.toString().split(/\r?\n/);
-			console.log(data);
-			for(let i in strings)
-			{
-				if(!strings.hasOwnProperty(i))
-				{
-					continue;
-				}
-				const stdout = strings[i];
-				if(!stdout)
-				{
-					continue;
-				}
 
-				const result = DolphinResponse.parse(stdout);
-				if(DolphinActions.isCallable(result.action))
+			if(this.child)
+			{
+				//Only one child allowed at a time, may consider throwing an error instead
+				resolve(this.child);
+				return;
+			}
+
+			this.child = child.spawn(path.resolve(build.executablePath()), parameters, {
+				cwd: path.resolve(require('path').dirname(build.executablePath()))
+			});
+
+			this.child.on('error', (err) => {
+				if(err && err.toString().includes('ENOENT'))
 				{
-					build.changeIsSmartDolphin(true);
-					if(!build.isTesting)
+					reject('Could not launch file at ' + path.resolve(build.executablePath()));
+				}
+				reject('Failed To Launch');
+			});
+
+			this.child.stdout.on('data', (data) => {
+				resolve(this.child);
+				console.log('stdout: ' + data);
+				if(!data)
+				{
+					console.log('Empty?');
+					return;
+				}
+				const strings = data.toString().split(/\r?\n/);
+				console.log(data);
+				for(let i in strings)
+				{
+					if(!strings.hasOwnProperty(i))
 					{
-						DolphinActions.call(result.action, build, result.value)
+						continue;
+					}
+					const stdout = strings[i];
+					if(!stdout)
+					{
+						continue;
+					}
+
+					const result = DolphinResponse.parse(stdout);
+					if(DolphinActions.isCallable(result.action))
+					{
+						build.changeIsSmartDolphin(true);
+						if(!build.isTesting)
+						{
+							DolphinActions.call(result.action, build, result.value)
+						}
+					}
+					else
+					{
+						console.warn('Unusable stdout', result);
 					}
 				}
-				else
+			});
+
+			const failTimeout = setTimeout(()=>{
+				if(!this.child.pid)
 				{
-					console.warn('Unusable stdout', result);
+					reject('Child not found!');
 				}
+			},5000);
+			if(this.child.pid)
+			{
+				clearTimeout(failTimeout);
+				resolve(this.child);
 			}
 		});
-		return Promise.resolve(this.child);
 	}
 
 }

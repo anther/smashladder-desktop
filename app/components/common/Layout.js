@@ -1,12 +1,13 @@
 import React, {Component} from 'react';
 import {ReplaySync} from "../ReplaySync";
+import {WebsocketComponent} from "../WebsocketComponent";
 
-export default class Layout extends React.Component {
+export default class Layout extends Component {
 	render(){
 		return (
 			<div className='container'>
 				<div id="main-heading">
-					<h2 className="page-title">
+					<h3 className="page-title">
 					<span className='site_name'>
 						<span className='logo-smash'>Smash</span>
 						<img src='./images/ladder_logo_icon.png'/>
@@ -15,22 +16,21 @@ export default class Layout extends React.Component {
 								<span className='launcher_name'>
 						<span className='logo-dolphin'>Dolphin Launcher</span>
 					</span>
-					</h2>
+					</h3>
 				</div>
-				<span
-					className='title_tip'>Automatically launches dolphin when you join a match on smashladder.com</span>
-				{this.props.authentication &&
-				<ReplaySync
-					replayPath={this.props.replayPath}
-					setReplayPath={this.props.setReplayPath}
-				/>
-				}
 				<div className='row'>
-					<div className='col l8'>
+					<div className='col m8'>
 						{this.props.children}
 					</div>
-					<div className='col l4'>
-						Rawr
+					<div className='col m4 connecties'>
+						<ReplaySync
+							authentication={this.props.authentication}
+							replayPath={this.props.replayPath}
+							setReplayPath={this.props.setReplayPath}
+						/>
+						<WebsocketComponent
+							authentication={this.props.authentication}
+						/>
 					</div>
 				</div>
 			</div>

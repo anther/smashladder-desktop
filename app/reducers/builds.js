@@ -1,4 +1,8 @@
-import { BUILDS_ACQUIRED,BUILDS_RETRIEVE,BUILDS_RETRIEVE_FAILED } from '../actions/builds';
+import {
+	BUILDS_ACQUIRED,
+	BUILDS_RETRIEVE,
+	BUILDS_RETRIEVE_FAILED,
+	SET_BUILD_PATH} from '../actions/builds';
 
 import electronSettings from 'electron-settings';
 
@@ -11,6 +15,7 @@ export default (state = initialState, action) =>{
 		case BUILDS_ACQUIRED:
 		case BUILDS_RETRIEVE:
 		case BUILDS_RETRIEVE_FAILED:
+		case SET_BUILD_PATH:
 			const newState = {
 				...state,
 				...action.payload,

@@ -348,12 +348,12 @@ SetupNetplayHost(joinGameUsername, gameString, gameName){
     {
         if(gameString)
         {
-            MsgBox, , Game Not Found!, A listing for %gameName% was not found in the game list! (Game Identifier: %gameString%)
+            SendToParent("setup_netplay_host_failed", "Game Not Found!, A listing for " gameName " was not found in the game list! (Game Identifier: " gameString ")")
             return false
         }
         else
         {
-            MsgBox, , Game List Empty!, There are no games in your game list
+            SendToParent("setup_netplay_host_failed_empty_list", "Game was not found, And there are no games in this dolphin's game list")
             return false
         }
     }

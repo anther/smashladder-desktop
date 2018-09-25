@@ -13,7 +13,7 @@ export default class Login extends Component {
 		this.onLadderCodeChange = this.ladderCodeChange.bind(this);
 	}
 
-	componentWillMount(){
+	componentDidMount(){
 		if(this.props.loginCode){
 			this.props.setLoginKey(this.props.loginCode);
 		}

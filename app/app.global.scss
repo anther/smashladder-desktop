@@ -5,6 +5,8 @@
 @import '~@fortawesome/fontawesome-free/css/all.css';
 @import '~materialize-css/sass/materialize';
 
+$ladder-header: #323232;
+$ladder-highlight: #ff6c60;
 #main-heading {
   background-color: white;
   text-align: center;
@@ -13,6 +15,43 @@
 #main-heading .front-logo {
   max-width: 85%;
   opacity: 0;
+}
+
+.error_button {
+  @extend .red, .lighten-2;
+}
+.set_button {
+  @extend .green, .lighten-2;
+}
+
+select.browser-default {
+  border-color: black;
+}
+
+.page-title {
+  user-select: none;
+  font-weight: 200;
+
+  .site_name {
+    display: flex;
+    justify-content: center;
+  }
+  .logo-smash {
+    color: $ladder-header;
+  }
+  .logo-ladder {
+    color: $ladder-highlight;
+  }
+  .logo-smash,
+  .logo-ladder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .logo-dolphin {
+    display: block;
+    font-size: 2rem;
+  }
 }
 
 .build {
@@ -28,6 +67,46 @@
   .build {
     padding-left: 0;
     padding-right: 0;
+
+    .error {
+      @extend .red-text, .lighten-2;
+    }
+
+    .enter_join_code {
+      display: flex;
+      .cancel {
+        @extend .red, .lighten-2;
+      }
+      .join_code_input {
+        display: inline-block;
+        flex: 1 1 0;
+      }
+    }
+
+    .dolphin_actions {
+      button {
+        margin-right: 4px;
+      }
+    }
+
+    .build_actions {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .download_build {
+    }
+    .select_game_container {
+      flex: 1;
+      text-align: right;
+    }
+    .select_game {
+      display: inline-block;
+      width: auto;
+      min-width: 125px;
+      border-color: rgba(0, 0, 0, 0.4);
+    }
 
     .path_button {
       flex: 0 0 auto;
@@ -52,14 +131,19 @@
       }
       .has_path {
         .btn {
-          @extend .green, .lighten-2;
+          @extend .set_button;
         }
       }
       .no_path {
         .btn {
-          @extend .red, .lighten-2;
+          @extend .error_button;
         }
       }
     }
   }
+}
+
+.replays {
+  margin-top: 10px;
+  height: 320px;
 }

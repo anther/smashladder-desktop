@@ -4,7 +4,6 @@ import {SmashLadderAuthentication} from "../utils/SmashLadderAuthentication";
 import {BuildData} from "../utils/BuildData";
 import {Files} from "../utils/Files";
 import {BuildLaunchAhk} from "../utils/BuildLaunchAhk";
-import {ReplaySync} from "../components/ReplaySync";
 
 import {BuildComponent} from "./BuildComponent";
 import Layout from "./common/Layout";
@@ -13,12 +12,18 @@ export default class Builds extends Component {
 	constructor(props){
 		super(props);
 		this.onSetBuildPath = this.setBuildPath.bind(this);
+		this.onUnsetBuildPath = this.unsetBuildPath.bind(this);
 		this.buildLauncher = new BuildLaunchAhk();
 		this.authentication = SmashLadderAuthentication.create(this.props.loginCode);
 	}
 
-	setBuildPath(build){
-		Files.selectFile()
+	unsetBuildPath(build, event){
+		event.preventDefault();
+		this.props.setBuildPath(build, null);
+	}
+
+	setBuildPath(build, event){
+		Files.selectFile(build.path)
 			.then((path)=>{
 				if(path)
 				{
@@ -27,7 +32,7 @@ export default class Builds extends Component {
 			})
 	}
 
-	componentWillMount(){
+	componentDidMount(){
 		this.props.retrieveBuilds(this.authentication);
 	}
 
@@ -36,7 +41,9 @@ export default class Builds extends Component {
 		const buildData = BuildData.create({builds});
 		return (
 			<Layout
-				authentication={this.props.authentication}
+				setReplayPath={this.props.setReplayPath}
+				authentication={this.authentication}
+				replayPath={this.props.replayPath}
 			>
 				<div className='builds collection'>
 					{buildData.hasBuilds() &&
@@ -46,7 +53,9 @@ export default class Builds extends Component {
 									key={build.dolphin_build_id}
 									authentication={this.authentication}
 									build={build}
-									setBuildPath={this.onSetBuildPath}
+									setBuildPath={this.props.setBuildPath}
+									onSetBuildPathClick={this.onSetBuildPath}
+									unsetBuildPath={this.onUnsetBuildPath}
 									buildLauncher={this.buildLauncher}
 
 								/>

@@ -53,5 +53,7 @@ Status: ready
 
 	dolphin: function(value){
 		console.log('Yay');
-	}
+	},
+	setup_netplay_host_failed: () => (null),
+	setup_netplay_host_failed_empty_list: () => (null),
 };

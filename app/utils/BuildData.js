@@ -22,7 +22,17 @@ export class BuildData extends CacheableDataObject
 				build.addLadder(buildData.ladder);
 			}
 		});
-		return Array.from(buildList.values());
+		return Array.from(buildList.values()).sort((a,b)=>{
+			if(a.path && !b.path)
+			{
+				return -1;
+			}
+			if(b.path && !a.path)
+			{
+				return 1;
+			}
+			return 0;
+		});
 	}
 
 	getLadders(){

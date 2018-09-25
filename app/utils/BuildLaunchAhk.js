@@ -22,7 +22,7 @@ export class BuildLaunchAhk
 		console.log('hotkey location', this.hotkeyLocation);
 	}
 
-	async launchHotKey(command, build, successOnAction = ''){
+	async launchHotKey(command, build, successOnAction = '', failOnActions = []){
 		return new Promise((resolve,reject)=>{
 			this.killHotkey()
 				.then(()=>{
@@ -42,7 +42,6 @@ export class BuildLaunchAhk
 							}
 						}
 					}
-					console.log('Opening Smash Quick Play SL', parameters);
 					this.hotkey = child.spawn(this.hotkeyLocation, parameters);
 					this.hotkey.on('error', function(err) {
 						reject(`Hotkey Error: ${err}`);
@@ -68,17 +67,18 @@ export class BuildLaunchAhk
 							if(DolphinActions.isCallable(result.action))
 							{
 								const callResult = DolphinActions.call(result.action, build, result.value)
-								if(result.action === 'host_code' && callResult)
+								result.dolphinAction = true;
+								if(result.action === successOnAction && callResult)
 								{
 									resolve(callResult);
+								}
+								if(failOnActions.includes(result.action))
+								{
+									reject(result);
 								}
 							}
 						}
 					});
-					if(!this.hotkey.pid)
-					{
-						throw new Error('Error loading up SmashQuickPlay, never received a process id');
-					}
 					this.hotkey.on('close', (e)=>{
 						this.hotkey = null;
 						reject('AutoHotKey Attempt Closed');
@@ -124,13 +124,11 @@ export class BuildLaunchAhk
 		this.launchHotKey('launch');
 	}
 
-	launch(build){
-		console.trace('at open');
+	async launch(build: Build){
+		console.log('launching?');
 		return this.buildLauncher
 			.launch(build, null, true)
-			.then((child)=>{
-				console.log('launching?');
-				const dolphinProcess = this.buildLauncher.child;
+			.then((dolphinProcess)=>{
 				if(dolphinProcess)
 				{
 					dolphinProcess.on('close', ()=>{
@@ -140,7 +138,8 @@ export class BuildLaunchAhk
 				var parameters = ['launch'];
 				parameters.push('Temp Username');
 				parameters.push(build.name);
-				return this.launchHotKey(parameters, build)
+				this.launchHotKey(parameters, build)
+				return dolphinProcess;
 			})
 			.catch((error)=>{
 				throw error;
@@ -182,7 +181,10 @@ export class BuildLaunchAhk
 				parameters.push(gameLaunch.name);
 				parameters.push(build.name);
 			}
-			return this.launchHotKey(parameters, build, 'host_code');
+			return this.launchHotKey(parameters, build, 'host_code',
+				['setup_netplay_host_failed',
+				'setup_netplay_host_failed_empty_list']
+			);
 		});
 		return Promise.all([dolphinPromise, hotkeyPromise]);
 	}

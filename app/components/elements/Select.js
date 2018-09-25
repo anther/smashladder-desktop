@@ -1,6 +1,6 @@
 import React , {Component} from 'react';
 
-export default class Button extends Component
+export default class Select extends Component
 {
 
 	render(){
@@ -9,9 +9,9 @@ export default class Button extends Component
 		{
 			className = '';
 		}
-		className += ' btn waves-effect waves-light';
+		className += ' browser-default';
 		return (
-			<button className={className} {...props} />
+			<select className={className} {...props} />
 		)
 	}
 }

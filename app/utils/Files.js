@@ -32,12 +32,16 @@ export class Files
 		return path.join(appPath, location);
 	}
 
-	static selectFile(){
-		return Files._openDialogSelectOne({properties: ['openFile']});
+	static selectFile(defaultPath = ''){
+		return Files._openDialogSelectOne({
+			defaultPath,
+			properties: ['openFile']});
 	}
 
-	static selectDirectory(){
-		return Files._openDialogSelectOne({properties: ['openDirectory']});
+	static selectDirectory(defaultPath = ''){
+		return Files._openDialogSelectOne({
+			defaultPath,
+			properties: ['openDirectory']});
 	}
 
 	static makeFilenameSafe(fileName){
