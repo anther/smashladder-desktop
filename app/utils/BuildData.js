@@ -77,7 +77,6 @@ export class Build extends CacheableDataObject
 			return false;
 		}
 		const extension = require('path').extname(this.download_file).toLowerCase();
-		console.log(extension);
 		return !!acceptableExtensions[extension];
 	}
 

@@ -33,17 +33,30 @@ export default class Builds extends Component {
 	}
 
 	componentDidMount(){
-		this.props.retrieveBuilds(this.authentication);
+		this.props.retrieveBuilds();
+	}
+
+	isActiveBuild(build){
+		if(!this.props.activeBuild)
+		{
+			return false;
+		}
+		return this.props.activeBuild.id === build.id;
 	}
 
 	render(){
-		const { builds } = this.props;
+		const { builds, buildError} = this.props;
 		const buildData = BuildData.create({builds});
 		return (
 			<Layout
 				setReplayPath={this.props.setReplayPath}
 				authentication={this.authentication}
 				replayPath={this.props.replayPath}
+
+				launchBuild={this.props.launchBuild}
+				hostBuild={this.props.hostBuild}
+				joinBuild={this.props.joinBuild}
+				closeDolphin={this.props.closeDolphin}
 			>
 				<div className='builds collection'>
 					{buildData.hasBuilds() &&
@@ -56,7 +69,15 @@ export default class Builds extends Component {
 									setBuildPath={this.props.setBuildPath}
 									onSetBuildPathClick={this.onSetBuildPath}
 									unsetBuildPath={this.onUnsetBuildPath}
-									buildLauncher={this.buildLauncher}
+
+									launchBuild={this.props.launchBuild}
+									hostBuild={this.props.hostBuild}
+									joinBuild={this.props.joinBuild}
+									closeDolphin={this.props.closeDolphin}
+									buildOpen={this.isActiveBuild(build) && this.props.buildOpen}
+									buildOpening={this.isActiveBuild(build) && this.props.buildOpening}
+									hostCode={this.isActiveBuild(build) && this.props.hostCode}
+									buildError={(buildError && buildError.for === build.id) ? buildError.error: null}
 
 								/>
 							)}

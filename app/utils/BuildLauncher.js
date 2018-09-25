@@ -17,10 +17,24 @@ export default class DolphinLauncher{
 		{
 			if(!this.child)
 			{
-				if(DolphinChecker.dolphinIsRunning())
-				{
-					throw new Error('Dolphin is already opened. Please close all instances of dolphin!');
-				}
+				return DolphinChecker.dolphinIsRunning()
+					.then((isRunning)=>{
+						const errorMessage = 'Dolphin is already opened. Please close all instances of dolphin!';
+						if(isRunning)
+						{
+							throw errorMessage;
+						}
+					})
+					.then(()=>{
+						return this.close();
+					})
+					.then(()=>{
+						return this.launchChild(build, parameters)
+					})
+					.catch( error =>{
+						throw error;
+					});
+
 			}
 			return this.close()
 				.then(()=>{

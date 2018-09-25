@@ -3,6 +3,8 @@ import urlSerialize from "../utils/urlSerialize";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
+import _ from 'lodash';
+
 const noResponseTimeoutInSeconds = 50;
 export class WebsocketComponent extends Component
 {
@@ -13,6 +15,64 @@ export class WebsocketComponent extends Component
 		this.state = {
 			forcedDisconnect: false
 		}
+
+		this.websocketCommands = {
+
+			selectVersion: (message) => {
+				this.browserWindow.webContents.send('highlightBuild', message.data.dolphin_version.name);
+			},
+
+			startedMatch: (message) => {
+				this.browserWindow.webContents.send('startedMatch', message)
+			},
+
+			hostNetplay: (message) => {
+				this.props.hostBuild(message.dolphin_version, message.game_launch_name);
+			},
+
+			sendChatMessage: (message) =>{
+				if (!message.data || !message.data.dolphin_version || !message.data.dolphin_version.id) {
+					throw 'Dolphin Data not included';
+				}
+				this.browserWindow.webContents.send('sendChatMessage' , message)
+			},
+			startNetplay: (message) => {
+				//This only happens if dolphin is not already launched...
+				if (!message.data || !message.data.dolphin_version || !message.data.dolphin_version.id) {
+					throw 'Dolphin Data not included';
+				}
+				this.browserWindow.webContents.send('startNetplay' , message);
+			},
+
+			quitDolphin: () => {
+				this.browserWindow.webContents.send('quitDolphin');
+			},
+
+			startGame: (message) => {
+				this.browserWindow.webContents.send('startGame', message);
+			},
+
+			disableConnection: (message) => {
+				Authentication.load()
+					.then((authentication)=> {
+						if (authentication.session_id == message.data.session_id) {
+							console.log('[I GET TO LIVE]');
+						}
+						else {
+							this.emit('disableConnection');
+						}
+					})
+					.catch(function (error) {
+						console.error(error);
+					});
+
+			},
+
+			requestAuthentication: () => {
+				this.mainWindow.webContents.send('requestAuthentication');
+				//After a minute or so, goes back to disable connection
+			}
+		};
 	}
 
 	componentDidMount(){
@@ -69,10 +129,26 @@ export class WebsocketComponent extends Component
 			const data = event.data;
 			console.log(event.data);
 			this.resetAlonenessTimer();
-			if(data.ping)
-			{
+			let message = {};
+			try{
+				message = JSON.parse(event.data);
 			}
-
+			catch(error)
+			{
+				console.error(error);
+			}
+			if(message.functionCall)
+			{
+				if(this.websocketCommands.hasOwnProperty(message.functionCall))
+				{
+					console.log('payload', message.data);
+					this.websocketCommands[message.functionCall](message.data);
+				}
+				else
+				{
+					console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
+				}
+			}
 		};
 
 		this.websocket.onerror = (evt) => {
@@ -128,6 +204,4 @@ export class WebsocketComponent extends Component
 			</div>
 		)
 	}
-
-
 }

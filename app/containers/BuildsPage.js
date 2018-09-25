@@ -1,10 +1,11 @@
 // @flow
 import React, { Component } from 'react';
 import Builds from '../components/Builds';
-import { retrieveBuilds, setBuildPath } from '../actions/builds';
+import * as BuildActions from '../actions/builds';
 import { setReplayPath } from '../actions/replays';
 
 import {connect} from "react-redux";
+import {bindActionCreators} from "redux";
 
 type Props = {};
 
@@ -28,4 +29,8 @@ const mapStateToProps = state => {
 	}
 };
 
-export default connect(mapStateToProps, { retrieveBuilds, setBuildPath, setReplayPath } )(BuildsPage);
+function mapDispatchToProps(dispatch) {
+	return bindActionCreators({ setReplayPath, ...BuildActions}, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(BuildsPage);

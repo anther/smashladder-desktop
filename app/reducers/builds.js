@@ -1,26 +1,67 @@
 import {
-	BUILDS_ACQUIRED,
-	BUILDS_RETRIEVE,
-	BUILDS_RETRIEVE_FAILED,
-	SET_BUILD_PATH} from '../actions/builds';
+	FETCH_BUILDS_SUCCESS,
+	FETCH_BUILDS_BEGIN,
+	FETCH_BUILDS_FAIL, CLOSE_BUILD, LAUNCH_BUILD_BEGIN, LAUNCH_BUILD_FAIL, LAUNCH_BUILD_SUCCESS,
+	SET_BUILD_PATH, HOST_BUILD_BEGIN, JOIN_BUILD_BEGIN, HOST_BUILD_SUCCESS, JOIN_BUILD_SUCCESS, HOST_BUILD_FAIL,
+	JOIN_BUILD_FAIL, BUILD_CLOSED
+} from '../actions/builds';
 
 import electronSettings from 'electron-settings';
 
 const initialState = {
-	builds: []
+	builds: [],
+	activeBuild: null,
+	buildOpen: false,
+	buildOpening: false,
+	buildError: null,
 };
 
 export default (state = initialState, action) =>{
 	switch(action.type){
-		case BUILDS_ACQUIRED:
-		case BUILDS_RETRIEVE:
-		case BUILDS_RETRIEVE_FAILED:
+		case FETCH_BUILDS_SUCCESS:
+		case FETCH_BUILDS_BEGIN:
+		case FETCH_BUILDS_FAIL:
 		case SET_BUILD_PATH:
-			const newState = {
+			return {
 				...state,
 				...action.payload,
 			};
-			return newState;
+		case LAUNCH_BUILD_BEGIN:
+		case HOST_BUILD_BEGIN:
+		case JOIN_BUILD_BEGIN:
+			return {
+				...state,
+				activeBuild: action.payload.build,
+				buildOpening: true,
+				buildError: null,
+			};
+		case LAUNCH_BUILD_SUCCESS:
+		case HOST_BUILD_SUCCESS:
+		case JOIN_BUILD_SUCCESS:
+			return {
+				...state,
+				buildOpen: true,
+				buildOpening: false,
+				hostCode: action.payload ? action.payload.hostCode : null,
+			};
+		case LAUNCH_BUILD_FAIL:
+		case HOST_BUILD_FAIL:
+		case JOIN_BUILD_FAIL:
+			console.log('the state', state.builds.activeBuild);
+			return {
+				...state,
+				buildOpen: false,
+				buildOpening: false,
+				buildError: action.payload.buildError,
+			};
+		case BUILD_CLOSED:
+		case CLOSE_BUILD:
+			return {
+				...state,
+				activeBuild: null,
+				buildOpen: false,
+				buildOpening: false,
+			};
 		default:
 			return state;
 	}

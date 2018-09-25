@@ -74,7 +74,7 @@ export class BuildLaunchAhk
 								}
 								if(failOnActions.includes(result.action))
 								{
-									reject(result);
+									reject(result.value);
 								}
 							}
 						}
@@ -119,13 +119,16 @@ export class BuildLaunchAhk
 		}
 	}
 
-	startGame(){
+	async startGame(){
 		console.log('command to start game');
-		this.launchHotKey('launch');
+		return this.launchHotKey('launch');
 	}
 
 	async launch(build: Build){
-		console.log('launching?');
+		if(!build)
+		{
+			throw new Error('Build is required!');
+		}
 		return this.buildLauncher
 			.launch(build, null, true)
 			.then((dolphinProcess)=>{
@@ -187,6 +190,14 @@ export class BuildLaunchAhk
 			);
 		});
 		return Promise.all([dolphinPromise, hotkeyPromise]);
+	}
+
+	_hostDolphin(build, gameLaunch){
+
+	}
+
+	_hostHotkey(build, gameLaunch){
+
 	}
 
 	async join(build, hostCode){

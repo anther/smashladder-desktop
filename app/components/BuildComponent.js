@@ -13,22 +13,24 @@ import Button from './elements/Button';
 import Select from './elements/Select';
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
+import _ from 'lodash';
 
 
 export class BuildComponent extends Component {
 	props: {
-		buildLauncher: BuildLaunchAhk,
 		build: Build,
 		setBuildPath: func,
 		onSetBuildPathClick: func,
 		unsetBuildPath: func,
-	}
+
+		launchBuild: func,
+		closeDolphin: func,
+	};
 
 	constructor(props){
 		super(props);
 		this.onSetBuildPathClick = this.props.onSetBuildPathClick;
 		this.unsetBuildPath = this.props.unsetBuildPath;
-		this.buildLauncher = this.props.buildLauncher;
 
 		const {build} = this.props;
 		const selectedGame = build.getPossibleGames()[0];
@@ -36,8 +38,6 @@ export class BuildComponent extends Component {
 		this.state = {
 			error: null,
 			selectedGame: selectedGame.id,
-			hosting: false,
-			dolphinOpen: false,
 			joinCode: '',
 			enterJoinCode: false,
 			submittingJoinCode: false,
@@ -107,7 +107,7 @@ export class BuildComponent extends Component {
 						console.log('ended!')
 						// Do something after request finishes
 						this.setState({
-							downloading: 'Unzipping File',
+							downloading: 'Unzipping Build',
 							downloadingProgress: null,
 						});
 						switch(extension.toLowerCase())
@@ -116,6 +116,11 @@ export class BuildComponent extends Component {
 								var unzipper = require("unzipper");
 
 								console.log('Before open zip', zipWriteLocation);
+								const updateEntryDisplay = _.throttle( (entry) => {
+									this.setState({
+										unzipStatus: entry.path ? entry.path : null
+									});
+								}, 100);
 								multitry(500, 5, () => {
 									fs.createReadStream(zipWriteLocation)
 										.pipe(unzipper.Extract({path: unzipLocation})
@@ -130,11 +135,7 @@ export class BuildComponent extends Component {
 													unzipStatus: null,
 												});
 											})
-											.on('entry', (entry) => {
-												this.setState({
-													unzipStatus: entry.path ? entry.path : null
-												});
-											})
+											.on('entry', updateEntryDisplay)
 										);
 
 								});
@@ -161,32 +162,11 @@ export class BuildComponent extends Component {
 		}
 	}
 
-	joinCodeCancel(event){
+	joinCodeCancel(){
 		this.setState({
 			enterJoinCode: false,
 			joinCode: ''
 		});
-	}
-
-	joinCodeSubmit(event){
-		this.setState({
-			submittingJoinCode: true,
-			enterJoinCode: false
-		});
-		this.buildLauncher.join(this.props.build, this.state.joinCode)
-			.then((dolphinProcess) => {
-				this.setState({
-					submittingJoinCode: false
-				});
-
-			})
-			.catch((error) => {
-				this.setState({
-					submittingJoinCode: false,
-					error: String(error),
-					dolphinOpen: false
-				});
-			});
 	}
 
 	joinCodeChange(event){
@@ -209,22 +189,7 @@ export class BuildComponent extends Component {
 	}
 
 	closeClick(){
-		return this.buildLauncher.close().then(() => {
-			this._dolphinClosed();
-			this.setState({
-				error: null,
-				hosting: null,
-			})
-		});
-	}
-
-	_dolphinClosed(){
-		const {authentication} = this.props;
-		this.setState({
-			dolphinOpen: false,
-			hosting: null,
-		});
-		authentication.apiPost(endpoints.CLOSED_DOLPHIN);
+		return this.props.closeDolphin();
 	}
 
 	_getSelectedGame(){
@@ -241,61 +206,21 @@ export class BuildComponent extends Component {
 		return game;
 	}
 
+	joinCodeSubmit(){
+		this.props.joinBuild(this.props.build, this.state.joinCode);
+	}
+
 	launchClick(){
-		this.buildLauncher.launch(this.props.build)
-			.then(() => {
-				this.setState({
-					dolphinOpen: true
-				});
-			}).catch((error) => {
-				this.setState({
-					dolphinOpen: false,
-					error: String(error)
-				});
-			})
+		this.props.launchBuild(this.props.build);
 	}
 
 	hostClick(){
-		const {authentication} = this.props;
-
-		this.setState({error: null});
-		const game = this._getSelectedGame();
-		this.setState({
-			dolphinOpen: true
-		});
-		this.buildLauncher.host(this.props.build, game)
-			.then(([dolphinProcess, hostCode]) => {
-				authentication.apiPost(endpoints.OPENED_DOLPHIN);
-				dolphinProcess.on('close', (e) => {
-					this._dolphinClosed();
-				});
-
-				authentication.apiPost(endpoints.DOLPHIN_HOST, {host_code: hostCode});
-				this.setState({
-					hosting: hostCode,
-				})
-			})
-			.catch((error) => {
-				console.log('the error', error);
-				this.closeClick().then(() => {
-					const newState = {
-						hosting: null,
-					};
-					if(error.dolphinAction)
-					{
-						newState.error = error.value;
-					}
-					else
-					{
-						newState.error = String(error);
-					}
-					this.setState(newState);
-				});
-			});
+		this.props.hostBuild(this.props.build, this._getSelectedGame());
 	}
 
 	render(){
-		const {build} = this.props;
+		const {build, buildOpen, buildOpening, hostCode, buildError} = this.props;
+		const error = this.state.error || buildError;
 		return (
 			<div className='build' key={build.id}>
 				<div className='build_heading'>
@@ -306,6 +231,7 @@ export class BuildComponent extends Component {
 									onClick={this.onSetBuildPathClick.bind(null, build)}
 									onContextMenu={this.unsetBuildPath.bind(null, build)}
 									className='btn-small'>Path Set <i className="fa fa-check"/></Button>
+							{build.path}
 							</span>
 
 						}
@@ -321,7 +247,6 @@ export class BuildComponent extends Component {
 					<span className='build_name'>
 						{build.name}
 					</span>
-
 				</div>
 
 				{!this.state.enterJoinCode &&
@@ -330,28 +255,33 @@ export class BuildComponent extends Component {
 					{build.path &&
 					<React.Fragment>
 						<div className='dolphin_actions'>
-							{!this.state.dolphinOpen &&
+							{!buildOpen &&
 								<React.Fragment>
 									<Button onClick={this.onLaunchClick}>Launch</Button>
 									<Button onClick={this.onHostClick}>Host</Button>
 									<Button onClick={this.onJoinClick}>Join</Button>
 								</React.Fragment>
 							}
-							{this.state.dolphinOpen &&
+							{buildOpen &&
 								<Button onClick={this.onCloseClick}>Close</Button>
 							}
 						</div>
-						<div className='select_game_container'>
-							<Select className='select_game'
-							        onChange={this.onSelectedGameChange}
-							        value={this.state.selectedGame}>
-								{build.getPossibleGames().map((game) =>
-									<option value={game.id} key={game.id}>
-										{game.name}
-									</option>
-								)}
-							</Select>
-						</div>
+						{buildOpen && hostCode &&
+							<h6 className='host_code'>{hostCode}</h6>
+						}
+						{!buildOpen &&
+							<div className='select_game_container'>
+								<Select className='select_game'
+								        onChange={this.onSelectedGameChange}
+								        value={this.state.selectedGame}>
+									{build.getPossibleGames().map((game) =>
+										<option value={game.id} key={game.id}>
+											{game.name}
+										</option>
+									)}
+								</Select>
+							</div>
+						}
 					</React.Fragment>
 					}
 					{!build.path && build.hasDownload() &&
@@ -389,20 +319,19 @@ export class BuildComponent extends Component {
 						onKeyPress={this.onJoinKeyPress}/>
 					<Button onClick={this.onJoinCodeSubmit}>Go!</Button>
 					<Button className='cancel' onClick={this.onJoinCodeCancel}>Cancel</Button>
-					<img class='join_logo' src={this._getSelectedGame().small_image}/>
 
 				</div>
 				}
 
 				<div>
-					{this.state.dolphinOpen &&
+					{buildOpening &&
+						<ProgressIndeterminate />
+					}
+					{buildOpen &&
 						<ProgressDeterminate />
 					}
-					{this.state.hosting &&
-					<div className='error'>{this.state.hosting}</div>
-					}
-					{this.state.error &&
-					<div className='error'>Error! {this.state.error}</div>
+					{error &&
+						<div className='error'>{error}</div>
 					}
 				</div>
 			</div>
