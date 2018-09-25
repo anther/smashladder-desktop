@@ -210,7 +210,7 @@ export class WebsocketComponent extends Component
 	render(){
 		return (
 			<div className='websocket'>
-				<div class='progress_status'>
+				<div className='progress_status'>
 					{this.websocket.readyState === 1 &&
 						<ProgressDeterminate />
 					}
