@@ -47,6 +47,10 @@
   "build": {
     "productName": "SmashLadderDesktop",
     "appId": "org.anther.SmashLadderDesktop",
+    "asarUnpack": [
+      "**/dolphin/**/*",
+      "**/external/**/*"
+    ],
     "files": [
       "dist/",
       "node_modules/",

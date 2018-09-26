@@ -44,7 +44,27 @@ export default class Builds extends Component {
 
 	render(){
 		const { builds, buildError} = this.props;
-		if(!this.authentication || !this.authentication._getAccessCode())
+		const buildList = _.values(builds).sort((a,b)=>{
+			if(a.path && !b.path)
+			{
+				return -1;
+			}
+			if(b.path && !a.path)
+			{
+				return 1;
+			}
+			if(a.hasDownload() && !b.hasDownload())
+			{
+				return -1;
+			}
+			if(b.hasDownload() && !a.hasDownload())
+			{
+				return 1;
+			}
+			return 0;
+		});
+		console.log('the builds', builds, buildList);
+		if(!this.props.player)
 		{
 			return <Redirect to={'/'} />
 		}
@@ -65,9 +85,9 @@ export default class Builds extends Component {
 				builds={this.props.builds}
 			>
 				<div className='builds collection'>
-					{builds.length > 0 &&
+					{buildList.length > 0 &&
 						<div className=''>
-							{builds.map((build)=>
+							{buildList.map((build)=>
 								<BuildComponent
 									key={build.dolphin_build_id}
 									authentication={this.authentication}

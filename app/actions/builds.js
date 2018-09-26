@@ -9,7 +9,7 @@ export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
 export const FETCH_BUILDS_FAIL = 'FETCH_BUILDS_FAIL';
 
-export const SET_BUILD_PATH = 'SET_BUILD_PATH';
+export const UPDATED_BUILD = 'UPDATED_BUILD';
 
 export const HOST_BUILD_BEGIN = 'HOST_BUILD_BEGIN';
 export const HOST_BUILD_SUCCESS = 'HOST_BUILD_SUCCESS';
@@ -61,7 +61,7 @@ export const retrieveBuilds = () => {
 };
 
 const organizeFetchedBuilds = (rawBuildData) =>{
-	const buildList = new Map();
+	const buildList = {};
 	const savedBuildData = electronSettings.get('builds') || {};
 	_.forEach(rawBuildData, (buildData) =>{
 		for(let build of buildData.builds){
@@ -69,49 +69,37 @@ const organizeFetchedBuilds = (rawBuildData) =>{
 			{
 				build = Object.assign(savedBuildData[build.dolphin_build_id], build);
 			}
-			build = buildList.get(build.dolphin_build_id) || Build.create(build);
-			buildList.set(build.dolphin_build_id, build);
+			build = buildList[build.dolphin_build_id] || Build.create(build);
+			buildList[build.dolphin_build_id] = build;
 			build.addLadder(buildData.ladder);
 		}
 	});
-	return Array.from(buildList.values()).sort((a,b)=>{
-		if(a.path && !b.path)
-		{
-			return -1;
-		}
-		if(b.path && !a.path)
-		{
-			return 1;
-		}
-		return 0;
-	});
+	return buildList;
 };
 
-const saveBuild = (build: Build) => {
+const saveBuild = (build: Build, getState) => {
+	const state = getState();
 	const builds = electronSettings.get('builds') || {};
 	if(!builds[build.dolphin_build_id]){
 		builds[build.dolphin_build_id] = {};
 	}
 	builds[build.dolphin_build_id] = build.serialize();
 	electronSettings.set('builds', builds);
-};
 
-const retrieveSavedBuildFromBuild = (build) => {
-	const builds = electronSettings.get('builds') || {};
-	if(builds[build.dolphin_build_id]){
-		builds[build.dolphin_build_id] = {};
-	}
-};
-
-export const setBuildPath = (build: Build, path) => {
-	build.path = path;
-	saveBuild(build);
+	const currentBuilds = { ... state.builds.builds};
+	console.log('before', { ... state.builds.builds});
+	currentBuilds[build.dolphin_build_id] = build;
 	return {
-		type: SET_BUILD_PATH,
+		type: UPDATED_BUILD,
 		payload: {
-			build
+			builds: currentBuilds
 		}
-	}
+	};
+};
+
+export const setBuildPath = (build: Build, path) => (dispatch, getState) => {
+	build.path = path;
+	dispatch(saveBuild(build, getState));
 };
 
 export const startGame = () =>{

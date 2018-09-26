@@ -1,8 +1,8 @@
 import {
 	SET_LOGIN_KEY,
-	LOGIN_FAILED,
-	LOGIN_VERIFIED,
-	VERIFY_LOGIN,
+	LOGIN_FAIL,
+	LOGIN_SUCCESS,
+	LOGIN_BEGIN,
 	INVALID_LOGIN_KEY,
 	LOGOUT_BEGIN
 } from '../actions/login';
@@ -24,12 +24,13 @@ export default (state = initialState, action) =>{
 				...state,
 				loginCode: null,
 				sessionId: null,
+				player: null,
 			};
-		case LOGIN_VERIFIED:
+		case LOGIN_SUCCESS:
 		case SET_LOGIN_KEY:
-		case LOGIN_FAILED:
+		case LOGIN_FAIL:
 		case INVALID_LOGIN_KEY:
-		case VERIFY_LOGIN:
+		case LOGIN_BEGIN:
 			return {
 				...state,
 				...action.payload,

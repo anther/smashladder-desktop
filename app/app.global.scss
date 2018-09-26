@@ -24,6 +24,7 @@ $ladder-highlight: #ff6c60;
 .error_button {
   @extend .red, .lighten-2;
 }
+
 .set_button {
   @extend .green, .lighten-2;
 }
@@ -32,8 +33,8 @@ select.browser-default {
   border-color: black;
 }
 
-.progress_status{
-  .connection_state{
+.progress_status {
+  .connection_state {
     font-size: 1rem;
     white-space: nowrap;
     font-weight: 600;
@@ -43,37 +44,39 @@ select.browser-default {
   }
 }
 
-.websocket{
+.websocket {
   margin-bottom: 240px;
 }
 
-.login_information{
+.login_information {
   position: fixed;
   top: 0;
   right: 0;
-  .logged_in_as{
-    .fluff{
+  .logged_in_as {
+    .fluff {
     }
-    .username{
+    .username {
       font-weight: 700;
     }
-    &:after{
-      content: "|";
+    &:after {
+      content: '|';
       margin: 0 8px;
     }
   }
-  .logout{
+  .logout {
   }
 }
 
-.login_form{
-  .error, .retrieve_code{
+.login_form {
+  .error,
+  .retrieve_code {
     user-select: none;
   }
-  .error{
+  .error {
     pointer-events: none;
   }
 }
+
 .page-title {
   user-select: none;
   pointer-events: none;

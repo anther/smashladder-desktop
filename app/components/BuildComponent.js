@@ -117,7 +117,7 @@ export class BuildComponent extends Component {
 								var unzipper = require("unzipper");
 
 								console.log('Before open zip', zipWriteLocation);
-								const updateEntryDisplay = _.throttle( (entry) => {
+								const updateEntryDisplay = _.throttle((entry) => {
 									this.setState({
 										unzipStatus: entry.path ? entry.path : null
 									});
@@ -241,7 +241,7 @@ export class BuildComponent extends Component {
 
 						}
 						{!build.path &&
-							<span className='no_path'>
+						<span className='no_path'>
 								<Button
 									onClick={this.onSetBuildPathClick.bind(null, build)}
 									className='btn-small'>Path Not Set <i className="fa fa-times"/></Button>
@@ -261,36 +261,36 @@ export class BuildComponent extends Component {
 					<React.Fragment>
 						<div className='dolphin_actions'>
 							{!buildOpen &&
-								<React.Fragment>
-									<Button onClick={this.onLaunchClick}>Launch</Button>
-									<Button onClick={this.onHostClick}>Host</Button>
-									<Button onClick={this.onJoinClick}>Join</Button>
-								</React.Fragment>
+							<React.Fragment>
+								<Button onClick={this.onLaunchClick}>Launch</Button>
+								<Button onClick={this.onHostClick}>Host</Button>
+								<Button onClick={this.onJoinClick}>Join</Button>
+							</React.Fragment>
 							}
 							{buildOpen &&
-								<React.Fragment>
-									<Button onClick={this.onCloseClick}>Close</Button>
-									{hostCode &&
-										<Button onClick={this.onStartGameClick}>Start Game</Button>
-									}
-								</React.Fragment>
+							<React.Fragment>
+								<Button onClick={this.onCloseClick}>Close</Button>
+								{hostCode &&
+								<Button onClick={this.onStartGameClick}>Start Game</Button>
+								}
+							</React.Fragment>
 							}
 						</div>
 						{buildOpen && hostCode &&
-							<h6 className='host_code'>{hostCode}</h6>
+						<h6 className='host_code'>{hostCode}</h6>
 						}
 						{!buildOpen &&
-							<div className='select_game_container'>
-								<Select className='select_game'
-								        onChange={this.onSelectedGameChange}
-								        value={this.state.selectedGame}>
-									{build.getPossibleGames().map((game) =>
-										<option value={game.id} key={game.id}>
-											{game.name}
-										</option>
-									)}
-								</Select>
-							</div>
+						<div className='select_game_container'>
+							<Select className='select_game'
+							        onChange={this.onSelectedGameChange}
+							        value={this.state.selectedGame}>
+								{build.getPossibleGames().map((game) =>
+									<option value={game.id} key={game.id}>
+										{game.name}
+									</option>
+								)}
+							</Select>
+						</div>
 						}
 					</React.Fragment>
 					}
@@ -304,7 +304,12 @@ export class BuildComponent extends Component {
 						{this.state.downloading &&
 						<React.Fragment>
 									<span className='downloading_status'>
-										<div>{this.state.downloading}</div>
+										<div>
+											<span className='text'>{this.state.downloading}{' '}</span>
+											{this.state.downloadingProgress &&
+												<span className='percent'>{Math.floor(this.state.downloadingProgress * 100)}%</span>
+											}
+										</div>
 										<div>{this.state.unzipStatus}</div>
 									</span>
 							{this.state.downloadingProgress &&
@@ -335,13 +340,13 @@ export class BuildComponent extends Component {
 
 				<div>
 					{buildOpening &&
-						<ProgressIndeterminate />
+					<ProgressIndeterminate/>
 					}
 					{buildOpen &&
-						<ProgressDeterminate />
+					<ProgressDeterminate/>
 					}
 					{error &&
-						<div className='error'>{error}</div>
+					<div className='error'>{error}</div>
 					}
 				</div>
 			</div>

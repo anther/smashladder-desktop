@@ -6,8 +6,8 @@ import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 import _ from 'lodash';
 
 const noResponseTimeoutInSeconds = 50;
-export class WebsocketComponent extends Component
-{
+
+export class WebsocketComponent extends Component {
 	constructor(props){
 		super(props);
 		this.websocket = {};
@@ -30,11 +30,12 @@ export class WebsocketComponent extends Component
 				this.props.hostBuild(message.dolphin_version, message.game_launch_name);
 			},
 
-			sendChatMessage: (message) =>{
-				if (!message.data || !message.data.dolphin_version || !message.data.dolphin_version.id) {
+			sendChatMessage: (message) => {
+				if(!message.data || !message.data.dolphin_version || !message.data.dolphin_version.id)
+				{
 					throw 'Dolphin Data not included';
 				}
-				this.browserWindow.webContents.send('sendChatMessage' , message)
+				this.browserWindow.webContents.send('sendChatMessage', message)
 			},
 			startNetplay: (message) => {
 				this.props.joinBuild(message.dolphin_version, message.game_launch_name);
@@ -49,19 +50,7 @@ export class WebsocketComponent extends Component
 			},
 
 			disableConnection: (message) => {
-				Authentication.load()
-					.then((authentication)=> {
-						if (authentication.session_id == message.data.session_id) {
-							console.log('[I GET TO LIVE]');
-						}
-						else {
-							this.emit('disableConnection');
-						}
-					})
-					.catch(function (error) {
-						console.error(error);
-					});
-
+				console.error('code case for disable connection');
 			},
 
 			requestAuthentication: () => {
@@ -107,12 +96,12 @@ export class WebsocketComponent extends Component
 		var connectData = {
 			access_token: this.props.authentication._getAccessCode(),
 			version: '1.0.0',
-			type:5,
+			type: 5,
 			launcher_version: '2.0.0',
 		};
 		const parameters = urlSerialize(connectData);
 
-		this.websocket = new WebSocket('ws://localhost:100?'+parameters);
+		this.websocket = new WebSocket('ws://localhost:100?' + parameters);
 
 		this.setState({
 			connectionOpen: false,
@@ -132,7 +121,8 @@ export class WebsocketComponent extends Component
 			console.log(event.data);
 			this.resetAlonenessTimer();
 			let message = {};
-			try{
+			try
+			{
 				message = JSON.parse(event.data);
 			}
 			catch(error)
@@ -182,7 +172,7 @@ export class WebsocketComponent extends Component
 
 	resetAlonenessTimer(){
 		clearTimeout(this.potentialFailure);
-		this.potentialFailure = setTimeout(()=>{
+		this.potentialFailure = setTimeout(() => {
 			this.setState({forcedDisconnect: true});
 			this.websocket.close();
 		}, noResponseTimeoutInSeconds * 1000);
@@ -193,7 +183,8 @@ export class WebsocketComponent extends Component
 		{
 			return 'Forced Disconnect (Timeout)';
 		}
-		switch(this.websocket.readyState){
+		switch(this.websocket.readyState)
+		{
 			case 0:
 				return 'Connecting...';
 			case 1:
@@ -212,10 +203,10 @@ export class WebsocketComponent extends Component
 			<div className='websocket'>
 				<div className='progress_status'>
 					{this.websocket.readyState === 1 &&
-						<ProgressDeterminate />
+					<ProgressDeterminate/>
 					}
 					{this.websocket.readyState !== 1 &&
-						<ProgressIndeterminate />
+					<ProgressIndeterminate/>
 					}
 					<h6 className='connection_state'>{this.websocketState()}</h6>
 				</div>

@@ -11,7 +11,7 @@ export default class Button extends Component
 		}
 		className += ' btn waves-effect waves-light';
 		return (
-			<button className={className} {...props} />
+			<button type='button' className={className} {...props} />
 		)
 	}
 }

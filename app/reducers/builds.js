@@ -2,14 +2,14 @@ import {
 	FETCH_BUILDS_SUCCESS,
 	FETCH_BUILDS_BEGIN,
 	FETCH_BUILDS_FAIL, CLOSE_BUILD, LAUNCH_BUILD_BEGIN, LAUNCH_BUILD_FAIL, LAUNCH_BUILD_SUCCESS,
-	SET_BUILD_PATH, HOST_BUILD_BEGIN, JOIN_BUILD_BEGIN, HOST_BUILD_SUCCESS, JOIN_BUILD_SUCCESS, HOST_BUILD_FAIL,
+	UPDATED_BUILD, HOST_BUILD_BEGIN, JOIN_BUILD_BEGIN, HOST_BUILD_SUCCESS, JOIN_BUILD_SUCCESS, HOST_BUILD_FAIL,
 	JOIN_BUILD_FAIL, BUILD_CLOSED, START_GAME_FAIL
 } from '../actions/builds';
 
 import electronSettings from 'electron-settings';
 
 const initialState = {
-	builds: [],
+	builds: {},
 	activeBuild: null,
 	buildOpen: false,
 	buildOpening: false,
@@ -21,7 +21,7 @@ export default (state = initialState, action) =>{
 		case FETCH_BUILDS_SUCCESS:
 		case FETCH_BUILDS_BEGIN:
 		case FETCH_BUILDS_FAIL:
-		case SET_BUILD_PATH:
+		case UPDATED_BUILD:
 			return {
 				...state,
 				...action.payload,

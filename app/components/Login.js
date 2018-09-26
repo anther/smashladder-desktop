@@ -5,6 +5,7 @@ import { Redirect } from 'react-router'
 import {endpoints, SmashLadderAuthentication} from '../utils/SmashLadderAuthentication';
 import Layout from "./common/Layout";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
+import Button from "./elements/Button";
 
 type Props = {};
 
@@ -12,6 +13,7 @@ export default class Login extends Component {
 	constructor(props){
 		super(props);
 		this.onLadderCodeChange = this.ladderCodeChange.bind(this);
+		this.onLoginButtonClick = this.loginButtonClick.bind(this);
 	}
 
 	componentDidMount(){
@@ -24,13 +26,18 @@ export default class Login extends Component {
 		this.props.setLoginKey(event.target.value);
 	}
 
+	loginButtonClick(){
+		this.props.setLoginKey(this.props.loginCode);
+	}
+
+
+
 	render(){
-		const {isLoggingIn, player, loginErrors} = this.props;
+		const {isLoggingIn, player, loginErrors, showLoginButton} = this.props;
 		if(this.props.player)
 		{
 			return <Redirect to={'/builds'} />
 		}
-		console.log(loginErrors);
 		return (
 			<Layout>
 				<form className='login_form'>
@@ -45,6 +52,9 @@ export default class Login extends Component {
 									value={this.props.loginCode || ''}
 									autoFocus={true}
 								/>
+								{showLoginButton &&
+									<Button onClick={this.onLoginButtonClick} className='login_button'>Try Again</Button>
+								}
 							</div>
 							<a className='retrieve_code' href={SmashLadderAuthentication.fullEndpointUrl(endpoints.LOGIN)} target='_blank'>Retrieve A Login Code</a>
 						</React.Fragment>
