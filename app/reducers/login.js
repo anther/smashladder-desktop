@@ -4,7 +4,9 @@ import {
 	LOGIN_SUCCESS,
 	LOGIN_BEGIN,
 	INVALID_LOGIN_KEY,
-	LOGOUT_BEGIN
+	LOGOUT_BEGIN,
+	DISABLE_CONNECTION,
+	ENABLE_CONNECTION
 } from '../actions/login';
 
 import electronSettings from 'electron-settings';
@@ -15,12 +17,24 @@ const initialState = {
 	player: loginDatas.player || null,
 	loginCode: loginDatas.loginCode || null,
 	sessionId: loginDatas.sessionId || null,
+	connectionEnabled: true,
 };
 
-export default (state = initialState, action) =>{
-	switch(action.type){
+export default (state = initialState, action) => {
+	switch(action.type)
+	{
+		case ENABLE_CONNECTION:
+			return {
+				...state,
+				connectionEnabled: true
+			};
+		case DISABLE_CONNECTION:
+			return {
+				...state,
+				connectionEnabled: false
+			};
 		case LOGOUT_BEGIN:
-			return{
+			return {
 				...state,
 				loginCode: null,
 				sessionId: null,

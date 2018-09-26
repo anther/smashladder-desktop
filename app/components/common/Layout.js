@@ -44,17 +44,22 @@ export default class Layout extends Component {
 						<WebsocketComponent
 							authentication={this.props.authentication}
 
+							sessionId={this.props.sessionId}
 							builds={this.props.builds}
 							launchBuild={this.props.launchBuild}
 							hostBuild={this.props.hostBuild}
 							joinBuild={this.props.joinBuild}
 							startGame={this.props.startGame}
 							closeDolphin={this.props.closeDolphin}
+							enableConnection={this.props.enableConnection}
+							disableConnection={this.props.disableConnection}
+							connectionEnabled={this.props.connectionEnabled}
 						/>
 						<ReplaySync
 							authentication={this.props.authentication}
 							replayPath={this.props.replayPath}
 							setReplayPath={this.props.setReplayPath}
+							connectionEnabled={this.props.connectionEnabled}
 						/>
 						<FilePaths
 							romPath={this.props.romPath}

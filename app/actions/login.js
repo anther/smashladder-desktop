@@ -13,6 +13,10 @@ export const LOGOUT_BEGIN = 'LOGOUT_BEGIN';
 export const LOGOUT_SUCCESS = 'LOGOUT_SUCCESS';
 export const LOGOUT_FAIL = 'LOGOUT_FAIL';
 
+export const ENABLE_CONNECTION = 'ENABLE_CONNECTION';
+export const DISABLE_CONNECTION = 'DISABLE_CONNECTION';
+
+
 export const setLoginKey = (loginCode) =>{
 	return (dispatch) =>{
 		const authentication = SmashLadderAuthentication.create({loginCode});
@@ -95,6 +99,17 @@ export const setLoginKey = (loginCode) =>{
 				});
 			});
 	}
+};
+
+export const disableConnection = () => (dispatch) => {
+	dispatch({
+		type: DISABLE_CONNECTION
+	});
+};
+export const enableConnection = () => (dispatch) => {
+	dispatch({
+		type: ENABLE_CONNECTION
+	});
 };
 
 export const logout = () => (dispatch, getState) => {

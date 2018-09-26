@@ -147,6 +147,9 @@ h6{
 		}
 
 		.dolphin_actions{
+			flex: 1;
+			display: flex;
+			flex-wrap: nowrap;
 			button{
 				margin-right: 4px;
 			}
@@ -170,8 +173,6 @@ h6{
 			}
 		}
 		.select_game_container{
-			flex: 1;
-			text-align: right;
 		}
 		.select_game{
 			display: inline-block;

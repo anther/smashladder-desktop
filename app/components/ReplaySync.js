@@ -207,24 +207,39 @@ export class ReplaySync extends Component {
 	}
 
 
+	isReady(){
+		const { connectionEnabled } = this.props;
+		const { sending } = this.state;
+
+		return !sending;
+	}
+
+	getProgressColor(){
+		const { connectionEnabled } = this.props;
+		return connectionEnabled ? 'teal' : 'red';
+	}
+
 	render(){
+		const {replayPath } = this.props;
+		const { sending } = this.state;
 		return (
 			<div className='replays'>
-				{this.props.replayPath &&
+				{replayPath &&
 				<React.Fragment>
 					<Button
-						title={this.props.replayPath}
+						title={replayPath}
 						className='set_button'
-					        onClick={this.onSetReplayDirectoryPath}>Replay Path Is Set
-						{' '}✔
+					        onClick={this.onSetReplayDirectoryPath}>Replay Path Set ✔
 					</Button>
 
 					<div className='progress_status'>
-						{!this.state.sending &&
+						{this.isReady() &&
 							<ProgressDeterminate/>
 						}
-						{this.state.sending &&
-							<ProgressIndeterminate />
+						{!this.isReady() &&
+							<ProgressIndeterminate
+								color={this.getProgressColor()}
+							/>
 						}
 						<h6 className='connection_state'>
 							{this.getSyncStatusStatement()}
@@ -240,7 +255,7 @@ export class ReplaySync extends Component {
 					}
 				</React.Fragment>
 				}
-				{!this.props.replayPath &&
+				{!replayPath &&
 				<Button className='error_button'
 				        onClick={this.onSetReplayDirectoryPath}> Set Replay Path ❌
 				</Button>

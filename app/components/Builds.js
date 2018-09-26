@@ -83,6 +83,10 @@ export default class Builds extends Component {
 				startGame={this.props.startGame}
 				closeDolphin={this.props.closeDolphin}
 				builds={this.props.builds}
+				enableConnection={this.props.enableConnection}
+				disableConnection={this.props.disableConnection}
+				connectionEnabled={this.props.connectionEnabled}
+				sessionId={this.props.sessionId}
 
 				updateSearchSubdirectories={this.props.updateSearchSubdirectories}
 				updateRomPath={this.props.updateRomPath}

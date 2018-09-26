@@ -4,26 +4,27 @@ import ProgressDeterminate from "./elements/ProgressDeterminate";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 import _ from 'lodash';
+import Button from "./elements/Button";
 
 const noResponseTimeoutInSeconds = 50;
 
 export class WebsocketComponent extends Component {
 	constructor(props){
 		super(props);
-		this.websocket = {};
+		this.websocket = null;
 		this.potentialFailure = null;
 		this.state = {
 			forcedDisconnect: false
-		}
+		};
 
 		this.websocketCommands = {
 
 			selectVersion: (message) => {
-				this.browserWindow.webContents.send('highlightBuild', message.data.dolphin_version.name);
+				console.info('select version trigger');
 			},
 
 			startedMatch: (message) => {
-				this.browserWindow.webContents.send('startedMatch', message)
+				console.info('started match trigger');
 			},
 
 			hostNetplay: (message) => {
@@ -37,6 +38,7 @@ export class WebsocketComponent extends Component {
 				}
 				this.browserWindow.webContents.send('sendChatMessage', message)
 			},
+
 			startNetplay: (message) => {
 				this.props.joinBuild(message.dolphin_version, message.game_launch_name);
 			},
@@ -50,7 +52,14 @@ export class WebsocketComponent extends Component {
 			},
 
 			disableConnection: (message) => {
-				console.error('code case for disable connection');
+				if (this.props.sessionId == message.session_id)
+				{
+					console.log('[I GET TO LIVE]');
+				}
+				else
+				{
+					this.props.disableConnection();
+				}
 			},
 
 			requestAuthentication: () => {
@@ -61,9 +70,7 @@ export class WebsocketComponent extends Component {
 	}
 
 	fetchBuildFromDolphinVersion(dolphinVersion){
-		return this.props.builds.find((build) => {
-			return build.id === dolphinVersion.id
-		});
+		return this.props.builds[dolphinVersion.id];
 	}
 
 	componentDidMount(){
@@ -76,20 +83,29 @@ export class WebsocketComponent extends Component {
 
 	componentWillUnmount(){
 		clearTimeout(this.potentialFailure);
-		if(this.websocket.readyState !== 2 || this.websocket.readyState !== 3)
+		if(this.websocket)
 		{
-			this.websocket.onclose = null;
-			this.websocket.close();
+			if(this.websocket.readyState !== 2 || this.websocket.readyState !== 3)
+			{
+				this.websocket.onclose = null;
+				this.websocket.close();
+			}
 		}
 	}
 
 	updateWebsocketIfNecessary(){
-		if(this.props.authentication &&
-			(this.websocket.readyState === 1 || this.websocket.readyState === 0))
+		const { connectionEnabled } = this.props;
+		if(this.websocket && !connectionEnabled)
+		{
+			this.websocket.close();
+			return;
+		}
+		if(this.props.authentication && this.websocket &&
+			(this.websocket.readyState === WebSocket.OPEN || this.websocket.readyState === WebSocket.CONNECTING))
 		{
 			return;
 		}
-		if(this.websocket.close)
+		if(this.websocket && this.websocket.close)
 		{
 			this.websocket.close();
 		}
@@ -127,36 +143,43 @@ export class WebsocketComponent extends Component {
 			{
 				console.error(error);
 			}
-			if(message.functionCall)
-			{
-				if(this.websocketCommands.hasOwnProperty(message.functionCall))
+			try{
+				if(message.functionCall)
 				{
-					console.log('payload', message.data);
-					if(message.data)
+					if(this.websocketCommands.hasOwnProperty(message.functionCall))
 					{
-						if(message.data.dolphin_version)
+						console.log('payload', message.data);
+						if(message.data)
 						{
-							message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
-						}
-						if(message.data.game_launch_name)
-						{
-							const gameInfo = message.data.game_launch_name;
+							if(message.data.dolphin_version)
+							{
+								message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
+							}
+							if(message.data.game_launch_name)
+							{
+								const gameInfo = message.data.game_launch_name;
 
-							gameInfo.dolphin_game_id_hint = gameInfo.launch;
-							gameInfo.name = gameInfo.game;
+								gameInfo.dolphin_game_id_hint = gameInfo.launch;
+								gameInfo.name = gameInfo.game;
+							}
 						}
+						this.websocketCommands[message.functionCall](message.data);
 					}
-					this.websocketCommands[message.functionCall](message.data);
+					else
+					{
+						console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
+					}
 				}
-				else
-				{
-					console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
-				}
+			}
+			catch(error)
+			{
+				console.error('websocket message error');
+				console.error(error);
 			}
 		};
 
 		this.websocket.onerror = (evt) => {
-			console.error(evt.data);
+			console.error(evt);
 		};
 
 		this.websocket.onclose = () => {
@@ -177,9 +200,20 @@ export class WebsocketComponent extends Component {
 	}
 
 	websocketState(){
+		const { connectionEnabled } = this.props;
 		if(this.state.forcedDisconnect)
 		{
-			return 'Forced Disconnect (Timeout)';
+			return 'Disconnected (Timeout)';
+		}
+
+		if(!connectionEnabled)
+		{
+			return 'Connection Disabled';
+		}
+
+		if(!this.websocket)
+		{
+			return 'Waiting...';
 		}
 		switch(this.websocket.readyState)
 		{
@@ -196,20 +230,34 @@ export class WebsocketComponent extends Component {
 		}
 	}
 
+	isConnected(){
+		return this.websocket && this.websocket.readyState === WebSocket.OPEN;
+	}
+
 	render(){
+		const { connectionEnabled } = this.props;
 		return (
 			<div className='websocket'>
 				<div className='progress_status'>
-					{this.websocket.readyState === 1 &&
+					{this.isConnected() &&
 					<ProgressDeterminate/>
 					}
-					{this.websocket.readyState !== 1 &&
-					<ProgressIndeterminate/>
+					{!this.isConnected()  &&
+					<ProgressIndeterminate
+						color={connectionEnabled ? null : 'red'}
+					/>
 					}
 					<h6 className='connection_state'>{this.websocketState()}</h6>
+					{!this.props.connectionEnabled &&
+						<Button className='btn-small' onClick={this.props.enableConnection}>Enable</Button>
+					}
+					{this.props.connectionEnabled &&
+						<Button className='btn-small red lighten-2' onClick={this.props.disableConnection}>Disable</Button>
+					}
 					<span className='what_am_i'>
 						A connection to SmashLadder is required in order to trigger interactions with Dolphin from the Website.
 					</span>
+
 				</div>
 			</div>
 		)

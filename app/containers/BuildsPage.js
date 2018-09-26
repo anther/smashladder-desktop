@@ -4,7 +4,7 @@ import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import { setReplayPath } from '../actions/replays';
 import * as FileActions from '../actions/filePaths';
-import { logout } from '../actions/login';
+import {disableConnection, enableConnection, logout} from '../actions/login';
 
 import {connect} from "react-redux";
 import {bindActionCreators} from "redux";
@@ -33,7 +33,14 @@ const mapStateToProps = state => {
 };
 
 function mapDispatchToProps(dispatch) {
-	return bindActionCreators({ setReplayPath, ...BuildActions, ...FileActions, logout}, dispatch);
+	return bindActionCreators({
+		setReplayPath,
+		...BuildActions,
+		...FileActions,
+		logout,
+		enableConnection,
+		disableConnection},
+		dispatch);
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(BuildsPage);
