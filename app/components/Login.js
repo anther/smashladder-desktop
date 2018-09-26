@@ -33,19 +33,23 @@ export default class Login extends Component {
 
 
 	render(){
-		const {isLoggingIn, player, loginErrors, showLoginButton} = this.props;
-		if(this.props.player)
+		const {isLoggingIn, player, loginErrors, showLoginButton, productionUrls} = this.props;
+		if(player)
 		{
 			return <Redirect to={'/builds'} />
 		}
+		console.log(productionUrls);
+		const authentication = SmashLadderAuthentication.create({
+			productionUrls: productionUrls
+		});
 		return (
 			<Layout>
 				<form className='login_form'>
 					{!player &&
 						<React.Fragment>
 							<div className="input-field">
-								<label htmlFor="ladder_code" className="">Paste Login Code Here</label>
 								<input
+									placeholder='Paste Login Code Here'
 									disabled={this.props.isLoggingIn}
 									onChange={this.onLadderCodeChange}
 									type="password" name='ladder_code'
@@ -56,7 +60,7 @@ export default class Login extends Component {
 									<Button onClick={this.onLoginButtonClick} className='login_button'>Try Again</Button>
 								}
 							</div>
-							<a className='retrieve_code' href={SmashLadderAuthentication.fullEndpointUrl(endpoints.LOGIN)} target='_blank'>Retrieve A Login Code</a>
+							<a className='retrieve_code' href={authentication.fullEndpointUrl(endpoints.LOGIN)} target='_blank'>Retrieve A Login Code</a>
 						</React.Fragment>
 					}
 

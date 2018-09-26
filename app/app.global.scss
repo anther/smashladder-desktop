@@ -6,216 +6,229 @@
 @import '~materialize-css/sass/materialize';
 
 $ladder-header: #323232;
-$ladder-highlight: #FF6C60;
-#main-heading{
-	background-color: white;
-	text-align: center;
+$ladder-highlight: #ff6c60;
+#main-heading {
+  background-color: white;
+  text-align: center;
 }
 
-#main-heading .front-logo{
-	max-width: 85%;
-	opacity: 0;
+#main-heading .front-logo {
+  max-width: 85%;
+  opacity: 0;
 }
 
-.error{
-	@extend .red-text, .lighten-2;
+.error {
+  @extend .red-text, .lighten-2;
 }
 
-.error_button{
-	@extend .red, .lighten-2;
+.error_button {
+  @extend .red, .lighten-2;
 }
 
-.set_button{
-	@extend .green, .lighten-2;
+.nowrap {
+  white-space: nowrap;
 }
 
-select.browser-default{
-	border-color: black;
+.set_button {
+  @extend .green, .lighten-2;
 }
 
-h6{
-	font-size: 1rem;
-	font-weight: 600;
-	text-align: center;
-	pointer-events: none;
-	user-select: none;
+select.browser-default {
+  border-color: black;
 }
 
-.progress_status{
-	.connection_state{
-		white-space: nowrap;
-	}
-	.what_am_i{
-		opacity: 0;
-		pointer-events: none;
-		user-select: none;
-		display: block;
-		text-align: center;
-		font-size: 12px;
-	}
-	&:hover{
-		.what_am_i{
-			opacity: 1;
-		}
-	}
-
+h6,
+.connection_state {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 0;
+  text-align: center;
 }
 
-.websocket{
-	position: relative;
+h6 {
+  pointer-events: none;
+  user-select: none;
 }
 
-.login_information{
-	position: fixed;
-	top: 0;
-	right: 0;
-	.logged_in_as{
-		.fluff{
-		}
-		.username{
-			font-weight: 700;
-		}
-		&:after{
-			content: '|';
-			margin: 0 8px;
-		}
-	}
-	.logout{
-	}
+.progress_status {
+  display: flex;
+  flex-direction: column;
+
+  .connection_state {
+    white-space: nowrap;
+  }
+  .what_am_i {
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+    display: block;
+    text-align: center;
+    font-size: 12px;
+  }
+  &:hover {
+    .what_am_i {
+      opacity: 1;
+    }
+  }
 }
 
-.login_form{
-	.error,
-	.retrieve_code{
-		user-select: none;
-	}
-	.error{
-		pointer-events: none;
-	}
+.websocket {
+  position: relative;
 }
 
-.page-title{
-	user-select: none;
-	pointer-events: none;
-	font-weight: 200;
-
-	.site_name{
-		display: flex;
-		justify-content: center;
-	}
-	.logo-smash{
-		color: $ladder-header;
-	}
-	.logo-ladder{
-		color: $ladder-highlight;
-	}
-	.logo-smash,
-	.logo-ladder{
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-	}
-	.logo-dolphin{
-		display: block;
-		font-size: 2rem;
-	}
+.login_information {
+  position: fixed;
+  top: 0;
+  right: 0;
+  .logged_in_as {
+    .fluff {
+    }
+    .username {
+      font-weight: 700;
+    }
+    &:after {
+      content: '|';
+      margin: 0 8px;
+    }
+  }
+  .logout {
+  }
 }
 
-.build{
-	@extend .collection-item;
+.login_form {
+  .error,
+  .retrieve_code {
+    user-select: none;
+  }
+  .error {
+    pointer-events: none;
+  }
 }
 
-.builds{
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	border: none;
+.page-title {
+  user-select: none;
+  pointer-events: none;
+  font-weight: 200;
 
-	.build{
-		padding-left: 0;
-		padding-right: 0;
-
-		.enter_join_code{
-			display: flex;
-			.cancel{
-				@extend .red, .lighten-2;
-			}
-			.join_code_input{
-				display: inline-block;
-				flex: 1 1 0;
-			}
-		}
-
-		.dolphin_actions{
-			flex: 1;
-			display: flex;
-			flex-wrap: nowrap;
-			button{
-				margin-right: 4px;
-			}
-		}
-
-		.build_actions{
-			margin-top: 6px;
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-		}
-		.host_code{
-			flex: 1;
-			text-align: right;
-			align-self: center;
-		}
-
-		.download_build{
-			.download_arrow{
-				display: none;
-			}
-		}
-		.select_game_container{
-		}
-		.select_game{
-			display: inline-block;
-			width: auto;
-			min-width: 125px;
-			border-color: rgba(0, 0, 0, 0.4);
-		}
-
-		.path_button{
-			flex: 0 0 auto;
-			width: 144px;
-		}
-
-		.badge{
-			flex: 1;
-			text-align: right;
-		}
-
-		.build_heading{
-			display: flex;
-
-			.build_name{
-				margin-left: 16px;
-				font-size: 19px;
-			}
-
-			.has_path i,
-			.no_path i{
-			}
-			.has_path{
-				.btn{
-					@extend .set_button;
-				}
-			}
-			.no_path{
-				.btn{
-					@extend .error_button;
-				}
-			}
-		}
-	}
+  .site_name {
+    display: flex;
+    justify-content: center;
+  }
+  .logo-smash {
+    color: $ladder-header;
+  }
+  .logo-ladder {
+    color: $ladder-highlight;
+  }
+  .logo-smash,
+  .logo-ladder {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .logo-dolphin {
+    display: block;
+    font-size: 2rem;
+  }
 }
 
-.replays{
-	margin-top: 10px;
+.build {
+  @extend .collection-item;
+}
+
+.builds {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  border: none;
+
+  .build {
+    padding-left: 0;
+    padding-right: 0;
+
+    .enter_join_code {
+      display: flex;
+      .cancel {
+        @extend .red, .lighten-2;
+      }
+      .join_code_input {
+        display: inline-block;
+        flex: 1 1 0;
+      }
+    }
+
+    .dolphin_actions {
+      flex: 1;
+      display: flex;
+      flex-wrap: nowrap;
+      button {
+        margin-right: 4px;
+      }
+    }
+
+    .build_actions {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .host_code {
+      flex: 1;
+      text-align: right;
+      align-self: center;
+    }
+
+    .download_build {
+      .download_arrow {
+        display: none;
+      }
+    }
+    .select_game_container {
+    }
+    .select_game {
+      display: inline-block;
+      width: auto;
+      min-width: 125px;
+      border-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .path_button {
+      flex: 0 0 auto;
+      width: 144px;
+    }
+
+    .badge {
+      flex: 1;
+      text-align: right;
+    }
+
+    .build_heading {
+      display: flex;
+
+      .build_name {
+        margin-left: 16px;
+        font-size: 19px;
+      }
+
+      .has_path i,
+      .no_path i {
+      }
+      .has_path {
+        .btn {
+          @extend .set_button;
+        }
+      }
+      .no_path {
+        .btn {
+          @extend .error_button;
+        }
+      }
+    }
+  }
+}
+
+.replays {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
 }

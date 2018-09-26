@@ -15,14 +15,6 @@ export default class CacheableDataObject
 		return this.newInstance().update(data);
 	}
 
-	static updateMany(data){
-		let created = [];
-		$.each(data, (i, entry)=>{
-			created.push(this.create(entry));
-		});
-		return created;
-	}
-
 	update(data){
 		if(this.beforeUpdate(data) === false)
 		{

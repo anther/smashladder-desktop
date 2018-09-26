@@ -303,15 +303,15 @@ export class BuildComponent extends Component {
 						}
 						{this.state.downloading &&
 						<React.Fragment>
-									<span className='downloading_status'>
-										<div>
-											<span className='text'>{this.state.downloading}{' '}</span>
-											{this.state.downloadingProgress &&
-												<span className='percent'>{Math.floor(this.state.downloadingProgress * 100)}%</span>
-											}
-										</div>
-										<div>{this.state.unzipStatus}</div>
-									</span>
+							<span className='downloading_status'>
+								<div>
+									<span className='text'>{this.state.downloading}{' '}</span>
+									{this.state.downloadingProgress &&
+										<span className='percent'>{Math.floor(this.state.downloadingProgress * 100)}%</span>
+									}
+								</div>
+								<div className='nowrap'>{this.state.unzipStatus}</div>
+							</span>
 							{this.state.downloadingProgress &&
 							<ProgressDeterminate percent={this.state.downloadingProgress * 100}/>
 							}

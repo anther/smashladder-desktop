@@ -15,12 +15,24 @@ export class ReplaySync extends Component {
 		super(props);
 		this.onSetReplayDirectoryPath = this.setReplayDirectoryPath.bind(this);
 		this.watcher = null;
+		this.watcherPath = null;
 		this.state = {
 			watching: null,
 			sending: null,
 			active: false,
 			sentGame: null,
+			replayPath: null,
 		}
+	}
+
+	static getDerivedStateFromProps(props, state){
+		if(props.replayPath !== state.replayPath)
+		{
+			return {
+				replayPath: props.replayPath
+			};
+		}
+		return null;
 	}
 
 	setReplayDirectoryPath(){
@@ -41,32 +53,16 @@ export class ReplaySync extends Component {
 	}
 
 	componentWillUnmount(){
+		this.disableWatch();
+	}
+
+	disableWatch(){
 		if(this.watcher)
 		{
+			this.watcherPath = null;
 			this.watcher.close();
+			this.watcher = null;
 		}
-	}
-
-	getSyncStatusStatement(){
-		if(this.state.sending)
-		{
-			return 'Sending Game Data...';
-		}
-		else if(this.slippiGame)
-		{
-			return 'Sending game result';
-		}
-		else
-		{
-			return 'Waiting';
-		}
-	}
-
-	updateWatchSettings(settings){
-		console.log('updating watch settings to ', settings);
-		this.settings = settings;
-		this.startWatchingIfSettingsAreGood();
-		return this;
 	}
 
 	_getRootPath(){
@@ -74,40 +70,46 @@ export class ReplaySync extends Component {
 	}
 
 	startWatchingIfSettingsAreGood(){
-		if(this.watcher)
+		const { authentication, connectionEnabled } = this.props;
+		const { replayPath } = this.state;
+		if(!connectionEnabled)
 		{
-			this.watcher.close();
-		}
-		if(!this._getRootPath())
-		{
-			console.log('can not start watching since root path is not set');
 			return;
 		}
-		if(!this.props.authentication)
+		if(!replayPath)
 		{
-			console.log('Improper Authentation');
+			this.disableWatch();
 			return;
 		}
-		this.watcher = watch(this._getRootPath(), {recursive: false}, (event, filePath) => {
-			if(event == 'remove')
-			{
-				return;
-			}
-			fs.lstat(filePath, (err, stats) => {
-				if(err)
+		if(!authentication)
+		{
+			this.disableWatch();
+			return;
+		}
+		if(this.watcherPath !== replayPath)
+		{
+			this.watcherPath = replayPath;
+			this.watcher = watch(replayPath, {recursive: false}, (event, filePath) => {
+				if(event == 'remove')
 				{
-					return console.log(err); //Handle error
+					return;
 				}
-				else
-				{
-					if(stats.isFile())
+				fs.lstat(filePath, (err, stats) => {
+					if(err)
 					{
-						this.slippiGame = null;
-						this.updateLastGame(filePath);
+						return console.log(err); //Handle error
 					}
-				}
+					else
+					{
+						if(stats.isFile())
+						{
+							this.slippiGame = null;
+							this.updateLastGame(filePath);
+						}
+					}
+				});
 			});
-		});
+		}
 	}
 
 	updateLastGame(file){
@@ -215,50 +217,76 @@ export class ReplaySync extends Component {
 	}
 
 	getProgressColor(){
-		const { connectionEnabled } = this.props;
-		return connectionEnabled ? 'teal' : 'red';
+		const { connectionEnabled, replayPath } = this.props;
+		return connectionEnabled && replayPath ? 'teal' : 'red';
+	}
+
+	getSyncStatusStatement(){
+		const { authentication, connectionEnabled } = this.props;
+		const { sending, replayPath } = this.state;
+
+		if(!authentication)
+		{
+			return 'Invalid Authentication';
+		}
+		if(sending)
+		{
+			return 'Sending Game Data...';
+		}
+		if(this.slippiGame)
+		{
+			return 'Sending game result';
+		}
+		if(!connectionEnabled)
+		{
+			return 'Watch Process Disabled';
+		}
+		if(!replayPath)
+		{
+			return 'Path Not Set';
+		}
+		return 'Waiting';
 	}
 
 	render(){
 		const {replayPath } = this.props;
-		const { sending } = this.state;
 		return (
 			<div className='replays'>
 				{replayPath &&
-				<React.Fragment>
 					<Button
 						title={replayPath}
 						className='set_button'
-					        onClick={this.onSetReplayDirectoryPath}>Replay Path Set ✔
+						onClick={this.onSetReplayDirectoryPath}>Replay Path Set ✔
 					</Button>
-
-					<div className='progress_status'>
-						{this.isReady() &&
-							<ProgressDeterminate/>
-						}
-						{!this.isReady() &&
-							<ProgressIndeterminate
-								color={this.getProgressColor()}
-							/>
-						}
-						<h6 className='connection_state'>
-							{this.getSyncStatusStatement()}
-						</h6>
-						<span className='what_am_i'>
-							Compatible only with Project Slippi.  Your replay directory will be watched for new files and will automatically send the results to SmashLadder.
-						</span>
-					</div>
-					{this.state.sentGame &&
-					<h6 className='sent_game'>
-						Match Submitted Successfully
-					</h6>
-					}
-				</React.Fragment>
 				}
 				{!replayPath &&
-				<Button className='error_button'
+					<Button className='error_button'
 				        onClick={this.onSetReplayDirectoryPath}> Set Replay Path ❌
-				</Button>
+					</Button>
+				}
+
+				<div className='progress_status'>
+					{this.isReady() &&
+						<ProgressDeterminate
+							color={this.getProgressColor()}
+						/>
+					}
+					{!this.isReady() &&
+						<ProgressIndeterminate
+							color={this.getProgressColor()}
+						/>
+					}
+					<h6 className='connection_state'>
+						{this.getSyncStatusStatement()}
+					</h6>
+					<span className='what_am_i'>
+						Compatible only with Project Slippi.  Your replay directory will be watched for new files and will automatically send the results to SmashLadder.
+					</span>
+				</div>
+				{this.state.sentGame &&
+				<h6 className='sent_game'>
+					Match Submitted Successfully
+				</h6>
 				}
 			</div>
 		);

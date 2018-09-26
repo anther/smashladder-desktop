@@ -16,10 +16,16 @@ export const LOGOUT_FAIL = 'LOGOUT_FAIL';
 export const ENABLE_CONNECTION = 'ENABLE_CONNECTION';
 export const DISABLE_CONNECTION = 'DISABLE_CONNECTION';
 
+export const ENABLE_PRODUCTION_URLS = 'ENABLE_PRODUCTION_URLS';
+export const ENABLE_DEVELOPMENT_URLS = 'ENABLE_DEVELOPMENT_URLS';
 
 export const setLoginKey = (loginCode) =>{
-	return (dispatch) =>{
-		const authentication = SmashLadderAuthentication.create({loginCode});
+	return (dispatch, getState) =>{
+		const currentState = getState();
+		const authentication = SmashLadderAuthentication.create({
+			loginCode,
+			productionUrls: currentState.login.productionUrls
+		});
 		const state = {
 			loginCode: loginCode,
 		};
@@ -99,6 +105,18 @@ export const setLoginKey = (loginCode) =>{
 				});
 			});
 	}
+};
+
+export const enableProductionUrls  = () => {
+	return {
+		type: ENABLE_PRODUCTION_URLS
+	};
+};
+
+export const enableDevelopmentUrls = () => {
+	return {
+		type: ENABLE_DEVELOPMENT_URLS
+	};
 };
 
 export const disableConnection = () => (dispatch) => {

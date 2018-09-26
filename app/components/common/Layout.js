@@ -8,20 +8,36 @@ import FilePaths from "../FilePaths";
 
 export default class Layout extends Component {
 	render(){
+		const { player, logout, productionUrls, enableDevelopmentUrls, enableProductionUrls } = this.props;
 		return (
 			<div className='container'>
 				<div id="main-heading">
-					{this.props.player &&
+					{player &&
 						<div className='login_information'>
 							<span className='logged_in_as'>
-								<span className='fluff'>Logged In As{' '}</span>
-								<span className='username'>{this.props.player.username}</span>
+								<span className='fluff'>Logged in as{' '}</span>
+								<span className='username'>{player.username}</span>
 							</span>
 							<span className='logout'>
-								<a className='waves-effect waves-teal btn-flat'
+								<a className='waves-effect waves-teal btn-flat btn-small'
 								   onClick={this.props.logout}>Log Out
 								</a>
 							</span>
+							{player.id === 1 &&
+								<React.Fragment>
+
+									{productionUrls &&
+									<a className='waves-effect waves-teal btn-flat btn-small'
+										        onClick={enableDevelopmentUrls}>Production Urls
+									</a>
+									}
+									{!productionUrls &&
+									<a className='waves-effect waves-teal btn-flat btn-small'
+											onClick={enableProductionUrls}>Developer Urls
+									</a>
+									}
+								</React.Fragment>
+							}
 						</div>
 					}
 					<h3 className="page-title">

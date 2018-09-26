@@ -6,23 +6,38 @@ import {
 	INVALID_LOGIN_KEY,
 	LOGOUT_BEGIN,
 	DISABLE_CONNECTION,
-	ENABLE_CONNECTION
+	ENABLE_CONNECTION, ENABLE_DEVELOPMENT_URLS, ENABLE_PRODUCTION_URLS
 } from '../actions/login';
 
 import electronSettings from 'electron-settings';
 
 const loginDatas = electronSettings.get('login') || {};
+
+console.log('login settings', loginDatas);
 const initialState = {
 	loginErrors: [],
 	player: loginDatas.player || null,
 	loginCode: loginDatas.loginCode || null,
 	sessionId: loginDatas.sessionId || null,
 	connectionEnabled: true,
+	productionUrls: loginDatas.productionUrls === undefined ? true : loginDatas.productionUrls,
 };
 
 export default (state = initialState, action) => {
 	switch(action.type)
 	{
+		case ENABLE_DEVELOPMENT_URLS:
+			electronSettings.set('login.productionUrls', false);
+			return {
+				...state,
+				productionUrls: false
+			};
+		case ENABLE_PRODUCTION_URLS:
+			electronSettings.set('login.productionUrls', true);
+			return {
+				...state,
+				productionUrls: true
+			};
 		case ENABLE_CONNECTION:
 			return {
 				...state,

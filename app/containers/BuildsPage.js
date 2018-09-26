@@ -4,7 +4,13 @@ import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import { setReplayPath } from '../actions/replays';
 import * as FileActions from '../actions/filePaths';
-import {disableConnection, enableConnection, logout} from '../actions/login';
+import {
+	disableConnection,
+	enableConnection,
+	enableDevelopmentUrls,
+	enableProductionUrls,
+	logout
+} from '../actions/login';
 
 import {connect} from "react-redux";
 import {bindActionCreators} from "redux";
@@ -39,6 +45,8 @@ function mapDispatchToProps(dispatch) {
 		...FileActions,
 		logout,
 		enableConnection,
+		enableDevelopmentUrls,
+		enableProductionUrls,
 		disableConnection},
 		dispatch);
 }

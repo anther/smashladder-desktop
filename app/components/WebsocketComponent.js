@@ -3,8 +3,9 @@ import urlSerialize from "../utils/urlSerialize";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
-import _ from 'lodash';
 import Button from "./elements/Button";
+import {endpoints} from "../utils/SmashLadderAuthentication";
+import {LinearBackoff} from 'simple-backoff';
 
 const noResponseTimeoutInSeconds = 50;
 
@@ -14,8 +15,17 @@ export class WebsocketComponent extends Component {
 		this.websocket = null;
 		this.potentialFailure = null;
 		this.state = {
-			forcedDisconnect: false
+			forcedDisconnect: false,
+			secondsUntilRetry: null,
 		};
+
+		this.connectionBackoff = new LinearBackoff({
+			min: 0,
+			step: 10000,
+			max: 600000 //60000 = Ten Minutes
+		});
+		this.reconnectTimeout = null;
+		this.retryingCounter = null;
 
 		this.websocketCommands = {
 
@@ -61,11 +71,6 @@ export class WebsocketComponent extends Component {
 					this.props.disableConnection();
 				}
 			},
-
-			requestAuthentication: () => {
-				this.mainWindow.webContents.send('requestAuthentication');
-				//After a minute or so, goes back to disable connection
-			}
 		};
 	}
 
@@ -81,8 +86,16 @@ export class WebsocketComponent extends Component {
 		this.updateWebsocketIfNecessary();
 	}
 
-	componentWillUnmount(){
+	clearTimers(){
+		clearTimeout(this.reconnectTimeout);
+		clearTimeout(this.retryingCounter);
 		clearTimeout(this.potentialFailure);
+
+		this.reconnectTimeout = null;
+	}
+
+	componentWillUnmount(){
+		this.clearTimers();
 		if(this.websocket)
 		{
 			if(this.websocket.readyState !== 2 || this.websocket.readyState !== 3)
@@ -94,41 +107,71 @@ export class WebsocketComponent extends Component {
 	}
 
 	updateWebsocketIfNecessary(){
-		const { connectionEnabled } = this.props;
-		if(this.websocket && !connectionEnabled)
+		const { connectionEnabled, authentication } = this.props;
+		if(this.websocket)
 		{
-			this.websocket.close();
-			return;
+			if(!connectionEnabled)
+			{
+				this.websocket.close();
+				return;
+			}
+			if(authentication &&
+				(this.websocket.readyState === WebSocket.OPEN || this.websocket.readyState === WebSocket.CONNECTING))
+			{
+				return;
+			}
 		}
-		if(this.props.authentication && this.websocket &&
-			(this.websocket.readyState === WebSocket.OPEN || this.websocket.readyState === WebSocket.CONNECTING))
-		{
-			return;
-		}
-		if(this.websocket && this.websocket.close)
-		{
-			this.websocket.close();
-		}
-		var connectData = {
-			access_token: this.props.authentication._getAccessCode(),
-			version: '1.0.0',
-			type: 5,
-			launcher_version: '2.0.0',
-		};
-		const parameters = urlSerialize(connectData);
 
-		this.websocket = new WebSocket('ws://localhost:100?' + parameters);
+		if(!this.reconnectTimeout)
+		{
+			const nextRetry = this.connectionBackoff.next();
+			const estimatedWhen = new Date(Date.now() + nextRetry);
+			console.log(estimatedWhen);
+			this.retryingCounter = setInterval(()=>{
+				const time = Math.floor((estimatedWhen.getTime() - Date.now()) / 1000);
+				this.setState({
+					secondsUntilRetry: time > 0 ? time : 0
+				});
+			},1000);
 
-		this.setState({
-			connectionOpen: false,
-			connecting: false
-		});
+
+			this.reconnectTimeout = setTimeout(()=>{
+				const {	authentication } = this.props;
+				if(this.websocket)
+				{
+					this.websocket.close();
+				}
+
+				this.clearTimers();
+				const connectData = {
+					access_token: authentication._getAccessCode(),
+					version: '1.0.0',
+					type: 5,
+					launcher_version: '2.0.0',
+				};
+				const parameters = urlSerialize(connectData);
+
+				this.websocket = new WebSocket(authentication.fullEndpointUrl(endpoints.WEBSOCKET_URL)+'?' + parameters);
+
+				this.setState({
+					connectionOpen: false,
+					connecting: false
+				});
+
+				this.setWebsocketCallbacks();
+
+			}, nextRetry);
+		}
+	}
+
+	setWebsocketCallbacks(){
 		this.websocket.onopen = () => {
 			this.setState({
 				connectionOpen: true,
 				connecting: false,
 				forcedDisconnect: false
 			});
+			this.connectionBackoff.reset();
 			this.resetAlonenessTimer();
 		};
 
@@ -210,6 +253,10 @@ export class WebsocketComponent extends Component {
 		{
 			return 'Connection Disabled';
 		}
+		if(this.reconnectTimeout)
+		{
+			return `Reconnecting (${this.state.secondsUntilRetry}s)`;
+		}
 
 		if(!this.websocket)
 		{
@@ -247,7 +294,9 @@ export class WebsocketComponent extends Component {
 						color={connectionEnabled ? null : 'red'}
 					/>
 					}
-					<h6 className='connection_state'>{this.websocketState()}</h6>
+					<span className='connection_state'>
+						{this.websocketState()}
+					</span>
 					{!this.props.connectionEnabled &&
 						<Button className='btn-small' onClick={this.props.enableConnection}>Enable</Button>
 					}

@@ -11,9 +11,29 @@ import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 export default class Builds extends Component {
 	constructor(props){
 		super(props);
+		this.state = {
+			loginCode: null
+		};
 		this.onSetBuildPath = this.setBuildPath.bind(this);
 		this.onUnsetBuildPath = this.unsetBuildPath.bind(this);
-		this.authentication = SmashLadderAuthentication.create({loginCode: this.props.loginCode});
+	}
+
+	static getDerivedStateFromProps(props, state){
+		if(props.loginCode !== state.loginCode || props.productionUrls !== state.productionUrls){
+
+			return {
+				loginCode: props.loginCode,
+				authentication: SmashLadderAuthentication.create({
+					loginCode: props.loginCode,
+					productionUrls: props.productionUrls
+				})
+			}
+		}
+		return null;
+	}
+
+	componentDidMount(){
+		this.props.retrieveBuilds();
 	}
 
 	unsetBuildPath(build, event){
@@ -31,10 +51,6 @@ export default class Builds extends Component {
 			})
 	}
 
-	componentDidMount(){
-		this.props.retrieveBuilds();
-	}
-
 	isActiveBuild(build){
 		if(!this.props.activeBuild)
 		{
@@ -45,6 +61,7 @@ export default class Builds extends Component {
 
 	render(){
 		const {builds, buildError, fetchingBuilds} = this.props;
+		const { authentication } = this.state;
 		const buildList = _.values(builds).sort((a, b) => {
 			if(a.path && !b.path)
 			{
@@ -70,11 +87,14 @@ export default class Builds extends Component {
 		}
 		return (
 			<Layout
+				authentication={authentication}
 				logout={this.props.logout}
 				player={this.props.player}
+				productionUrls={this.props.productionUrls}
+				enableProductionUrls={this.props.enableProductionUrls}
+				enableDevelopmentUrls={this.props.enableDevelopmentUrls}
 
 				setReplayPath={this.props.setReplayPath}
-				authentication={this.authentication}
 				replayPath={this.props.replayPath}
 
 				launchBuild={this.props.launchBuild}
@@ -105,7 +125,7 @@ export default class Builds extends Component {
 						{buildList.map((build) =>
 							<BuildComponent
 								key={build.dolphin_build_id}
-								authentication={this.authentication}
+								authentication={authentication}
 								build={build}
 								setBuildPath={this.props.setBuildPath}
 								onSetBuildPathClick={this.onSetBuildPath}
