@@ -117,8 +117,6 @@ export class WebsocketComponent extends Component {
 		};
 
 		this.websocket.onmessage = (event) => {
-			const data = event.data;
-			console.log(event.data);
 			this.resetAlonenessTimer();
 			let message = {};
 			try
@@ -209,6 +207,9 @@ export class WebsocketComponent extends Component {
 					<ProgressIndeterminate/>
 					}
 					<h6 className='connection_state'>{this.websocketState()}</h6>
+					<span className='what_am_i'>
+						A connection to SmashLadder is required in order to trigger interactions with Dolphin from the Website.
+					</span>
 				</div>
 			</div>
 		)

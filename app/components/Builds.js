@@ -83,6 +83,10 @@ export default class Builds extends Component {
 				startGame={this.props.startGame}
 				closeDolphin={this.props.closeDolphin}
 				builds={this.props.builds}
+
+				updateSearchSubdirectories={this.props.updateSearchSubdirectories}
+				updateRomPath={this.props.updateRomPath}
+				filePaths={this.props.filePaths}
 			>
 				{fetchingBuilds &&
 				<div className='fetching_builds'>

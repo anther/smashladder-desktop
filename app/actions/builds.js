@@ -68,7 +68,6 @@ export const retrieveBuilds = () => {
 
 const convertLadderBuildListToSomethingThatMakesSense = (ladderList) =>{
 	const buildList = {};
-	console.log(ladderList);
 	_.forEach(ladderList, (buildData) =>{
 		for(let build of buildData.builds){
 			build = buildList[build.dolphin_build_id] || Build.create(build);

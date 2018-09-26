@@ -113,10 +113,7 @@ export class SmashLadderAuthentication extends CacheableDataObject{
 				this.player = response.player;
 				this.session_id = response.session_id;
 				return this;
-			}).catch(error=>{
-				console.log('authentication check failed');
-				throw error;
-			});
+			})
 	}
 
 }

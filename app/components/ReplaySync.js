@@ -41,7 +41,10 @@ export class ReplaySync extends Component {
 	}
 
 	componentWillUnmount(){
-		this.watcher.close();
+		if(this.watcher)
+		{
+			this.watcher.close();
+		}
 	}
 
 	getSyncStatusStatement(){
@@ -209,9 +212,11 @@ export class ReplaySync extends Component {
 			<div className='replays'>
 				{this.props.replayPath &&
 				<React.Fragment>
-					<Button className='set_button'
-					        onClick={this.onSetReplayDirectoryPath}>Replay Path Set
-						{' '}<i className='fa fa-check'/>
+					<Button
+						title={this.props.replayPath}
+						className='set_button'
+					        onClick={this.onSetReplayDirectoryPath}>Replay Path Is Set
+						{' '}✔
 					</Button>
 
 					<div className='progress_status'>
@@ -224,6 +229,9 @@ export class ReplaySync extends Component {
 						<h6 className='connection_state'>
 							{this.getSyncStatusStatement()}
 						</h6>
+						<span className='what_am_i'>
+							Compatible only with Project Slippi.  Your replay directory will be watched for new files and will automatically send the results to SmashLadder.
+						</span>
 					</div>
 					{this.state.sentGame &&
 					<h6 className='sent_game'>
@@ -234,7 +242,7 @@ export class ReplaySync extends Component {
 				}
 				{!this.props.replayPath &&
 				<Button className='error_button'
-				        onClick={this.onSetReplayDirectoryPath}>Set Replay Path
+				        onClick={this.onSetReplayDirectoryPath}> Set Replay Path ❌
 				</Button>
 				}
 			</div>

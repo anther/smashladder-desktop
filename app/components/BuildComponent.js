@@ -236,7 +236,7 @@ export class BuildComponent extends Component {
 									title={build.path}
 									onClick={this.onSetBuildPathClick.bind(null, build)}
 									onContextMenu={this.unsetBuildPath.bind(null, build)}
-									className='btn-small'>Path Set <i className="fa fa-check"/></Button>
+									className='btn-small'>Path Set ✔</Button>
 							</span>
 
 						}
@@ -244,7 +244,7 @@ export class BuildComponent extends Component {
 						<span className='no_path'>
 								<Button
 									onClick={this.onSetBuildPathClick.bind(null, build)}
-									className='btn-small'>Path Not Set <i className="fa fa-times"/></Button>
+									className='btn-small'>Path Not Set ❌</Button>
 							</span>
 						}
 					</div>
@@ -298,7 +298,7 @@ export class BuildComponent extends Component {
 					<React.Fragment>
 						{!this.state.downloading &&
 						<Button className='download_build' onClick={this.onDownloadClick}>
-							Download <i className='fa fa-cloud-download-alt'/>
+							Download <span className='download_arrow'>⇩</span>
 						</Button>
 						}
 						{this.state.downloading &&

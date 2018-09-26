@@ -4,10 +4,10 @@ import {WebsocketComponent} from "../WebsocketComponent";
 import Button from "../elements/Button";
 
 import ladder_logo_icon from '../../images/ladder_logo_icon.png';
+import FilePaths from "../FilePaths";
 
 export default class Layout extends Component {
 	render(){
-		console.log(this.props);
 		return (
 			<div className='container'>
 				<div id="main-heading">
@@ -55,6 +55,12 @@ export default class Layout extends Component {
 							authentication={this.props.authentication}
 							replayPath={this.props.replayPath}
 							setReplayPath={this.props.setReplayPath}
+						/>
+						<FilePaths
+							romPath={this.props.romPath}
+							searchSubdirectories={this.props.searchSubdirectories}
+							updateRomPath={this.props.updateRomPath}
+							updateSearchSubdirectories={this.props.updateSearchSubdirectories}
 						/>
 					</div>
 					}
