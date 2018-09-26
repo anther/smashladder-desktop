@@ -33,11 +33,11 @@ export class BuildComponent extends Component {
 		this.unsetBuildPath = this.props.unsetBuildPath;
 
 		const {build} = this.props;
-		const selectedGame = build.getPossibleGames()[0];
+		const selectedGame = build.getPrimaryGame();
 
 		this.state = {
 			error: null,
-			selectedGame: selectedGame.id,
+			selectedGame: selectedGame ? selectedGame.id : null,
 			joinCode: '',
 			enterJoinCode: false,
 			submittingJoinCode: false,
@@ -72,7 +72,7 @@ export class BuildComponent extends Component {
 		var progress = require('request-progress');
 		const {build} = this.props;
 
-		const basePath = Files.createApplicationPath('./dolphin');
+		const basePath = Files.createApplicationPath('./dolphin_downloads');
 
 		const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
 		const extension = require('path').extname(build.download_file);

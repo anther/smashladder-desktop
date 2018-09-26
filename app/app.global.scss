@@ -33,14 +33,17 @@ select.browser-default {
   border-color: black;
 }
 
-.progress_status {
-  .connection_state {
-    font-size: 1rem;
-    white-space: nowrap;
+h6{
+	font-size: 1rem;
     font-weight: 600;
-    text-align: center;
+	text-align: center;
     pointer-events: none;
     user-select: none;
+}
+
+.progress_status {
+  .connection_state {
+    white-space: nowrap;
   }
 }
 

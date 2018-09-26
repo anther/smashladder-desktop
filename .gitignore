@@ -51,4 +51,8 @@ main.js.map
 .idea
 npm-debug.log.*
 
-app/dolphin
+#Ignore
+app/dolphin_downloads/*
+
+#Allow
+!app/dolphin_downloads/placeholder.txt

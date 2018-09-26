@@ -39,11 +39,14 @@ export const retrieveBuilds = () => {
 		dispatch({
 			type: FETCH_BUILDS_BEGIN,
 		});
+		const savedBuildData = electronSettings.get('builds') || {};
 		getAuthenticationFromState(getState)
 			.apiGet(endpoints.DOLPHIN_BUILDS)
 			.then(response => {
-				console.log('retrieved build response', response)
-				const builds = organizeFetchedBuilds(response.builds);
+				let builds = convertLadderBuildListToSomethingThatMakesSense(response.builds);
+				builds = combineWithSavedBuildData(builds, savedBuildData);
+
+				electronSettings.set('builds', builds);
 
 				dispatch({
 					type: FETCH_BUILDS_SUCCESS,
@@ -52,27 +55,39 @@ export const retrieveBuilds = () => {
 					}
 				})
 			}).catch(response => {
-				console.log('something went wrong', response);
+				const builds = combineWithSavedBuildData(savedBuildData, savedBuildData);
 				dispatch({
-					type: FETCH_BUILDS_FAIL
+					type: FETCH_BUILDS_FAIL,
+					payload: {
+						builds: builds
+					}
 				})
 		});
 	}
 };
 
-const organizeFetchedBuilds = (rawBuildData) =>{
+const convertLadderBuildListToSomethingThatMakesSense = (ladderList) =>{
 	const buildList = {};
-	const savedBuildData = electronSettings.get('builds') || {};
-	_.forEach(rawBuildData, (buildData) =>{
+	console.log(ladderList);
+	_.forEach(ladderList, (buildData) =>{
 		for(let build of buildData.builds){
-			if(savedBuildData[build.dolphin_build_id])
-			{
-				build = Object.assign(savedBuildData[build.dolphin_build_id], build);
-			}
 			build = buildList[build.dolphin_build_id] || Build.create(build);
 			buildList[build.dolphin_build_id] = build;
 			build.addLadder(buildData.ladder);
 		}
+	});
+	return buildList;
+};
+
+const combineWithSavedBuildData = (rawBuildData, savedBuildData) =>{
+	const buildList = {};
+	_.forEach(rawBuildData, (build) =>{
+		if(savedBuildData[build.dolphin_build_id])
+		{
+			build = Object.assign(savedBuildData[build.dolphin_build_id], build);
+		}
+		build = buildList[build.dolphin_build_id] || Build.create(build);
+		buildList[build.dolphin_build_id] = build;
 	});
 	return buildList;
 };
@@ -87,7 +102,6 @@ const saveBuild = (build: Build, getState) => {
 	electronSettings.set('builds', builds);
 
 	const currentBuilds = { ... state.builds.builds};
-	console.log('before', { ... state.builds.builds});
 	currentBuilds[build.dolphin_build_id] = build;
 	return {
 		type: UPDATED_BUILD,

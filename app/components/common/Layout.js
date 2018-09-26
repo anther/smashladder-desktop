@@ -3,6 +3,8 @@ import {ReplaySync} from "../ReplaySync";
 import {WebsocketComponent} from "../WebsocketComponent";
 import Button from "../elements/Button";
 
+import ladder_logo_icon from '../../images/ladder_logo_icon.png';
+
 export default class Layout extends Component {
 	render(){
 		console.log(this.props);
@@ -25,7 +27,7 @@ export default class Layout extends Component {
 					<h3 className="page-title">
 						<span className='site_name'>
 							<span className='logo-smash'>Smash</span>
-							<img src='./images/ladder_logo_icon.png'/>
+							<img src={ladder_logo_icon}/>
 							<span className='logo-ladder'>Ladder</span>
 						</span>
 							<span className='launcher_name'>

@@ -18,13 +18,18 @@ const initialState = {
 
 export default (state = initialState, action) =>{
 	switch(action.type){
-		case FETCH_BUILDS_SUCCESS:
 		case FETCH_BUILDS_BEGIN:
+			return {
+				...state,
+				fetchingBuilds: true,
+			};
+		case FETCH_BUILDS_SUCCESS:
 		case FETCH_BUILDS_FAIL:
 		case UPDATED_BUILD:
 			return {
 				...state,
 				...action.payload,
+				fetchingBuilds: false,
 			};
 		case LAUNCH_BUILD_BEGIN:
 		case HOST_BUILD_BEGIN:

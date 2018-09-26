@@ -14,6 +14,14 @@ export class Build extends CacheableDataObject
 		return this.games;
 	}
 
+	getPrimaryGame(){
+		if(!this.games.length)
+		{
+			return null;
+		}
+		return this.games[0];
+	}
+
 	executablePath(){
 		return this.path;
 	}

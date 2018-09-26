@@ -48,13 +48,14 @@
     "productName": "SmashLadderDesktop",
     "appId": "org.anther.SmashLadderDesktop",
     "asarUnpack": [
-      "**/dolphin/**/*",
+      "**/dolphin_downloads/**/*",
       "**/external/**/*"
     ],
     "files": [
       "dist/",
       "node_modules/",
       "external/",
+      "dolphin_downloads/",
       "app.html",
       "main.prod.js",
       "main.prod.js.map",
