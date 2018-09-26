@@ -1,4 +1,5 @@
 import fs from "fs";
+import hazardous from 'hazardous';
 import path from "path";
 
 const { dialog, app } = require('electron').remote;
