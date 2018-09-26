@@ -4,6 +4,7 @@ import Button from "./elements/Button";
 import {endpoints} from "../utils/SmashLadderAuthentication";
 import watch from "node-watch";
 import fs from "fs";
+import path from "path";
 import Numbers from "../utils/Numbers";
 import multitry from "../utils/multitry";
 import SlippiGame from "slp-parser-js";
@@ -13,35 +14,31 @@ import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 export class ReplaySync extends Component {
 	constructor(props){
 		super(props);
-		this.onSetReplayDirectoryPath = this.setReplayDirectoryPath.bind(this);
+		this.onSetCheckForReplaysTrue = this.updateCheckForReplays.bind(this, true);
+		this.onSetCheckForReplaysFalse = this.updateCheckForReplays.bind(this, false);
 		this.watcher = null;
-		this.watcherPath = null;
+		this.watchingPaths = [];
 		this.state = {
 			watching: null,
 			sending: null,
 			active: false,
 			sentGame: null,
-			replayPath: null,
+			checkForReplays: null,
 		}
+	}
+
+	updateCheckForReplays(set){
+		this.props.setCheckForReplays(set);
 	}
 
 	static getDerivedStateFromProps(props, state){
-		if(props.replayPath !== state.replayPath)
+		if(props.checkForReplays !== state.checkForReplays)
 		{
 			return {
-				replayPath: props.replayPath
+				checkForReplays: props.checkForReplays
 			};
 		}
 		return null;
-	}
-
-	setReplayDirectoryPath(){
-		Files.selectDirectory(this.props.replayPath).then((path) => {
-			if(path)
-			{
-				this.props.setReplayPath(path);
-			}
-		})
 	}
 
 	componentDidMount(){
@@ -65,18 +62,27 @@ export class ReplaySync extends Component {
 		}
 	}
 
-	_getRootPath(){
-		return this.props.replayPath;
+	_getWatchableSlippiPaths(){
+		const { builds } = this.props;
+		let paths = new Set();
+		_.each(builds, (build) =>{
+			if(build.getSlippiPath())
+			{
+				paths.add(build.getSlippiPath());
+			}
+		});
+		paths = Array.from(paths);
+		return paths;
 	}
 
 	startWatchingIfSettingsAreGood(){
 		const { authentication, connectionEnabled } = this.props;
-		const { replayPath } = this.state;
+		const { checkForReplays } = this.state;
 		if(!connectionEnabled)
 		{
 			return;
 		}
-		if(!replayPath)
+		if(!checkForReplays)
 		{
 			this.disableWatch();
 			return;
@@ -86,10 +92,13 @@ export class ReplaySync extends Component {
 			this.disableWatch();
 			return;
 		}
-		if(this.watcherPath !== replayPath)
+		const paths = this._getWatchableSlippiPaths();
+
+		if(!_.isEqual(this.watchingPaths.sort(), paths.sort()))
 		{
-			this.watcherPath = replayPath;
-			this.watcher = watch(replayPath, {recursive: false}, (event, filePath) => {
+			this.watchingPaths = paths;
+			console.log('gon watch', paths);
+			this.watcher = watch(paths, {recursive: false}, (event, filePath) => {
 				if(event == 'remove')
 				{
 					return;
@@ -165,7 +174,9 @@ export class ReplaySync extends Component {
 
 	createBetterFileName(originalFile, {others = []}){
 		const date = new Date();
-		const folder = `${this._getRootPath()}/${date.getFullYear()}-${Numbers.forceTwoDigits(date.getMonth())}-${Numbers.forceTwoDigits(date.getDate())}`;
+		const root = path.dirname(originalFile);
+
+		const folder = `${root}/${date.getFullYear()}-${Numbers.forceTwoDigits(date.getMonth())}-${Numbers.forceTwoDigits(date.getDate())}`;
 		const hour = Numbers.forceTwoDigits(date.getHours());
 		let usernameList = '';
 		if(others.length)
@@ -217,13 +228,13 @@ export class ReplaySync extends Component {
 	}
 
 	getProgressColor(){
-		const { connectionEnabled, replayPath } = this.props;
-		return connectionEnabled && replayPath ? 'teal' : 'red';
+		const { connectionEnabled, checkForReplays } = this.props;
+		return connectionEnabled && checkForReplays ? 'teal' : 'red';
 	}
 
 	getSyncStatusStatement(){
 		const { authentication, connectionEnabled } = this.props;
-		const { sending, replayPath } = this.state;
+		const { sending, checkForReplays } = this.state;
 
 		if(!authentication)
 		{
@@ -239,29 +250,28 @@ export class ReplaySync extends Component {
 		}
 		if(!connectionEnabled)
 		{
-			return 'Watch Process Disabled';
+			return 'Connection Disabled';
 		}
-		if(!replayPath)
+		if(!checkForReplays)
 		{
-			return 'Path Not Set';
+			return '...Not Enabled...';
 		}
 		return 'Waiting';
 	}
 
 	render(){
-		const {replayPath } = this.props;
+		const { checkForReplays } = this.props;
 		return (
 			<div className='replays'>
-				{replayPath &&
+				{checkForReplays &&
 					<Button
-						title={replayPath}
 						className='set_button'
-						onClick={this.onSetReplayDirectoryPath}>Replay Path Set ✔
+						onClick={this.onSetCheckForReplaysFalse}>Send Replays ✔
 					</Button>
 				}
-				{!replayPath &&
+				{!checkForReplays &&
 					<Button className='error_button'
-				        onClick={this.onSetReplayDirectoryPath}> Set Replay Path ❌
+				        onClick={this.onSetCheckForReplaysTrue}>No Replays ❌
 					</Button>
 				}
 

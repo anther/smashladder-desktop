@@ -94,8 +94,8 @@ export default class Builds extends Component {
 				enableProductionUrls={this.props.enableProductionUrls}
 				enableDevelopmentUrls={this.props.enableDevelopmentUrls}
 
-				setReplayPath={this.props.setReplayPath}
-				replayPath={this.props.replayPath}
+				setCheckForReplays={this.props.setCheckForReplays}
+				checkForReplays={this.props.checkForReplays}
 
 				launchBuild={this.props.launchBuild}
 				hostBuild={this.props.hostBuild}

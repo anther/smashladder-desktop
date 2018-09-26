@@ -72,9 +72,10 @@ export default class Layout extends Component {
 							connectionEnabled={this.props.connectionEnabled}
 						/>
 						<ReplaySync
+							builds={this.props.builds}
 							authentication={this.props.authentication}
-							replayPath={this.props.replayPath}
-							setReplayPath={this.props.setReplayPath}
+							setCheckForReplays={this.props.setCheckForReplays}
+							checkForReplays={this.props.checkForReplays}
 							connectionEnabled={this.props.connectionEnabled}
 						/>
 						<FilePaths

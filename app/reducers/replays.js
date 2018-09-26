@@ -1,19 +1,18 @@
-import { SET_REPLAY_PATH } from "../actions/replays";
+import { CHECK_FOR_REPLAYS } from "../actions/replays";
 import electronSettings from 'electron-settings';
 
 const initialState = {
-	path: electronSettings.get('settings.replayPath')
+	checkForReplays: electronSettings.get('settings.checkForReplays')
 };
 
 export default (state = initialState, action) =>{
 	switch(action.type){
-		case SET_REPLAY_PATH:
-			electronSettings.set('settings.replayPath', action.payload);
-			const newState = {
+		case CHECK_FOR_REPLAYS:
+			electronSettings.set('settings.checkForReplays', action.payload);
+			return {
 				...state,
-				path: action.payload,
+				checkForReplays: action.payload,
 			};
-			return newState;
 		default:
 			return state;
 	}

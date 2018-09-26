@@ -13,12 +13,10 @@ export default class DolphinLauncher{
 	}
 
 	async launch(build, parameters = [], closePrevious){
-		console.log('4');
 		if(closePrevious)
 		{
 			if(!this.child)
 			{
-				console.log('6');
 				return DolphinChecker.dolphinIsRunning()
 					.then((isRunning)=>{
 						const errorMessage = 'Dolphin is already opened. Please close all instances of dolphin!';
@@ -38,7 +36,6 @@ export default class DolphinLauncher{
 					});
 
 			}
-			console.log('7');
 			return this.close()
 				.then(()=>{
 					return this.launchChild(build, parameters)
@@ -46,7 +43,6 @@ export default class DolphinLauncher{
 		}
 		else
 		{
-			console.log('8');
 			return this.launchChild(build, parameters);
 		}
 	}
@@ -81,23 +77,19 @@ export default class DolphinLauncher{
 			const killPromise = new Promise((resolve, reject) => {
 				this.child.on('exit', (e)=>{
 					this.child = null;
-					console.log(10);
 					resolve();
 				});
 			});
 			this.child.kill();
-			console.log(11);
 			return killPromise;
 		}
 		else
 		{
-			console.log(12);
 			return Promise.resolve();
 		}
 	}
 
 	async launchChild(build: Build, parameters = []){
-		console.log(5);
 		return new Promise((resolve, reject)=>{
 			if(!parameters)
 			{

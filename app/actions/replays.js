@@ -1,10 +1,8 @@
+export const CHECK_FOR_REPLAYS = 'CHECK_FOR_REPLAYS';
 
-
-export const SET_REPLAY_PATH = 'SET_REPLAY_PATH';
-
-export const setReplayPath = (path) => {
+export const setCheckForReplays = (yes) => {
 	return {
-		type: SET_REPLAY_PATH,
-		payload: path
+		type: CHECK_FOR_REPLAYS,
+		payload: yes
 	};
 };

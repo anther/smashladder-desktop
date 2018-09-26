@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
-import { setReplayPath } from '../actions/replays';
+import { setCheckForReplays } from '../actions/replays';
 import * as FileActions from '../actions/filePaths';
 import {
 	disableConnection,
@@ -34,13 +34,13 @@ const mapStateToProps = state => {
 		...state.login,
 		...state.builds,
 		filePaths: {...state.filePaths},
-		replayPath: state.replays.path
+		checkForReplays: state.replays.checkForReplays
 	}
 };
 
 function mapDispatchToProps(dispatch) {
 	return bindActionCreators({
-		setReplayPath,
+		setCheckForReplays,
 		...BuildActions,
 		...FileActions,
 		logout,

@@ -1,4 +1,6 @@
 import CacheableDataObject from "./CacheableDataObject"
+import fs from 'fs';
+import path from 'path';
 
 export class Build extends CacheableDataObject
 {
@@ -24,6 +26,26 @@ export class Build extends CacheableDataObject
 
 	executablePath(){
 		return this.path;
+	}
+
+	getSlippiPath(){
+		if(!this.path)
+		{
+			return null;
+		}
+		if(this._slippiPath !== undefined)
+		{
+			return this._slippiPath;
+		}
+		const slippiPath = path.dirname(this.path) + '/Slippi';
+		if(fs.existsSync(slippiPath))
+		{
+			return this._slippiPath = slippiPath;
+		}
+		else
+		{
+			return this._slippiPath = null;
+		}
 	}
 
 	addGameLaunch(){
