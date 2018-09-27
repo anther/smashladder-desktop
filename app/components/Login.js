@@ -11,11 +11,15 @@ export default class Login extends Component {
 	static propTypes = {
 		loginCode: PropTypes.string.isRequired,
 		setLoginKey: PropTypes.func.isRequired,
-		isLoggingIn: PropTypes.func.isRequired,
-		player: PropTypes.object.isRequired,
+		isLoggingIn: PropTypes.bool.isRequired,
+		player: PropTypes.object,
 		loginErrors: PropTypes.array.isRequired,
 		showLoginButton: PropTypes.bool.isRequired,
 		productionUrls: PropTypes.bool.isRequired,
+	};
+
+	static defaultProps = {
+		player: null
 	};
 
 	constructor(props){

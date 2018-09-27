@@ -12,7 +12,7 @@ export default class Header extends Component {
 	};
 
 	static defaultProps = {
-		player: {},
+		player: null,
 		productionUrls: null,
 		enableDevelopmentUrls: null,
 		enableProductionUrls: null,

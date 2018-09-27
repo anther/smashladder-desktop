@@ -263,12 +263,12 @@ export default class ReplaySync extends Component {
 				{checkForReplays &&
 				<Button
 					className='set_button'
-					onClick={this.onSetCheckForReplaysFalse}>Send Replays ✔
+					onClick={this.onSetCheckForReplaysFalse}>Sending Replays ✔
 				</Button>
 				}
 				{!checkForReplays &&
 				<Button className='error_button'
-				        onClick={this.onSetCheckForReplaysTrue}>No Replays ❌
+				        onClick={this.onSetCheckForReplaysTrue}>Holding Replays ❌
 				</Button>
 				}
 

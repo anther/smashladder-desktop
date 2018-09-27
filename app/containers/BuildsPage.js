@@ -5,7 +5,7 @@ import {bindActionCreators} from "redux";
 import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import { setCheckForReplays } from '../actions/replays';
-import * as FileActions from '../actions/filePaths';
+import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import {
 	disableConnection,
 	enableConnection,
@@ -15,7 +15,7 @@ import {
 } from '../actions/login';
 import WebsocketComponent from "../components/WebsocketComponent";
 import ReplaySync from "../components/ReplaySync";
-import FilePaths from "../components/FilePaths";
+import DolphinSettings from "../components/DolphinSettings";
 import { SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
 import Header from "../components/common/Header";
 import Layout from "../components/common/Layout";
@@ -45,6 +45,7 @@ class BuildsPage extends Component<Props> {
 	}
 
 	render() {
+		console.log('bild props', this.props);
 		return (
 			<Layout>
 				<Header
@@ -77,11 +78,16 @@ class BuildsPage extends Component<Props> {
 					checkForReplays={this.props.checkForReplays}
 					connectionEnabled={this.props.connectionEnabled}
 				/>
-				<FilePaths
-					romPath={this.props.romPath}
-					searchSubdirectories={this.props.searchSubdirectories}
-					updateRomPath={this.props.updateRomPath}
-					updateSearchSubdirectories={this.props.updateSearchSubdirectories}
+				<DolphinSettings
+					addRomPath={this.props.addRomPath}
+					removeRomPath={this.props.removeRomPath}
+					romPaths={this.props.romPaths}
+
+					searchRomSubdirectories={this.props.searchRomSubdirectories}
+					updateSearchRomSubdirectories={this.props.updateSearchRomSubdirectories}
+
+					allowDolphinAnalytics={this.props.allowDolphinAnalytics}
+					updateAllowDolphinAnalytics={this.props.updateAllowDolphinAnalytics}
 				/>
 			</Layout>
 		)
@@ -91,7 +97,7 @@ class BuildsPage extends Component<Props> {
 const mapStateToProps = state => ({
 		...state.login,
 		...state.builds,
-		filePaths: {...state.filePaths},
+		...state.dolphinSettings,
 		checkForReplays: state.replays.checkForReplays
 	});
 
@@ -99,7 +105,7 @@ function mapDispatchToProps(dispatch) {
 	return bindActionCreators({
 		setCheckForReplays,
 		...BuildActions,
-		...FileActions,
+		...DolphinSettingsActions,
 		logout,
 		enableConnection,
 		enableDevelopmentUrls,

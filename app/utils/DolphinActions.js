@@ -1,17 +1,18 @@
-import {DolphinPlayer} from './DolphinPlayer';
+import { DolphinPlayer } from './DolphinPlayer';
 
-export default class DolphinActions
-{
-	static call(name, build, message) {
-		if (DolphinActions.isCallable(name)) {
+export default class DolphinActions {
+	static call(name, build, message){
+		if(DolphinActions.isCallable(name))
+		{
 			return DolphinActions.callableActions[name](build, message);
 		}
-		else {
-			throw 'Invalid Call to ' + name;
+		else
+		{
+			throw new Error(`Invalid Call to ${name}`);
 		}
 	}
 
-	static isCallable(name) {
+	static isCallable(name){
 		return typeof DolphinActions.callableActions[name] === "function";
 	}
 
@@ -33,11 +34,11 @@ DolphinActions.callableActions = {
 		return String(value).padStart(8, '0');
 	},
 
-	joining: function(build, value){
+	joining: (build, value) => {
 		build.ignoreNextHost(true);
 	},
 
-	player_list_info: function(build, value){
+	player_list_info: (build, value) => {
 		if(false && constants.debuggingMatchInputs)
 		{
 			value = `Antherpzy[1] : 727(0b00f1f) Win | 1------- |
@@ -51,7 +52,7 @@ Status: ready
 		return DolphinPlayer.parseDolphinPlayerList(value);
 	},
 
-	dolphin: function(value){
+	dolphin: () => {
 		console.log('Yay');
 	},
 	setup_netplay_host_failed: () => (null),

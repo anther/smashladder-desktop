@@ -2,7 +2,7 @@ import electronSettings from 'electron-settings';
 import { CHECK_FOR_REPLAYS } from "../actions/replays";
 
 const initialState = {
-	checkForReplays: electronSettings.get('settings.checkForReplays')
+	checkForReplays: electronSettings.get('settings.checkForReplays', true)
 };
 
 export default (state = initialState, action) => {

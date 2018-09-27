@@ -1,15 +1,15 @@
-"use strict";
-
 import child from 'child_process';
-const { app } = require('electron').remote;
-import DolphinResponse from "./DolphinResponse.js";
-import DolphinActions from "./DolphinActions.js";
+
+import DolphinResponse from "./DolphinResponse";
+import DolphinActions from "./DolphinActions";
 
 import BuildLauncher from './BuildLauncher';
-import {Build} from "./BuildData";
-import {Files} from "./Files";
+import Build from "./BuildData";
+import Files from "./Files";
 
-export class BuildLaunchAhk
+const { app } = require('electron').remote;
+
+export default class BuildLaunchAhk
 {
 	constructor(){
 		this.hotkey = null;
@@ -32,7 +32,7 @@ export class BuildLaunchAhk
 			failOnActions = [failOnActions];
 		}
 		return new Promise((resolve,reject)=>{
-			this.killHotkey()
+			return this.killHotkey()
 				.then(()=>{
 					const parameters = [];
 					parameters.push('/force');
@@ -42,7 +42,7 @@ export class BuildLaunchAhk
 					}
 					else
 					{
-						for(var i in command)
+						for(const i in command)
 						{
 							if(command.hasOwnProperty(i))
 							{
@@ -51,8 +51,8 @@ export class BuildLaunchAhk
 						}
 					}
 					this.hotkey = child.spawn(this.hotkeyLocation, parameters);
-					this.hotkey.on('error', function(err) {
-						reject(`Hotkey Error: ${err}`);
+					this.hotkey.on('error', (err) => {
+						reject(new Error(`Hotkey Error: ${err}`));
 					});
 					this.hotkey.stdout.on('data', (data) => {
 						if(!data)
@@ -60,7 +60,7 @@ export class BuildLaunchAhk
 							console.log('Empty?');
 							return;
 						}
-						var strings = data.toString().split(/\r?\n/);
+						const strings = data.toString().split(/\r?\n/);
 						for(const string of strings)
 						{
 							if(!string)
@@ -70,7 +70,7 @@ export class BuildLaunchAhk
 							const stdout = JSON.parse(string);
 							console.log(stdout);
 
-							var result = DolphinResponse.ahkResponse(stdout);
+							const result = DolphinResponse.ahkResponse(stdout);
 							// console.log(result);
 							if(DolphinActions.isCallable(result.action))
 							{
@@ -86,9 +86,9 @@ export class BuildLaunchAhk
 							}
 						}
 					});
-					this.hotkey.on('close', (e)=>{
+					this.hotkey.on('close', ()=>{
 						this.hotkey = null;
-						reject('AutoHotKey Attempt Closed');
+						reject(new Error('AutoHotKey Attempt Closed'));
 					});
 				})
 		})
@@ -96,11 +96,11 @@ export class BuildLaunchAhk
 
 	async killHotkey(){
 		if(this.hotkey){
-			return new Promise((resolve, reject)=>{
+			return new Promise((resolve)=>{
 				console.log('Killing Hotkey');
 				this.hotkey.kill();
 
-				var checkForDeadHotkey = ()=>{
+				const checkForDeadHotkey = ()=>{
 					if(this.hotkey === null)
 					{
 						setTimeout(()=>{
@@ -117,13 +117,11 @@ export class BuildLaunchAhk
 					}
 				};
 				checkForDeadHotkey();
-
 			});
 		}
-		else
-		{
+		
 			return Promise.resolve();
-		}
+		
 	}
 
 	async startGame(){
@@ -136,25 +134,22 @@ export class BuildLaunchAhk
 		{
 			throw new Error('Build is required!');
 		}
-		console.log('1');
 		return this.buildLauncher
 			.launch(build, null, true)
 			.then((dolphinProcess)=>{
-				console.log('2');
 				if(dolphinProcess)
 				{
 					dolphinProcess.on('close', ()=>{
 						this.killHotkey();
 					});
 				}
-				var parameters = ['launch'];
+				const parameters = ['launch'];
 				parameters.push('Temp Username');
 				parameters.push(build.name);
-				this.launchHotKey(parameters, build)
+				this.launchHotKey(parameters, build);
 				return dolphinProcess;
 			})
 			.catch((error)=>{
-				console.log('3');
 				throw error;
 			});
 	}
@@ -164,7 +159,6 @@ export class BuildLaunchAhk
 	}
 
 	async host(build: Build, gameLaunch){
-		let outerDolphinProcess = null;
 		if(!gameLaunch)
 		{
 			throw new Error('A Game is Required to host!');
@@ -202,14 +196,6 @@ export class BuildLaunchAhk
 		return Promise.all([dolphinPromise, hotkeyPromise]);
 	}
 
-	_hostDolphin(build, gameLaunch){
-
-	}
-
-	_hostHotkey(build, gameLaunch){
-
-	}
-
 	async join(build, hostCode){
 		if(!hostCode)
 		{
@@ -220,10 +206,10 @@ export class BuildLaunchAhk
 			.then((newChild)=>{
 				if(!newChild)
 				{
-					throw 'Dolphin already open!';
+					throw new Error('Dolphin already open!');
 				}
 				return new Promise((resolve, reject)=>{
-					var parameters = ['join'];
+					const parameters = ['join'];
 					parameters.push('Username');
 					parameters.push(hostCode);
 					parameters.push(build.name);
@@ -244,7 +230,6 @@ export class BuildLaunchAhk
 						this.killHotkey();
 					});
 				}
-				var hostCodeElement = build.element.find('.host_code');
 
 			})
 			.then(()=>{

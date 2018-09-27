@@ -1,8 +1,8 @@
-import CacheableDataObject from "./CacheableDataObject"
 import fs from 'fs';
 import path from 'path';
+import CacheableDataObject from "./CacheableDataObject"
 
-export class Build extends CacheableDataObject
+export default class Build extends CacheableDataObject
 {
 	beforeConstruct(){
 		this.games = [];
@@ -37,15 +37,14 @@ export class Build extends CacheableDataObject
 		{
 			return this._slippiPath;
 		}
-		const slippiPath = path.dirname(this.path) + '/Slippi';
+		const slippiPath = `${path.dirname(this.path)  }/Slippi`;
 		if(fs.existsSync(slippiPath))
 		{
 			return this._slippiPath = slippiPath;
 		}
-		else
-		{
+		
 			return this._slippiPath = null;
-		}
+		
 	}
 
 	addGameLaunch(){

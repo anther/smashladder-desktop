@@ -4,8 +4,8 @@ import { clipboard } from 'electron';
 import path from "path";
 import _ from 'lodash';
 import unzipper from "unzipper";
-import { Build } from "../utils/BuildData";
-import { Files } from "../utils/Files";
+import Build from "../utils/BuildData";
+import Files from "../utils/Files";
 
 import multitry from "../utils/multitry";
 
@@ -23,8 +23,6 @@ const progress = require('request-progress');
 export default class BuildComponent extends Component {
 	static propTypes = {
 		build: PropTypes.instanceOf(Build).isRequired,
-		onSetBuildPathClick: PropTypes.func.isRequired,
-		unsetBuildPath: PropTypes.func.isRequired,
 		setBuildPath: PropTypes.func.isRequired,
 		closeDolphin: PropTypes.func.isRequired,
 		joinBuild: PropTypes.func.isRequired,
@@ -43,10 +41,9 @@ export default class BuildComponent extends Component {
 
 	constructor(props){
 		super(props);
-		const { onSetBuildPathClick, unsetBuildPath } = this.props;
 
-		this.onSetBuildPathClick = onSetBuildPathClick;
-		this.unsetBuildPath = unsetBuildPath;
+		this.onSetBuildPathClick = this.setBuildPathClick.bind(this);
+		this.onUnsetBuildPathClick = this.unsetBuildPathClick.bind(this);
 
 		const { build } = this.props;
 		const selectedGame = build.getPrimaryGame();
@@ -75,6 +72,29 @@ export default class BuildComponent extends Component {
 		this.onDownloadClick = this.downloadClick.bind(this);
 
 		this.onSelectedGameChange = this.selectedGameChange.bind(this);
+	}
+
+
+	setBuildPathClick(){
+		const { build } = this.props;
+		this.setState({
+			settingBuildPath: true
+		});
+		return Files.selectFile(build.path)
+			.then((selectedPath) => {
+				if(selectedPath)
+				{
+					this.props.setBuildPath(build, selectedPath);
+				}
+				this.setState({
+					settingBuildPath: false
+				});
+			})
+			.catch(error => console.error(error))
+	}
+
+	unsetBuildPathClick(){
+		this.props.setBuildPath(this.props.build, null);
 	}
 
 	downloadClick(){
@@ -138,11 +158,13 @@ export default class BuildComponent extends Component {
 									fs.createReadStream(zipWriteLocation)
 										.pipe(unzipper.Extract({ path: unzipLocation })
 											.on('close', () => {
-												const found = Files.findInDirectory(unzipLocation, 'Dolphin.exe');
-												if(found.length)
+												const dolphinLocation = Files.findInDirectory(unzipLocation, 'Dolphin.exe');
+												if(dolphinLocation.length)
 												{
-													this.props.setBuildPath(build, found[0]);
+													this.props.setBuildPath(build, dolphinLocation[0]);
 												}
+												// const configLocation = Files.findInDirectory(unzipLocation, 'Dolphin.ini');
+
 												this.setState({
 													downloading: null,
 													unzipStatus: null,
@@ -243,6 +265,7 @@ export default class BuildComponent extends Component {
 
 	render(){
 		const { build, buildOpen, buildOpening, hostCode, buildError } = this.props;
+		const { settingBuildPath } = this.state;
 		const error = this.state.error || buildError;
 		return (
 			<div className='build' key={build.id}>
@@ -251,9 +274,10 @@ export default class BuildComponent extends Component {
 						{build.path &&
 						<span className='has_path'>
 								<Button
+									disabled={settingBuildPath}
 									title={build.path}
-									onClick={this.onSetBuildPathClick.bind(null, build)}
-									onContextMenu={this.unsetBuildPath.bind(null, build)}
+									onClick={this.onSetBuildPathClick}
+									onContextMenu={this.onUnsetBuildPathClick}
 									className='btn-small'>Path Set ✔</Button>
 							</span>
 
@@ -261,7 +285,8 @@ export default class BuildComponent extends Component {
 						{!build.path &&
 						<span className='no_path'>
 								<Button
-									onClick={this.onSetBuildPathClick.bind(null, build)}
+									disabled={settingBuildPath}
+									onClick={this.onSetBuildPathClick}
 									className='btn-small'>Path Not Set ❌</Button>
 							</span>
 						}

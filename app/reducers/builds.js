@@ -12,6 +12,7 @@ const initialState = {
 	buildOpen: false,
 	buildOpening: false,
 	buildError: null,
+	fetchingBuilds: false,
 };
 
 export default (state = initialState, action) => {
@@ -51,7 +52,6 @@ export default (state = initialState, action) => {
 		case LAUNCH_BUILD_FAIL:
 		case HOST_BUILD_FAIL:
 		case JOIN_BUILD_FAIL:
-			console.log('the state', state.builds.activeBuild);
 			return {
 				...state,
 				buildOpen: false,

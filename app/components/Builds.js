@@ -3,11 +3,11 @@ import PropTypes from 'prop-types';
 
 import _ from 'lodash';
 import { Redirect } from "react-router";
-import { Files } from "../utils/Files";
+import Files from "../utils/Files";
 
 import BuildComponent from "./BuildComponent";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
-import { Build } from "../utils/BuildData";
+import Build from "../utils/BuildData";
 
 export default class Builds extends Component {
 	static propTypes = {
@@ -17,7 +17,7 @@ export default class Builds extends Component {
 		builds: PropTypes.objectOf(PropTypes.instanceOf(Build)).isRequired,
 		buildError: PropTypes.any,
 		player: PropTypes.object,
-		fetchingBuilds: PropTypes.func.isRequired,
+		fetchingBuilds: PropTypes.bool.isRequired,
 		launchBuild: PropTypes.func.isRequired,
 		joinBuild: PropTypes.func.isRequired,
 		hostBuild: PropTypes.func.isRequired,
@@ -35,30 +35,8 @@ export default class Builds extends Component {
 		hostCode: null,
 	};
 
-	constructor(props){
-		super(props);
-		this.onSetBuildPath = this.setBuildPath.bind(this);
-		this.onUnsetBuildPath = this.unsetBuildPath.bind(this);
-	}
-
-
 	componentDidMount(){
 		this.props.retrieveBuilds();
-	}
-
-	unsetBuildPath(build, event){
-		event.preventDefault();
-		this.props.setBuildPath(build, null);
-	}
-
-	setBuildPath(build){
-		return Files.selectFile(build.path)
-			.then((path) => {
-				if(path)
-				{
-					this.props.setBuildPath(build, path);
-				}
-			})
 	}
 
 	isActiveBuild(build){
@@ -113,8 +91,6 @@ export default class Builds extends Component {
 								build={build}
 
 								setBuildPath={this.props.setBuildPath}
-								onSetBuildPathClick={this.onSetBuildPath}
-								unsetBuildPath={this.onUnsetBuildPath}
 
 								launchBuild={this.props.launchBuild}
 								hostBuild={this.props.hostBuild}

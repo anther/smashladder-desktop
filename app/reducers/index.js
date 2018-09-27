@@ -4,13 +4,13 @@ import { routerReducer as router } from 'react-router-redux';
 import login from './login';
 import builds from './builds';
 import replays from './replays';
-import filePaths from './filePaths';
+import dolphinSettings from './dolphinSettings';
 
 const rootReducer = combineReducers({
 	login,
 	builds,
 	replays,
-	filePaths,
+	dolphinSettings,
 	router
 });
 

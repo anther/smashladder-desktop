@@ -7,7 +7,7 @@ import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 import Button from "./elements/Button";
 import { endpoints, SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
-import { Build } from "../utils/BuildData";
+import Build from "../utils/BuildData";
 
 const noResponseTimeoutInSeconds = 30;
 

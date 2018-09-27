@@ -11,7 +11,7 @@ import {
 } from '../actions/login';
 
 
-const loginDatas = electronSettings.get('login') || {};
+const loginDatas = electronSettings.get('login', {});
 
 console.log('login settings', loginDatas);
 const initialState = {
@@ -19,8 +19,10 @@ const initialState = {
 	player: loginDatas.player || null,
 	loginCode: loginDatas.loginCode || null,
 	sessionId: loginDatas.sessionId || null,
-	connectionEnabled: true,
 	productionUrls: loginDatas.productionUrls === undefined ? true : loginDatas.productionUrls,
+	connectionEnabled: true,
+	isLoggingIn: false,
+	showLoginButton: false,
 };
 
 export default (state = initialState, action) => {

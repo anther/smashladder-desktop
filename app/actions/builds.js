@@ -2,8 +2,8 @@
 import electronSettings from 'electron-settings';
 import _ from "lodash";
 import { endpoints } from "../utils/SmashLadderAuthentication";
-import { Build } from "../utils/BuildData";
-import { BuildLaunchAhk } from "../utils/BuildLaunchAhk";
+import Build from "../utils/BuildData";
+import BuildLaunchAhk from "../utils/BuildLaunchAhk";
 import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
@@ -38,7 +38,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 	dispatch({
 		type: FETCH_BUILDS_BEGIN,
 	});
-	const savedBuildData = electronSettings.get('builds') || {};
+	const savedBuildData = electronSettings.get('builds', {});
 	getAuthenticationFromState(getState)
 		.apiGet(endpoints.DOLPHIN_BUILDS)
 		.then(response => {
@@ -52,7 +52,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 				payload: {
 					builds
 				}
-			})
+			});
 			return response;
 		}).catch(() => {
 		const builds = combineWithSavedBuildData(savedBuildData, savedBuildData);

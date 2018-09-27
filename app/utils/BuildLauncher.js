@@ -1,13 +1,11 @@
-"use strict";
-
-import DolphinResponse from "./DolphinResponse.js";
-import DolphinActions from "./DolphinActions.js";
-import DolphinChecker from "./DolphinChecker";
-import {Build} from "./BuildData";
 import child from 'child_process';
 import path from 'path';
+import DolphinResponse from "./DolphinResponse";
+import DolphinActions from "./DolphinActions";
+import DolphinChecker from "./DolphinChecker";
+import Build from "./BuildData";
 
-export default class DolphinLauncher{
+export default class DolphinLauncher {
 	constructor(){
 		this.child = null;
 	}
@@ -18,33 +16,32 @@ export default class DolphinLauncher{
 			if(!this.child)
 			{
 				return DolphinChecker.dolphinIsRunning()
-					.then((isRunning)=>{
+					.then((isRunning) => {
 						const errorMessage = 'Dolphin is already opened. Please close all instances of dolphin!';
 						if(isRunning)
 						{
 							throw errorMessage;
 						}
 					})
-					.then(()=>{
+					.then(() => {
 						return this.close();
 					})
-					.then(()=>{
+					.then(() => {
 						return this.launchChild(build, parameters)
 					})
-					.catch( error =>{
+					.catch(error => {
 						throw error;
 					});
 
 			}
 			return this.close()
-				.then(()=>{
+				.then(() => {
 					return this.launchChild(build, parameters)
 				})
 		}
-		else
-		{
-			return this.launchChild(build, parameters);
-		}
+
+		return this.launchChild(build, parameters);
+
 	}
 
 	async host(build: Build){
@@ -74,8 +71,8 @@ export default class DolphinLauncher{
 		if(this._retrieveActiveChild())
 		{
 			console.log('the child', this.child);
-			const killPromise = new Promise((resolve, reject) => {
-				this.child.on('exit', (e)=>{
+			const killPromise = new Promise((resolve) => {
+				this.child.on('exit', () => {
 					this.child = null;
 					resolve();
 				});
@@ -83,14 +80,13 @@ export default class DolphinLauncher{
 			this.child.kill();
 			return killPromise;
 		}
-		else
-		{
-			return Promise.resolve();
-		}
+
+		return Promise.resolve();
+
 	}
 
 	async launchChild(build: Build, parameters = []){
-		return new Promise((resolve, reject)=>{
+		return new Promise((resolve, reject) => {
 			if(!parameters)
 			{
 				parameters = [];
@@ -98,32 +94,32 @@ export default class DolphinLauncher{
 
 			if(!build.executablePath())
 			{
-				reject('Attempted to launch '+ build.name + ' but the path is not set!');
+				reject(new Error(`Attempted to launch ${build.name} but the path is not set!`));
 				return;
 			}
 
 			if(this._retrieveActiveChild())
 			{
-				//Only one child allowed at a time, may consider throwing an error instead
+				// Only one child allowed at a time, may consider throwing an error instead
 				resolve(this.child);
 				return;
 			}
 
 			this.child = child.spawn(path.resolve(build.executablePath()), parameters, {
-				cwd: path.resolve(require('path').dirname(build.executablePath()))
+				cwd: path.resolve(path.dirname(build.executablePath()))
 			});
 
 			this.child.on('error', (err) => {
 				if(err && err.toString().includes('ENOENT'))
 				{
-					reject('Could not launch file at ' + path.resolve(build.executablePath()));
+					reject(new Error(`Could not launch file at ${path.resolve(build.executablePath())}`));
 				}
-				reject('Failed To Launch');
+				reject(new Error('Failed To Launch'));
 			});
 
 			this.child.stdout.on('data', (data) => {
 				resolve(this.child);
-				console.log('stdout: ' + data);
+				console.log(`stdout: ${  data}`);
 				if(!data)
 				{
 					console.log('Empty?');
@@ -131,7 +127,7 @@ export default class DolphinLauncher{
 				}
 				const strings = data.toString().split(/\r?\n/);
 				console.log(data);
-				for(let i in strings)
+				for(const i in strings)
 				{
 					if(!strings.hasOwnProperty(i))
 					{
@@ -159,12 +155,12 @@ export default class DolphinLauncher{
 				}
 			});
 
-			const failTimeout = setTimeout(()=>{
+			const failTimeout = setTimeout(() => {
 				if(!this.child.pid)
 				{
-					reject('Child not found!');
+					reject(new Error('Child not found!'));
 				}
-			},5000);
+			}, 5000);
 			if(this.child.pid)
 			{
 				clearTimeout(failTimeout);

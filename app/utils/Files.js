@@ -1,23 +1,22 @@
 import fs from "fs";
-import hazardous from 'hazardous';
+// eslint-disable-next-line no-unused-vars
+import hazardous from 'hazardous';// This rewrites path for app.asar && needs to be before Path declaration
 import path from "path";
+
+import sanitize from "sanitize-filename";
 
 const { dialog, app } = require('electron').remote;
 
-export class Files
-{
+export default class Files {
 
 	static _openDialogSelectOne(options){
-		return new Promise((resolve, reject)=>{
-			dialog.showOpenDialog(options, (paths)=>{
+		return new Promise((resolve) => {
+			dialog.showOpenDialog(options, (paths) => {
 				if(paths && paths.length > 0)
 				{
 					return resolve(paths[0]);
 				}
-				else
-				{
-					return null;
-				}
+				return resolve(null);
 			});
 		})
 	}
@@ -36,26 +35,27 @@ export class Files
 	static selectFile(defaultPath = ''){
 		return Files._openDialogSelectOne({
 			defaultPath,
-			properties: ['openFile']});
+			properties: ['openFile']
+		});
 	}
 
 	static selectDirectory(defaultPath = ''){
 		return Files._openDialogSelectOne({
 			defaultPath,
-			properties: ['openDirectory']});
+			properties: ['openDirectory']
+		});
 	}
 
 	static makeFilenameSafe(fileName){
-		const sanitize = require("sanitize-filename");
 		return sanitize(fileName);
 	}
 
-	static ensureDirectoryExists(path, mask = 0o755, cb) {
-		return new Promise((resolve, reject)=>{
-			fs.mkdir(path, mask, function(err){
+	static ensureDirectoryExists(directoryPath, mask = 0o755){
+		return new Promise((resolve, reject) => {
+			fs.mkdir(directoryPath, mask, (err) => {
 				if(err)
 				{
-					if(err.code == 'EEXIST')
+					if(err.code === 'EEXIST')
 					{
 						resolve();
 					}
@@ -72,22 +72,26 @@ export class Files
 		})
 	}
 
-	static findInDirectory(startPath, filter, callback){
-		var results = [];
+	static findInDirectory(startPath, filter){
+		let results = [];
 
-		if (!fs.existsSync(startPath)){
-			throw new Error('Start directory not found '+startPath);
+		if(!fs.existsSync(startPath))
+		{
+			throw new Error(`Start directory not found ${startPath}`);
 		}
 
-		var files=fs.readdirSync(startPath);
-		for(var i=0;i<files.length;i++){
-			var filename=path.join(startPath,files[i]);
-			var stat = fs.lstatSync(filename);
-			if (stat.isDirectory()){
-				results = results.concat(Files.findInDirectory(filename,filter)); //recurse
+		const files = fs.readdirSync(startPath);
+		for(let i = 0; i < files.length; i++)
+		{
+			const filename = path.join(startPath, files[i]);
+			const stat = fs.lstatSync(filename);
+			if(stat.isDirectory())
+			{
+				results = results.concat(Files.findInDirectory(filename, filter)); // recurse
 			}
-			else if (filename.indexOf(filter)>=0) {
-				console.log('-- found: ',filename);
+			else if(filename.indexOf(filter) >= 0)
+			{
+				console.log('-- found: ', filename);
 				results.push(filename);
 			}
 		}

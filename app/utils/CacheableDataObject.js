@@ -1,15 +1,22 @@
-export default class CacheableDataObject
-{
+/* eslint-disable class-methods-use-this,no-restricted-syntax,prefer-destructuring */
+export default class CacheableDataObject {
 	constructor(data){
 		this.beforeConstruct();
 		this.update(data);
 		this.afterConstruct();
 	}
 
-	beforeConstruct(){}
-	afterConstruct(){}
-	beforeUpdate(){}
-	afterUpdate(){}
+	beforeConstruct(){
+	}
+
+	afterConstruct(){
+	}
+
+	beforeUpdate(){
+	}
+
+	afterUpdate(){
+	}
 
 	static create(data){
 		return this.newInstance().update(data);
@@ -20,14 +27,16 @@ export default class CacheableDataObject
 		{
 			return this;
 		}
-		for(let i in data){
+		for(let i in data)
+		{
 			if(!data.hasOwnProperty(i))
 			{
 				continue;
 			}
 			if(this.dataLocationParsers[i])
 			{
-				this.dataLocationParsers[i].call(this, this, data);//BABEL fucks up binding "this" to the function
+				//  BABEL fucks up binding "this" to the function
+				this.dataLocationParsers[i].call(this, this, data);
 			}
 			else
 			{
@@ -39,20 +48,21 @@ export default class CacheableDataObject
 	}
 
 	static retrieveById(id){
-		//TODO: Update this to be able to use dynamic id fields
-		return this.retrieve({id: id});
+		//  TODO: Update this to be able to use dynamic id fields
+		return this.retrieve({ id: id });
 	}
 
 	serialize(){
 		const data = {};
-		for(let field of this.serializeFields){
+		for(const field of this.serializeFields)
+		{
 			data[field] = this[field];
 		}
 		return data;
 	}
 
 	static retrieve(data, idToSave){
-		let className = this.name;
+		const className = this.name;
 		let id = null;
 
 		if(idToSave)
@@ -77,7 +87,7 @@ export default class CacheableDataObject
 		}
 		else
 		{
-			let newInstance = this.create(data);
+			const newInstance = this.create(data);
 			if(id)
 			{
 				CacheableDataObject.cache[className][id] = newInstance;
@@ -91,7 +101,5 @@ export default class CacheableDataObject
 	}
 }
 CacheableDataObject.cache = {};
-CacheableDataObject.prototype.dataLocationParsers = {
-
-};
+CacheableDataObject.prototype.dataLocationParsers = {};
 CacheableDataObject.prototype.serializeFields = [];

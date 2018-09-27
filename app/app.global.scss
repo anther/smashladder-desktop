@@ -231,3 +231,33 @@ h6 {
   display: flex;
   flex-direction: column;
 }
+
+.file_paths{
+  h6{
+    text-align: left;
+    font-size: 14px;
+    margin-top: 16px;
+  }
+
+  .rom_paths{
+    margin-top: 8px;
+  }
+
+  .rom_path{
+    display: flex;
+    flex-direction: row;
+
+    .path{
+      margin-left: 8px;
+      font-size: 11px;
+    }
+
+    button{
+      padding: 0 10px;
+
+    }
+  }
+  .search_subdirectories{
+    margin-top: 8px;
+  }
+}
