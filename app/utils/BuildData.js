@@ -26,6 +26,20 @@ export default class Build extends CacheableDataObject {
     return this.path;
   }
 
+  addLaunch() {
+    if (this.launches === undefined) {
+      this.launches = 0;
+    }
+    this.launches++;
+  }
+
+  addGameLaunch() {
+    if (this.gameLaunches === undefined) {
+      this.gameLaunches = 0;
+    }
+    this.gameLaunches++;
+  }
+
   getSlippiPath() {
     if (!this.path) {
       return null;
