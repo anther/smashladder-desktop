@@ -21,6 +21,26 @@ const progress = require('request-progress');
 
 
 export default class BuildComponent extends Component {
+	static propTypes = {
+		build: PropTypes.instanceOf(Build).isRequired,
+		onSetBuildPathClick: PropTypes.func.isRequired,
+		unsetBuildPath: PropTypes.func.isRequired,
+		setBuildPath: PropTypes.func.isRequired,
+		closeDolphin: PropTypes.func.isRequired,
+		joinBuild: PropTypes.func.isRequired,
+		launchBuild: PropTypes.func.isRequired,
+		hostBuild: PropTypes.func.isRequired,
+		startGame: PropTypes.func.isRequired,
+		buildOpen: PropTypes.bool.isRequired,
+		buildOpening: PropTypes.bool.isRequired,
+		buildError: PropTypes.any,
+		hostCode: PropTypes.string.isRequired,
+	};
+
+	static defaultProps = {
+		buildError: null,
+	};
+
 	constructor(props){
 		super(props);
 		const { onSetBuildPathClick, unsetBuildPath } = this.props;
@@ -68,7 +88,7 @@ export default class BuildComponent extends Component {
 		const basePath = Files.createApplicationPath('./dolphin_downloads');
 
 		const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
-		const extension = require('path').extname(build.download_file);
+		const extension = path.extname(build.download_file);
 		const baseNameAndExtension = `${baseName}${extension}`;
 		const unzipLocation = path.join(basePath, baseName, '/');
 		const zipWriteLocation = path.join(basePath, baseNameAndExtension);
@@ -80,7 +100,7 @@ export default class BuildComponent extends Component {
 		Files.ensureDirectoryExists(basePath, 0o0755)
 			.then(() => {
 				// The options argument is optional so you can omit it
-				progress(request(build.download_file), {})
+				return progress(request(build.download_file), {})
 					.on('progress', (state) => {
 
 						this.setState({
@@ -104,17 +124,16 @@ export default class BuildComponent extends Component {
 							downloading: 'Unzipping Build',
 							downloadingProgress: null,
 						});
+
+						const updateUnzipDisplay = _.throttle((entry) => {
+							this.setState({
+								unzipStatus: entry.path ? entry.path : null
+							});
+						}, 100);
 						switch(extension.toLowerCase())
 						{
 							case '.zip':
-
-
 								console.log('Before open zip', zipWriteLocation);
-								const updateEntryDisplay = _.throttle((entry) => {
-									this.setState({
-										unzipStatus: entry.path ? entry.path : null
-									});
-								}, 100);
 								multitry(500, 5, () => {
 									fs.createReadStream(zipWriteLocation)
 										.pipe(unzipper.Extract({ path: unzipLocation })
@@ -129,12 +148,18 @@ export default class BuildComponent extends Component {
 													unzipStatus: null,
 												});
 											})
-											.on('entry', updateEntryDisplay)
+											.on('entry', updateUnzipDisplay)
 										);
 
 								});
 
 								break;
+							default:
+								this.setState({
+									unzipStatus: null,
+									downloading: null,
+									error: 'Could not extract archive! (Invalid Extension)',
+								});
 						}
 					})
 					.pipe(fs.createWriteStream(zipWriteLocation));

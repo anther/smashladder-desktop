@@ -81,13 +81,12 @@ const convertLadderBuildListToSomethingThatMakesSense = (ladderList) => {
 const combineWithSavedBuildData = (rawBuildData, savedBuildData) => {
 	const buildList = {};
 	_.forEach(rawBuildData, (build) => {
-		let newBuild = build;
 		if(savedBuildData[build.dolphin_build_id])
 		{
-			newBuild = Object.assign(savedBuildData[build.dolphin_build_id], build);
+			build = Object.assign(savedBuildData[build.dolphin_build_id], build);
 		}
-		newBuild = buildList[build.dolphin_build_id] || Build.create(build);
-		buildList[build.dolphin_build_id] = newBuild;
+		build = buildList[build.dolphin_build_id] || Build.create(build);
+		buildList[build.dolphin_build_id] = build;
 	});
 	return buildList;
 };
@@ -101,6 +100,8 @@ const saveBuild = (build: Build, getState) => {
 	}
 	builds[build.dolphin_build_id] = build.serialize();
 	electronSettings.set('builds', builds);
+
+	console.log(builds);
 
 	const currentBuilds = { ...state.builds.builds };
 	currentBuilds[build.dolphin_build_id] = build;

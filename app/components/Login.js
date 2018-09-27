@@ -1,13 +1,23 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import { Redirect } from 'react-router'
 
-import {endpoints, SmashLadderAuthentication} from '../utils/SmashLadderAuthentication';
-import Layout from "./common/Layout";
+import { endpoints, SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 import Button from "./elements/Button";
 
 export default class Login extends Component {
+	static propTypes = {
+		loginCode: PropTypes.string.isRequired,
+		setLoginKey: PropTypes.func.isRequired,
+		isLoggingIn: PropTypes.func.isRequired,
+		player: PropTypes.object.isRequired,
+		loginErrors: PropTypes.array.isRequired,
+		showLoginButton: PropTypes.bool.isRequired,
+		productionUrls: PropTypes.bool.isRequired,
+	};
+
 	constructor(props){
 		super(props);
 		this.onLadderCodeChange = this.ladderCodeChange.bind(this);
@@ -15,7 +25,8 @@ export default class Login extends Component {
 	}
 
 	componentDidMount(){
-		if(this.props.loginCode){
+		if(this.props.loginCode)
+		{
 			this.props.setLoginKey(this.props.loginCode);
 		}
 	}
@@ -29,53 +40,51 @@ export default class Login extends Component {
 	}
 
 
-
 	render(){
-		const {isLoggingIn, player, loginErrors, showLoginButton, productionUrls} = this.props;
+		const { isLoggingIn, player, loginErrors, showLoginButton, productionUrls } = this.props;
 		if(player)
 		{
-			return <Redirect to="/builds" />
+			return <Redirect to="/builds"/>
 		}
-		console.log(productionUrls);
 		const authentication = SmashLadderAuthentication.create({
 			productionUrls: productionUrls
 		});
 		return (
-			<Layout>
-				<form className='login_form'>
-					{!player &&
-						<React.Fragment>
-							<div className="input-field">
-								<input
-									placeholder='Paste Login Code Here'
-									disabled={this.props.isLoggingIn}
-									onChange={this.onLadderCodeChange}
-									type="password" name='ladder_code'
-									value={this.props.loginCode || ''}
-									autoFocus
-								/>
-								{showLoginButton &&
-									<Button onClick={this.onLoginButtonClick} className='login_button'>Try Again</Button>
-								}
-							</div>
-							<a className='retrieve_code' href={authentication.fullEndpointUrl(endpoints.LOGIN)} target='_blank'>Retrieve A Login Code</a>
-						</React.Fragment>
-					}
+			<form className='login_form'>
+				{!player &&
+				<React.Fragment>
+					<div className="input-field">
+						<input
+							placeholder='Paste Login Code Here'
+							disabled={this.props.isLoggingIn}
+							onChange={this.onLadderCodeChange}
+							type="password" name='ladder_code'
+							value={this.props.loginCode || ''}
+						/>
+						{showLoginButton &&
+						<Button onClick={this.onLoginButtonClick} className='login_button'>Try Again</Button>
+						}
+					</div>
+					<a className='retrieve_code'
+					   href={authentication.fullEndpointUrl(endpoints.LOGIN)}
+					   rel='noopener noreferrer'
+					   target='_blank'>Retrieve A Login Code</a>
+				</React.Fragment>
+				}
 
 
-					{loginErrors.length > 0 &&
-						loginErrors.map((error, index)=>{
-							return (
-								<div className='error' key={index}>{error}</div>
-							)
-						})
-					}
+				{loginErrors.length > 0 &&
+				loginErrors.map((error) => {
+					return (
+						<div className='error' key={error}>{error}</div>
+					)
+				})
+				}
 
-					{isLoggingIn &&
-						<ProgressIndeterminate />
-					}
-				</form>
-			</Layout>
+				{isLoggingIn &&
+				<ProgressIndeterminate/>
+				}
+			</form>
 		);
 	}
 }

@@ -4,16 +4,21 @@ import { connect } from "react-redux";
 import Login from '../components/Login';
 
 import { setLoginKey } from "../actions/login";
-
-type Props = {};
+import Header from "../components/common/Header";
+import Layout from "../components/common/Layout";
 
 class LoginPage extends Component<Props> {
-	props: Props;
-
 	render(){
-		return <Login
-			{...this.props}
-		/>;
+		return (
+			<Layout>
+				<Header
+					productionUrls={this.props.productionUrls}
+				/>
+				<Login
+					{...this.props}
+				/>
+			</Layout>
+		);
 	}
 }
 

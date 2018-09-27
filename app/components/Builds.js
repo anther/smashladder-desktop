@@ -1,38 +1,46 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 
 import _ from 'lodash';
-import {Redirect} from "react-router";
-import {SmashLadderAuthentication} from "../utils/SmashLadderAuthentication";
-import {Files} from "../utils/Files";
+import { Redirect } from "react-router";
+import { Files } from "../utils/Files";
 
 import BuildComponent from "./BuildComponent";
-import Layout from "./common/Layout";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
+import { Build } from "../utils/BuildData";
 
 export default class Builds extends Component {
+	static propTypes = {
+		activeBuild: PropTypes.instanceOf(Build),
+		retrieveBuilds: PropTypes.func.isRequired,
+		setBuildPath: PropTypes.func.isRequired,
+		builds: PropTypes.objectOf(PropTypes.instanceOf(Build)).isRequired,
+		buildError: PropTypes.any,
+		player: PropTypes.object,
+		fetchingBuilds: PropTypes.func.isRequired,
+		launchBuild: PropTypes.func.isRequired,
+		joinBuild: PropTypes.func.isRequired,
+		hostBuild: PropTypes.func.isRequired,
+		startGame: PropTypes.func.isRequired,
+		closeDolphin: PropTypes.func.isRequired,
+		hostCode: PropTypes.string,
+		buildOpening: PropTypes.bool.isRequired,
+		buildOpen: PropTypes.bool.isRequired,
+	};
+
+	static defaultProps = {
+		activeBuild: null,
+		buildError: null,
+		player: null,
+		hostCode: null,
+	};
+
 	constructor(props){
 		super(props);
-		this.state = {
-			loginCode: null,
-			productionUrls: null,
-		};
 		this.onSetBuildPath = this.setBuildPath.bind(this);
 		this.onUnsetBuildPath = this.unsetBuildPath.bind(this);
 	}
 
-	static getDerivedStateFromProps(props, state){
-		if(props.loginCode !== state.loginCode || props.productionUrls !== state.productionUrls){
-
-			return {
-				loginCode: props.loginCode,
-				authentication: SmashLadderAuthentication.create({
-					loginCode: props.loginCode,
-					productionUrls: props.productionUrls
-				})
-			}
-		}
-		return null;
-	}
 
 	componentDidMount(){
 		this.props.retrieveBuilds();
@@ -44,7 +52,7 @@ export default class Builds extends Component {
 	}
 
 	setBuildPath(build){
-		Files.selectFile(build.path)
+		return Files.selectFile(build.path)
 			.then((path) => {
 				if(path)
 				{
@@ -54,16 +62,16 @@ export default class Builds extends Component {
 	}
 
 	isActiveBuild(build){
-		if(!this.props.activeBuild)
+		const { activeBuild } = this.props;
+		if(!activeBuild)
 		{
 			return false;
 		}
-		return this.props.activeBuild.id === build.id;
+		return activeBuild.id === build.id;
 	}
 
 	render(){
-		const {builds, buildError, fetchingBuilds} = this.props;
-		const { authentication } = this.state;
+		const { builds, buildError, fetchingBuilds, player } = this.props;
 		const buildList = _.values(builds).sort((a, b) => {
 			if(a.path && !b.path)
 			{
@@ -83,37 +91,12 @@ export default class Builds extends Component {
 			}
 			return 0;
 		});
-		if(!this.props.player)
+		if(!player)
 		{
 			return <Redirect to="/"/>
 		}
 		return (
-			<Layout
-				authentication={authentication}
-				logout={this.props.logout}
-				player={this.props.player}
-				productionUrls={this.props.productionUrls}
-				enableProductionUrls={this.props.enableProductionUrls}
-				enableDevelopmentUrls={this.props.enableDevelopmentUrls}
-
-				setCheckForReplays={this.props.setCheckForReplays}
-				checkForReplays={this.props.checkForReplays}
-
-				launchBuild={this.props.launchBuild}
-				hostBuild={this.props.hostBuild}
-				joinBuild={this.props.joinBuild}
-				startGame={this.props.startGame}
-				closeDolphin={this.props.closeDolphin}
-				builds={this.props.builds}
-				enableConnection={this.props.enableConnection}
-				disableConnection={this.props.disableConnection}
-				connectionEnabled={this.props.connectionEnabled}
-				sessionId={this.props.sessionId}
-
-				updateSearchSubdirectories={this.props.updateSearchSubdirectories}
-				updateRomPath={this.props.updateRomPath}
-				filePaths={this.props.filePaths}
-			>
+			<React.Fragment>
 				{fetchingBuilds &&
 				<div className='fetching_builds'>
 					<ProgressIndeterminate/>
@@ -127,8 +110,8 @@ export default class Builds extends Component {
 						{buildList.map((build) =>
 							<BuildComponent
 								key={build.dolphin_build_id}
-								authentication={authentication}
 								build={build}
+
 								setBuildPath={this.props.setBuildPath}
 								onSetBuildPathClick={this.onSetBuildPath}
 								unsetBuildPath={this.onUnsetBuildPath}
@@ -142,14 +125,16 @@ export default class Builds extends Component {
 								buildOpening={this.isActiveBuild(build) && this.props.buildOpening}
 								hostCode={this.isActiveBuild(build) && this.props.hostCode}
 								buildError={(buildError && buildError.for === build.id) ? buildError.error : null}
-
 							/>
 						)}
 					</div>
 					}
+					{buildList.length === 0 &&
+					<div className='no_builds'>I was not prepared for this</div>
+					}
 				</div>
 				}
-			</Layout>
+			</React.Fragment>
 		);
 	}
 }

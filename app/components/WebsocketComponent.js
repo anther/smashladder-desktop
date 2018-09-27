@@ -1,17 +1,33 @@
-import React, {Component} from 'react';
-import {LinearBackoff} from 'simple-backoff';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+import { LinearBackoff } from 'simple-backoff';
 import urlSerialize from "../utils/urlSerialize";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 import Button from "./elements/Button";
-import {endpoints} from "../utils/SmashLadderAuthentication";
+import { endpoints, SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
+import { Build } from "../utils/BuildData";
 
-const noResponseTimeoutInSeconds = 50;
+const noResponseTimeoutInSeconds = 30;
 
 export default class WebsocketComponent extends Component {
+	static propTypes = {
+		authentication: PropTypes.instanceOf(SmashLadderAuthentication).isRequired,
+		sessionId: PropTypes.string.isRequired,
+		builds: PropTypes.objectOf(PropTypes.instanceOf(Build)).isRequired,
+		hostBuild: PropTypes.func.isRequired,
+		joinBuild: PropTypes.func.isRequired,
+		startGame: PropTypes.func.isRequired,
+		closeDolphin: PropTypes.func.isRequired,
+		enableConnection: PropTypes.func.isRequired,
+		disableConnection: PropTypes.func.isRequired,
+		connectionEnabled: PropTypes.bool.isRequired,
+	};
+
 	constructor(props){
 		super(props);
+		console.log('what is buidls', props.builds);
 		this.websocket = null;
 		this.potentialFailure = null;
 		this.state = {
@@ -21,19 +37,20 @@ export default class WebsocketComponent extends Component {
 
 		this.connectionBackoff = new LinearBackoff({
 			min: 0,
-			step: 10000,
+			step: 5000,
 			max: 600000 // 60000 = Ten Minutes
 		});
 		this.reconnectTimeout = null;
 		this.retryingCounter = null;
+		this.connectedForABitTimeout = null;
 
 		this.websocketCommands = {
 
-			selectVersion: (message) => {
+			selectVersion: () => {
 				console.info('select version trigger');
 			},
 
-			startedMatch: (message) => {
+			startedMatch: () => {
 				console.info('started match trigger');
 			},
 
@@ -44,9 +61,8 @@ export default class WebsocketComponent extends Component {
 			sendChatMessage: (message) => {
 				if(!message.data || !message.data.dolphin_version || !message.data.dolphin_version.id)
 				{
-					throw 'Dolphin Data not included';
+					throw new Error('Dolphin Data not included');
 				}
-				this.browserWindow.webContents.send('sendChatMessage', message)
 			},
 
 			startNetplay: (message) => {
@@ -57,12 +73,12 @@ export default class WebsocketComponent extends Component {
 				this.props.closeDolphin();
 			},
 
-			startGame: (message) => {
+			startGame: () => {
 				this.props.startGame();
 			},
 
 			disableConnection: (message) => {
-				if (this.props.sessionId == message.session_id)
+				if(String(this.props.sessionId) === String(message.session_id))
 				{
 					console.log('[I GET TO LIVE]');
 				}
@@ -74,24 +90,12 @@ export default class WebsocketComponent extends Component {
 		};
 	}
 
-	fetchBuildFromDolphinVersion(dolphinVersion){
-		return this.props.builds[dolphinVersion.id];
-	}
-
 	componentDidMount(){
 		this.updateWebsocketIfNecessary();
 	}
 
 	componentDidUpdate(){
 		this.updateWebsocketIfNecessary();
-	}
-
-	clearTimers(){
-		clearTimeout(this.reconnectTimeout);
-		clearTimeout(this.retryingCounter);
-		clearTimeout(this.potentialFailure);
-
-		this.reconnectTimeout = null;
 	}
 
 	componentWillUnmount(){
@@ -106,8 +110,20 @@ export default class WebsocketComponent extends Component {
 		}
 	}
 
+	fetchBuildFromDolphinVersion(dolphinVersion){
+		return this.props.builds[dolphinVersion.id];
+	}
+
+	clearTimers(){
+		clearTimeout(this.reconnectTimeout);
+		clearTimeout(this.retryingCounter);
+		clearTimeout(this.potentialFailure);
+
+		this.reconnectTimeout = null;
+	}
+
 	updateWebsocketIfNecessary(){
-		const { connectionEnabled, authentication } = this.props;
+		const { connectionEnabled } = this.props;
 		if(this.websocket)
 		{
 			if(!connectionEnabled)
@@ -115,8 +131,7 @@ export default class WebsocketComponent extends Component {
 				this.websocket.close();
 				return;
 			}
-			if(authentication &&
-				(this.websocket.readyState === WebSocket.OPEN || this.websocket.readyState === WebSocket.CONNECTING))
+			if(this.websocket.readyState === WebSocket.OPEN || this.websocket.readyState === WebSocket.CONNECTING)
 			{
 				return;
 			}
@@ -127,16 +142,17 @@ export default class WebsocketComponent extends Component {
 			const nextRetry = this.connectionBackoff.next();
 			const estimatedWhen = new Date(Date.now() + nextRetry);
 			console.log(estimatedWhen);
-			this.retryingCounter = setInterval(()=>{
+			this.retryingCounter = setInterval(() => {
 				const time = Math.floor((estimatedWhen.getTime() - Date.now()) / 1000);
 				this.setState({
 					secondsUntilRetry: time > 0 ? time : 0
 				});
-			},1000);
+			}, 1000);
 
 
-			this.reconnectTimeout = setTimeout(()=>{
-				const {	authentication } = this.props;
+			console.log('next retry', nextRetry);
+			this.reconnectTimeout = setTimeout(() => {
+				const { authentication } = this.props;
 				if(this.websocket)
 				{
 					this.websocket.close();
@@ -169,9 +185,15 @@ export default class WebsocketComponent extends Component {
 			this.setState({
 				connectionOpen: true,
 				connecting: false,
-				forcedDisconnect: false
+				forcedDisconnect: false,
+				connectionStable: false,
 			});
-			this.connectionBackoff.reset();
+			this.connectedForABitTimeout = setTimeout(() => {
+				this.setState({
+					connectionStable: true,
+				});
+				this.connectionBackoff.reset();
+			}, 8000);
 			this.resetAlonenessTimer();
 		};
 
@@ -186,10 +208,11 @@ export default class WebsocketComponent extends Component {
 			{
 				console.error(error);
 			}
-			try{
+			try
+			{
 				if(message.functionCall)
 				{
-					if(this.websocketCommands.hasOwnProperty(message.functionCall))
+					if(this.websocketCommands[message.functionCall])
 					{
 						console.log('payload', message.data);
 						if(message.data)
@@ -230,6 +253,7 @@ export default class WebsocketComponent extends Component {
 				connectionOpen: false,
 				connecting: false
 			});
+			clearTimeout(this.connectedForABitTimeout);
 			clearTimeout(this.potentialFailure);
 		};
 	}
@@ -237,7 +261,7 @@ export default class WebsocketComponent extends Component {
 	resetAlonenessTimer(){
 		clearTimeout(this.potentialFailure);
 		this.potentialFailure = setTimeout(() => {
-			this.setState({forcedDisconnect: true});
+			this.setState({ forcedDisconnect: true });
 			this.websocket.close();
 		}, noResponseTimeoutInSeconds * 1000);
 	}
@@ -278,18 +302,18 @@ export default class WebsocketComponent extends Component {
 	}
 
 	isConnected(){
-		return this.websocket && this.websocket.readyState === WebSocket.OPEN;
+		return this.websocket && this.websocket.readyState === WebSocket.OPEN && this.state.connectionStable;
 	}
 
 	render(){
-		const { connectionEnabled } = this.props;
+		const { connectionEnabled, enableConnection, disableConnection } = this.props;
 		return (
 			<div className='websocket'>
 				<div className='progress_status'>
 					{this.isConnected() &&
 					<ProgressDeterminate/>
 					}
-					{!this.isConnected()  &&
+					{!this.isConnected() &&
 					<ProgressIndeterminate
 						color={connectionEnabled ? null : 'red'}
 					/>
@@ -297,11 +321,11 @@ export default class WebsocketComponent extends Component {
 					<span className='connection_state'>
 						{this.websocketState()}
 					</span>
-					{!this.props.connectionEnabled &&
-						<Button className='btn-small' onClick={this.props.enableConnection}>Enable</Button>
+					{!connectionEnabled &&
+					<Button className='btn-small' onClick={enableConnection}>Enable</Button>
 					}
-					{this.props.connectionEnabled &&
-						<Button className='btn-small red lighten-2' onClick={this.props.disableConnection}>Disable</Button>
+					{connectionEnabled &&
+					<Button className='btn-small red lighten-2' onClick={disableConnection}>Disable</Button>
 					}
 					<span className='what_am_i'>
 						A connection to SmashLadder is required in order to trigger interactions with Dolphin from the Website.
