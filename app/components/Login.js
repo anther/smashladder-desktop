@@ -9,7 +9,7 @@ import Button from "./elements/Button";
 
 export default class Login extends Component {
 	static propTypes = {
-		loginCode: PropTypes.string.isRequired,
+		loginCode: PropTypes.string,
 		setLoginKey: PropTypes.func.isRequired,
 		isLoggingIn: PropTypes.bool.isRequired,
 		player: PropTypes.object,
@@ -19,7 +19,8 @@ export default class Login extends Component {
 	};
 
 	static defaultProps = {
-		player: null
+		player: null,
+		loginCode: null,
 	};
 
 	constructor(props){

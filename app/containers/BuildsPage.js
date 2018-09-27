@@ -38,6 +38,7 @@ class BuildsPage extends Component<Props> {
         loginCode: props.loginCode,
         authentication: SmashLadderAuthentication.create({
           loginCode: props.loginCode,
+          session_id: props.sessionId,
           productionUrls: props.productionUrls
         })
       };

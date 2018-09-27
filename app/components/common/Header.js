@@ -51,14 +51,14 @@ export default class Header extends Component {
 				</div>
 				}
 				<h3 className="page-title">
-						<span className='site_name'>
-							<span className='logo-smash'>Smash</span>
-							<img alt='' src={ladderLogoIcon}/>
-							<span className='logo-ladder'>Ladder</span>
-						</span>
+					<span className='site_name'>
+						<span className='logo-smash'>Smash</span>
+						<img alt='' src={ladderLogoIcon}/>
+						<span className='logo-ladder'>Ladder</span>
+					</span>
 					<span className='launcher_name'>
-							<span className='logo-dolphin'>Dolphin Launcher</span>
-						</span>
+						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.0</span> </span>
+					</span>
 				</h3>
 			</div>
 		)

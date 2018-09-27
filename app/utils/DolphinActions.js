@@ -1,4 +1,5 @@
-import { DolphinPlayer } from './DolphinPlayer';
+/* eslint-disable eqeqeq */
+import DolphinPlayer from './DolphinPlayer';
 
 export default class DolphinActions {
 	static call(name, build, message){
@@ -6,10 +7,7 @@ export default class DolphinActions {
 		{
 			return DolphinActions.callableActions[name](build, message);
 		}
-		else
-		{
-			throw new Error(`Invalid Call to ${name}`);
-		}
+		throw new Error(`Invalid Call to ${name}`);
 	}
 
 	static isCallable(name){
@@ -19,7 +17,7 @@ export default class DolphinActions {
 }
 DolphinActions.lastHostCode = null;
 DolphinActions.callableActions = {
-	host_code: function(build, value){
+	host_code: (build, value) => {
 		if(build && build.ignoreNextHostMessage)
 		{
 			console.log('Ignoring host because attempting to join!');
@@ -34,12 +32,12 @@ DolphinActions.callableActions = {
 		return String(value).padStart(8, '0');
 	},
 
-	joining: (build, value) => {
+	joining: (build) => {
 		build.ignoreNextHost(true);
 	},
 
 	player_list_info: (build, value) => {
-		if(false && constants.debuggingMatchInputs)
+		if(false)
 		{
 			value = `Antherpzy[1] : 727(0b00f1f) Win | 1------- |
 Ping: 53ms

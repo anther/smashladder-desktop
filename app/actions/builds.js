@@ -168,15 +168,15 @@ buildLauncher.on('ahkEvent', event => {
   authotkeyAction(event);
 });
 
-export const closeDolphin = () => (dispatch, getState) => {
-  const authentication = getAuthenticationFromState(getState);
+export const closeDolphin = () => (dispatch) => {
+  // const authentication = getAuthenticationFromState(getState);
   buildLauncher
     .close()
     .then(() => {
       dispatch({
         type: CLOSE_BUILD
       });
-      authentication.apiPost(endpoints.CLOSED_DOLPHIN);
+      // authentication.apiPost(endpoints.CLOSED_DOLPHIN);
     })
     .catch(error => {
       console.error(error);

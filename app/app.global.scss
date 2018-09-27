@@ -137,7 +137,13 @@ h6 {
   }
   .logo-dolphin {
     display: block;
+    position: relative;
     font-size: 2rem;
+    .beta {
+      position: absolute;
+      top: -0.5em;
+      font-size: 40%;
+    }
   }
 }
 

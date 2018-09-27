@@ -108,7 +108,7 @@ export default class DolphinConfigurationUpdater {
         ? 'True'
         : 'False';
     }
-    updater.saveConfiguration();
+    updater.saveConfiguration(config);
     return true;
   }
 }

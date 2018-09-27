@@ -10,16 +10,20 @@ import {
 	ENABLE_CONNECTION, ENABLE_DEVELOPMENT_URLS, ENABLE_PRODUCTION_URLS
 } from '../actions/login';
 
-
-const loginDatas = electronSettings.get('login', {});
+const loginDatas = electronSettings.get('login', {
+	player: null,
+	loginCode: null,
+	sessionId: null,
+	productionUrls: true
+});
 
 console.log('login settings', loginDatas);
 const initialState = {
 	loginErrors: [],
-	player: loginDatas.player || null,
-	loginCode: loginDatas.loginCode || null,
-	sessionId: loginDatas.sessionId || null,
-	productionUrls: loginDatas.productionUrls === undefined ? true : loginDatas.productionUrls,
+	player: loginDatas.player,
+	loginCode: loginDatas.loginCode,
+	sessionId: loginDatas.sessionId,
+	productionUrls: loginDatas.productionUrls,
 	connectionEnabled: true,
 	isLoggingIn: false,
 	showLoginButton: false,

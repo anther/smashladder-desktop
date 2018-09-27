@@ -6,7 +6,6 @@ import SlippiGame from 'slp-parser-js';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import Files from '../utils/Files';
-import Button from './elements/Button';
 import {
   endpoints,
   SmashLadderAuthentication
@@ -266,23 +265,6 @@ export default class ReplaySync extends Component {
     const { checkForReplays } = this.props;
     return (
       <div className="replays">
-        {checkForReplays && (
-          <Button
-            className="set_button"
-            onClick={this.onSetCheckForReplaysFalse}
-          >
-            Sending Replays ✔
-          </Button>
-        )}
-        {!checkForReplays && (
-          <Button
-            className="error_button"
-            onClick={this.onSetCheckForReplaysTrue}
-          >
-            Holding Replays ❌
-          </Button>
-        )}
-
         <div className="progress_status">
           {this.isReady() && (
             <ProgressDeterminate color={this.getProgressColor()} />
@@ -293,14 +275,14 @@ export default class ReplaySync extends Component {
           <h6 className="connection_state">{this.getSyncStatusStatement()}</h6>
           <div className="switch">
             <label>
-              <span>Disabled</span>
+              <span>No</span>
               <input
                 onChange={this.onCheckForReplaysChange}
                 checked={checkForReplays}
                 type="checkbox"
               />
               <span className="lever" />
-              <span>Enabled</span>
+              <span>Upload Slippi Results</span>
             </label>
           </div>
           <span className="what_am_i">

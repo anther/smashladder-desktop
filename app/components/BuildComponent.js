@@ -116,7 +116,9 @@ export default class BuildComponent extends Component {
 
     Files.ensureDirectoryExists(basePath, 0o0755)
       .then(() => {
-        // The options argument is optional so you can omit it
+        this.setState({
+            downloading: build.download_file
+        });
         return progress(request(build.download_file), {})
           .on('progress', state => {
             this.setState({
