@@ -57,6 +57,14 @@ h6 {
   .connection_state {
     white-space: nowrap;
   }
+  .switch {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    label {
+    }
+  }
   .what_am_i {
     opacity: 0;
     pointer-events: none;
@@ -64,6 +72,7 @@ h6 {
     display: block;
     text-align: center;
     font-size: 12px;
+    margin-top: 4px;
   }
   &:hover {
     .what_am_i {
@@ -232,32 +241,34 @@ h6 {
   flex-direction: column;
 }
 
-.file_paths{
-  h6{
+.file_paths {
+  h6 {
     text-align: left;
     font-size: 14px;
     margin-top: 16px;
   }
 
-  .rom_paths{
+  .rom_paths {
     margin-top: 8px;
   }
 
-  .rom_path{
+  .rom_path {
     display: flex;
     flex-direction: row;
+    margin-bottom: 2px;
 
-    .path{
+    .path {
       margin-left: 8px;
       font-size: 11px;
     }
 
-    button{
-      padding: 0 10px;
-
+    button {
+      padding: 2px 10px;
+      line-height: inherit;
+      height: auto;
     }
   }
-  .search_subdirectories{
+  .search_subdirectories {
     margin-top: 8px;
   }
 }

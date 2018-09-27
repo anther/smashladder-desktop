@@ -311,11 +311,6 @@ FindNetplaySetupWindow(joinGameUsername = ""){
 
     setupWindowId := WinExist()  ; lock target handle to last found window
 
-    if(joinGameUsername)
-    {
-        ControlFocus, Edit1, ahk_id %setupWindowId%
-        ControlSetText, Edit1, %joinGameUsername%, ahk_id %setupWindowId%
-    }
     return %setupWindowId%
 }
 

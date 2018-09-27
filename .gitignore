@@ -53,6 +53,8 @@ npm-debug.log.*
 
 #Ignore
 app/dolphin_downloads/*
+app/external/ahk/*.ahk.bak
 
 #Allow
+!app/dolphin_downloads/hi.txt
 !app/dolphin_downloads/placeholder.txt
