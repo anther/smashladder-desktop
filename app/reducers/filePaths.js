@@ -1,4 +1,4 @@
-import {UPDATE_ROM_PATH, UPDATE_SEARCH_SUBDIRECTORIES} from "../actions/filePaths";
+import { UPDATE_ROM_PATH, UPDATE_SEARCH_SUBDIRECTORIES } from "../actions/filePaths";
 
 
 const initialState = {
@@ -6,9 +6,10 @@ const initialState = {
 	searchSubdirectories: null,
 };
 
-export default (state = initialState, action) =>{
+export default (state = initialState, action) => {
 
-	switch(action.type){
+	switch(action.type)
+	{
 		case UPDATE_ROM_PATH:
 		case UPDATE_SEARCH_SUBDIRECTORIES:
 			return {
@@ -16,6 +17,6 @@ export default (state = initialState, action) =>{
 				...action.payload,
 			};
 		default:
-		return state;
+			return state;
 	}
 }

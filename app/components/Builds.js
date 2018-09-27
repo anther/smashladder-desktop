@@ -1,18 +1,20 @@
 import React, {Component} from 'react';
 
+import _ from 'lodash';
+import {Redirect} from "react-router";
 import {SmashLadderAuthentication} from "../utils/SmashLadderAuthentication";
 import {Files} from "../utils/Files";
 
-import {BuildComponent} from "./BuildComponent";
+import BuildComponent from "./BuildComponent";
 import Layout from "./common/Layout";
-import {Redirect} from "react-router";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 export default class Builds extends Component {
 	constructor(props){
 		super(props);
 		this.state = {
-			loginCode: null
+			loginCode: null,
+			productionUrls: null,
 		};
 		this.onSetBuildPath = this.setBuildPath.bind(this);
 		this.onUnsetBuildPath = this.unsetBuildPath.bind(this);
@@ -83,7 +85,7 @@ export default class Builds extends Component {
 		});
 		if(!this.props.player)
 		{
-			return <Redirect to={'/'}/>
+			return <Redirect to="/"/>
 		}
 		return (
 			<Layout

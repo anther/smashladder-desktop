@@ -1,5 +1,7 @@
 // @flow
 import React, { Component } from 'react';
+import {connect} from "react-redux";
+import {bindActionCreators} from "redux";
 import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import { setCheckForReplays } from '../actions/replays';
@@ -12,16 +14,8 @@ import {
 	logout
 } from '../actions/login';
 
-import {connect} from "react-redux";
-import {bindActionCreators} from "redux";
-
-type Props = {};
 
 class BuildsPage extends Component<Props> {
-	constructor(props: Props){
-		super(props);
-	}
-
 	render() {
 		return <Builds
 			{...this.props}
@@ -29,14 +23,12 @@ class BuildsPage extends Component<Props> {
 	}
 }
 
-const mapStateToProps = state => {
-	return {
+const mapStateToProps = state => ({
 		...state.login,
 		...state.builds,
 		filePaths: {...state.filePaths},
 		checkForReplays: state.replays.checkForReplays
-	}
-};
+	});
 
 function mapDispatchToProps(dispatch) {
 	return bindActionCreators({

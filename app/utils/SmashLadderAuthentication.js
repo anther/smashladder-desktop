@@ -1,7 +1,9 @@
+import atob from 'atob';
 import CacheableDataObject from "./CacheableDataObject";
 
 const request = require('request-promise-native');
 const ClientOAuth2 = require('client-oauth2');
+
 
 export const endpoints = {
 	PLAYER_PROFILE: 'player/me',
@@ -16,9 +18,7 @@ export const endpoints = {
 	REPORT_MATCH_GAME: 'dolphin/report_match_game',
 	RETRIEVE_MATCH_GAME_ID: 'dolphin/prepare_match_game',
 	DOLPHIN_PLAYER_JOINED: 'dolphin/player_list_update',
-	WEBSOCKET_URL: (productionUrls)=>{
-		return productionUrls === false ? 'ws://localhost:100' : 'wss://www.smashladder.com';
-	},
+	WEBSOCKET_URL: (productionUrls) => productionUrls === false ? 'ws://localhost:100' : 'wss://www.smashladder.com',
 	LOGOUT: 'player/logout',
 };
 
@@ -42,14 +42,12 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 		{
 			return `${API_URL}/${endpoint}`;
 		}
-		else
-		{
+		
 			return endpoint(this.productionUrls);
-		}
+		
 	}
 
-	_parseCredentials(){
-		const atob = require('atob');
+	parseCredentials(){
 		let string = '';
 		try
 		{
@@ -67,8 +65,8 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 		};
 	}
 
-	_getAccessCode(){
-		let credentials = this._parseCredentials();
+	getAccessCode(){
+		const credentials = this.parseCredentials();
 		return credentials.access;
 	}
 
@@ -88,7 +86,7 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 	}
 
 	async request(requestData){
-		if(!this._getAccessCode())
+		if(!this.getAccessCode())
 		{
 			throw new Error('Invalid Login Credentials');
 		}
@@ -96,13 +94,13 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 	}
 
 	_sendRequest(requestData){
-		let oauthAuth = new ClientOAuth2({});
+		const oauthAuth = new ClientOAuth2({});
 		console.log('[SEND REQUEST]', requestData);
-		if(!this._getAccessCode())
+		if(!this.getAccessCode())
 		{
 			throw new Error('Invalid Login Code');
 		}
-		let token = oauthAuth.createToken(this._getAccessCode());
+		const token = oauthAuth.createToken(this.getAccessCode());
 		const signedRequest = token.sign(requestData);
 		// console.log('['+requestData.method+']', requestData);
 		return request(signedRequest)
@@ -122,7 +120,7 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 		if(this.checkValid)
 		{
 			console.log('[SHORTCUT CHECK]');
-			return Promise.resolve(this);
+			return this;
 		}
 
 		return this._sendRequest({

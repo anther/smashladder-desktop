@@ -1,17 +1,19 @@
-import React, {Component} from 'react';
-import {Files} from "../utils/Files";
-import Button from "./elements/Button";
-import {endpoints} from "../utils/SmashLadderAuthentication";
+import React, { Component } from 'react';
 import watch from "node-watch";
 import fs from "fs";
 import path from "path";
+import SlippiGame from "slp-parser-js";
+import _ from 'lodash';
+import { Files } from "../utils/Files";
+import Button from "./elements/Button";
+import { endpoints } from "../utils/SmashLadderAuthentication";
 import Numbers from "../utils/Numbers";
 import multitry from "../utils/multitry";
-import SlippiGame from "slp-parser-js";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
-export class ReplaySync extends Component {
+
+export default class ReplaySync extends Component {
 	constructor(props){
 		super(props);
 		this.onSetCheckForReplaysTrue = this.updateCheckForReplays.bind(this, true);
@@ -25,10 +27,6 @@ export class ReplaySync extends Component {
 			sentGame: null,
 			checkForReplays: null,
 		}
-	}
-
-	updateCheckForReplays(set){
-		this.props.setCheckForReplays(set);
 	}
 
 	static getDerivedStateFromProps(props, state){
@@ -53,6 +51,10 @@ export class ReplaySync extends Component {
 		this.disableWatch();
 	}
 
+	updateCheckForReplays(set){
+		this.props.setCheckForReplays(set);
+	}
+
 	disableWatch(){
 		if(this.watcher)
 		{
@@ -62,10 +64,10 @@ export class ReplaySync extends Component {
 		}
 	}
 
-	_getWatchableSlippiPaths(){
+	getWatchableSlippiPaths(){
 		const { builds } = this.props;
 		let paths = new Set();
-		_.each(builds, (build) =>{
+		_.each(builds, (build) => {
 			if(build.getSlippiPath())
 			{
 				paths.add(build.getSlippiPath());
@@ -92,30 +94,29 @@ export class ReplaySync extends Component {
 			this.disableWatch();
 			return;
 		}
-		const paths = this._getWatchableSlippiPaths();
+		const paths = this.getWatchableSlippiPaths();
 
 		if(!_.isEqual(this.watchingPaths.sort(), paths.sort()))
 		{
 			this.watchingPaths = paths;
 			console.log('gon watch', paths);
-			this.watcher = watch(paths, {recursive: false}, (event, filePath) => {
-				if(event == 'remove')
+			this.watcher = watch(paths, { recursive: false }, (event, filePath) => {
+				if(event === 'remove')
 				{
 					return;
 				}
 				fs.lstat(filePath, (err, stats) => {
 					if(err)
 					{
-						return console.log(err); //Handle error
+						return console.log(err); // Handle error
 					}
-					else
+
+					if(stats.isFile())
 					{
-						if(stats.isFile())
-						{
-							this.slippiGame = null;
-							this.updateLastGame(filePath);
-						}
+						this.slippiGame = null;
+						this.updateLastGame(filePath);
 					}
+
 				});
 			});
 		}
@@ -124,7 +125,7 @@ export class ReplaySync extends Component {
 	updateLastGame(file){
 		if(file && !this.slippiGame)
 		{
-			this.setState({watching: file});
+			this.setState({ watching: file });
 			this.loadGame(file).then(gameData => {
 				this.setState({
 					watching: null,
@@ -156,13 +157,10 @@ export class ReplaySync extends Component {
 								others: response.other_players,
 							})
 						}
-						else
-						{
-						}
 					})
 					.catch((response) => {
 						console.error('response failed', response);
-						this.setState({sending: false});
+						this.setState({ sending: false });
 					})
 			}).catch(error => {
 				console.error(error);
@@ -172,7 +170,7 @@ export class ReplaySync extends Component {
 
 	}
 
-	createBetterFileName(originalFile, {others = []}){
+	createBetterFileName(originalFile, { others = [] }){
 		const date = new Date();
 		const root = path.dirname(originalFile);
 
@@ -194,10 +192,10 @@ export class ReplaySync extends Component {
 		Files.ensureDirectoryExists(folder, 0o755, (error) => {
 			if(!error)
 			{
-				fs.rename(originalFile, newName, (error) => {
-					if(error)
+				fs.rename(originalFile, newName, (renameError) => {
+					if(renameError)
 					{
-						throw error;
+						throw renameError;
 					}
 				});
 			}
@@ -221,7 +219,6 @@ export class ReplaySync extends Component {
 
 
 	isReady(){
-		const { connectionEnabled } = this.props;
 		const { sending } = this.state;
 
 		return !sending;
@@ -264,27 +261,27 @@ export class ReplaySync extends Component {
 		return (
 			<div className='replays'>
 				{checkForReplays &&
-					<Button
-						className='set_button'
-						onClick={this.onSetCheckForReplaysFalse}>Send Replays ✔
-					</Button>
+				<Button
+					className='set_button'
+					onClick={this.onSetCheckForReplaysFalse}>Send Replays ✔
+				</Button>
 				}
 				{!checkForReplays &&
-					<Button className='error_button'
+				<Button className='error_button'
 				        onClick={this.onSetCheckForReplaysTrue}>No Replays ❌
-					</Button>
+				</Button>
 				}
 
 				<div className='progress_status'>
 					{this.isReady() &&
-						<ProgressDeterminate
-							color={this.getProgressColor()}
-						/>
+					<ProgressDeterminate
+						color={this.getProgressColor()}
+					/>
 					}
 					{!this.isReady() &&
-						<ProgressIndeterminate
-							color={this.getProgressColor()}
-						/>
+					<ProgressIndeterminate
+						color={this.getProgressColor()}
+					/>
 					}
 					<h6 className='connection_state'>
 						{this.getSyncStatusStatement()}

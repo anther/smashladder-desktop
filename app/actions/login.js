@@ -1,4 +1,4 @@
-import {endpoints, SmashLadderAuthentication} from "../utils/SmashLadderAuthentication";
+import { endpoints, SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
 import electronSettings from "electron-settings";
 import getAuthenticationFromState from "../utils/getAuthenticationFromState";
 
@@ -19,8 +19,8 @@ export const DISABLE_CONNECTION = 'DISABLE_CONNECTION';
 export const ENABLE_PRODUCTION_URLS = 'ENABLE_PRODUCTION_URLS';
 export const ENABLE_DEVELOPMENT_URLS = 'ENABLE_DEVELOPMENT_URLS';
 
-export const setLoginKey = (loginCode) =>{
-	return (dispatch, getState) =>{
+export const setLoginKey = (loginCode) => {
+	return (dispatch, getState) => {
 		const currentState = getState();
 		const authentication = SmashLadderAuthentication.create({
 			loginCode,
@@ -29,7 +29,7 @@ export const setLoginKey = (loginCode) =>{
 		const state = {
 			loginCode: loginCode,
 		};
-		if(!authentication._getAccessCode())
+		if(!authentication.getAccessCode())
 		{
 			dispatch({
 				type: INVALID_LOGIN_KEY,
@@ -51,12 +51,11 @@ export const setLoginKey = (loginCode) =>{
 		});
 		authentication
 			.isAuthenticated()
-			.then((authentication) => {
-				console.log(authentication);
+			.then(() => {
 				const saveDatas = {};
 				saveDatas.loginCode = loginCode;
 				saveDatas.sessionId = authentication.session_id;
-				saveDatas.player  = authentication.player;
+				saveDatas.player = authentication.player;
 				electronSettings.set('login', saveDatas);
 				dispatch({
 					type: LOGIN_SUCCESS,
@@ -70,23 +69,23 @@ export const setLoginKey = (loginCode) =>{
 			})
 			.catch(response => {
 				let error = null;
-				let showLoginButton = false;
 				if(response.statusCode === 401)
 				{
 					error = 'Invalid Code, Maybe it expired?';
 				}
 				else
 				{
-					try{
+					try
+					{
 						error = JSON.parse(response.error);
 						if(error.error)
 						{
 							error = error.error;
 						}
 					}
-					catch(parseError){
+					catch(parseError)
+					{
 						error = `Something is probably wrong with SmashLadder's server's right now, please try again later!`;
-						showLoginButton = true;
 					}
 				}
 				if(typeof error === 'string')
@@ -107,7 +106,7 @@ export const setLoginKey = (loginCode) =>{
 	}
 };
 
-export const enableProductionUrls  = () => {
+export const enableProductionUrls = () => {
 	return {
 		type: ENABLE_PRODUCTION_URLS
 	};
@@ -136,11 +135,11 @@ export const logout = () => (dispatch, getState) => {
 		type: LOGOUT_BEGIN
 	});
 	electronSettings.set('login', null)
-	authentication.apiPost(endpoints.LOGOUT, {logout: true}).then(()=>{
+	authentication.apiPost(endpoints.LOGOUT, { logout: true }).then(() => {
 		dispatch({
 			type: LOGOUT_SUCCESS
 		})
-	}).catch(()=>{
+	}).catch(() => {
 		dispatch({
 			type: LOGOUT_FAIL
 		})

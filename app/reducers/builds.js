@@ -6,8 +6,6 @@ import {
 	JOIN_BUILD_FAIL, BUILD_CLOSED, START_GAME_FAIL
 } from '../actions/builds';
 
-import electronSettings from 'electron-settings';
-
 const initialState = {
 	builds: {},
 	activeBuild: null,
@@ -16,8 +14,9 @@ const initialState = {
 	buildError: null,
 };
 
-export default (state = initialState, action) =>{
-	switch(action.type){
+export default (state = initialState, action) => {
+	switch(action.type)
+	{
 		case FETCH_BUILDS_BEGIN:
 			return {
 				...state,

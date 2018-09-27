@@ -1,38 +1,34 @@
-import React, {Component} from "react";
-import {endpoints} from "../utils/SmashLadderAuthentication";
-import {Build} from "../utils/BuildData";
-import {BuildLaunchAhk} from "../utils/BuildLaunchAhk";
-import {Files} from "../utils/Files";
-
-const {clipboard} = require('electron')
-const {app} = require('electron').remote;
+import React, { Component } from "react";
+import PropTypes from 'prop-types';
+import { clipboard } from 'electron';
 import path from "path";
+import _ from 'lodash';
+import unzipper from "unzipper";
+import { Build } from "../utils/BuildData";
+import { Files } from "../utils/Files";
+
 import multitry from "../utils/multitry";
 
 import Button from './elements/Button';
 import Select from './elements/Select';
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
-import _ from 'lodash';
 
 
-export class BuildComponent extends Component {
-	props: {
-		build: Build,
-		setBuildPath: func,
-		onSetBuildPathClick: func,
-		unsetBuildPath: func,
+const fs = require('fs');
+const request = require('request');
+const progress = require('request-progress');
 
-		launchBuild: func,
-		closeDolphin: func,
-	};
 
+export default class BuildComponent extends Component {
 	constructor(props){
 		super(props);
-		this.onSetBuildPathClick = this.props.onSetBuildPathClick;
-		this.unsetBuildPath = this.props.unsetBuildPath;
+		const { onSetBuildPathClick, unsetBuildPath } = this.props;
 
-		const {build} = this.props;
+		this.onSetBuildPathClick = onSetBuildPathClick;
+		this.unsetBuildPath = unsetBuildPath;
+
+		const { build } = this.props;
 		const selectedGame = build.getPrimaryGame();
 
 		this.state = {
@@ -40,7 +36,6 @@ export class BuildComponent extends Component {
 			selectedGame: selectedGame ? selectedGame.id : null,
 			joinCode: '',
 			enterJoinCode: false,
-			submittingJoinCode: false,
 
 			downloading: null,
 			downloadingProgress: null,
@@ -67,10 +62,8 @@ export class BuildComponent extends Component {
 			downloading: 'Downloading...',
 			downloadError: null,
 		});
-		var fs = require('fs');
-		var request = require('request');
-		var progress = require('request-progress');
-		const {build} = this.props;
+
+		const { build } = this.props;
 
 		const basePath = Files.createApplicationPath('./dolphin_downloads');
 
@@ -114,7 +107,7 @@ export class BuildComponent extends Component {
 						switch(extension.toLowerCase())
 						{
 							case '.zip':
-								var unzipper = require("unzipper");
+
 
 								console.log('Before open zip', zipWriteLocation);
 								const updateEntryDisplay = _.throttle((entry) => {
@@ -124,7 +117,7 @@ export class BuildComponent extends Component {
 								}, 100);
 								multitry(500, 5, () => {
 									fs.createReadStream(zipWriteLocation)
-										.pipe(unzipper.Extract({path: unzipLocation})
+										.pipe(unzipper.Extract({ path: unzipLocation })
 											.on('close', () => {
 												const found = Files.findInDirectory(unzipLocation, 'Dolphin.exe');
 												if(found.length)
@@ -194,8 +187,8 @@ export class BuildComponent extends Component {
 	}
 
 	_getSelectedGame(){
-		const game = this.props.build.getPossibleGames().find((game) => {
-			return game.id === this.state.selectedGame;
+		const game = this.props.build.getPossibleGames().find((searchGame) => {
+			return searchGame.id === this.state.selectedGame;
 		});
 		if(!game)
 		{
@@ -224,7 +217,7 @@ export class BuildComponent extends Component {
 	}
 
 	render(){
-		const {build, buildOpen, buildOpening, hostCode, buildError} = this.props;
+		const { build, buildOpen, buildOpening, hostCode, buildError } = this.props;
 		const error = this.state.error || buildError;
 		return (
 			<div className='build' key={build.id}>
@@ -307,7 +300,7 @@ export class BuildComponent extends Component {
 								<div>
 									<span className='text'>{this.state.downloading}{' '}</span>
 									{this.state.downloadingProgress &&
-										<span className='percent'>{Math.floor(this.state.downloadingProgress * 100)}%</span>
+									<span className='percent'>{Math.floor(this.state.downloadingProgress * 100)}%</span>
 									}
 								</div>
 								<div className='nowrap'>{this.state.unzipStatus}</div>

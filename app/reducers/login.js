@@ -1,3 +1,4 @@
+import electronSettings from 'electron-settings';
 import {
 	SET_LOGIN_KEY,
 	LOGIN_FAIL,
@@ -9,7 +10,6 @@ import {
 	ENABLE_CONNECTION, ENABLE_DEVELOPMENT_URLS, ENABLE_PRODUCTION_URLS
 } from '../actions/login';
 
-import electronSettings from 'electron-settings';
 
 const loginDatas = electronSettings.get('login') || {};
 

@@ -7,8 +7,6 @@ import Layout from "./common/Layout";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 import Button from "./elements/Button";
 
-type Props = {};
-
 export default class Login extends Component {
 	constructor(props){
 		super(props);
@@ -36,7 +34,7 @@ export default class Login extends Component {
 		const {isLoggingIn, player, loginErrors, showLoginButton, productionUrls} = this.props;
 		if(player)
 		{
-			return <Redirect to={'/builds'} />
+			return <Redirect to="/builds" />
 		}
 		console.log(productionUrls);
 		const authentication = SmashLadderAuthentication.create({
@@ -54,7 +52,7 @@ export default class Login extends Component {
 									onChange={this.onLadderCodeChange}
 									type="password" name='ladder_code'
 									value={this.props.loginCode || ''}
-									autoFocus={true}
+									autoFocus
 								/>
 								{showLoginButton &&
 									<Button onClick={this.onLoginButtonClick} className='login_button'>Try Again</Button>

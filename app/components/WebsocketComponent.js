@@ -1,15 +1,15 @@
 import React, {Component} from 'react';
+import {LinearBackoff} from 'simple-backoff';
 import urlSerialize from "../utils/urlSerialize";
 import ProgressDeterminate from "./elements/ProgressDeterminate";
 import ProgressIndeterminate from "./elements/ProgressIndeterminate";
 
 import Button from "./elements/Button";
 import {endpoints} from "../utils/SmashLadderAuthentication";
-import {LinearBackoff} from 'simple-backoff';
 
 const noResponseTimeoutInSeconds = 50;
 
-export class WebsocketComponent extends Component {
+export default class WebsocketComponent extends Component {
 	constructor(props){
 		super(props);
 		this.websocket = null;
@@ -22,7 +22,7 @@ export class WebsocketComponent extends Component {
 		this.connectionBackoff = new LinearBackoff({
 			min: 0,
 			step: 10000,
-			max: 600000 //60000 = Ten Minutes
+			max: 600000 // 60000 = Ten Minutes
 		});
 		this.reconnectTimeout = null;
 		this.retryingCounter = null;
@@ -144,14 +144,14 @@ export class WebsocketComponent extends Component {
 
 				this.clearTimers();
 				const connectData = {
-					access_token: authentication._getAccessCode(),
+					access_token: authentication.getAccessCode(),
 					version: '1.0.0',
 					type: 5,
 					launcher_version: '2.0.0',
 				};
 				const parameters = urlSerialize(connectData);
 
-				this.websocket = new WebSocket(authentication.fullEndpointUrl(endpoints.WEBSOCKET_URL)+'?' + parameters);
+				this.websocket = new WebSocket(`${authentication.fullEndpointUrl(endpoints.WEBSOCKET_URL)}?${  parameters}`);
 
 				this.setState({
 					connectionOpen: false,

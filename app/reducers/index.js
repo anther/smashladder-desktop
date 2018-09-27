@@ -7,11 +7,11 @@ import replays from './replays';
 import filePaths from './filePaths';
 
 const rootReducer = combineReducers({
-  login,
-  builds,
-  replays,
-  filePaths,
-  router
+	login,
+	builds,
+	replays,
+	filePaths,
+	router
 });
 
 export default rootReducer;
