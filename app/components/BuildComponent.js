@@ -125,6 +125,7 @@ export default class BuildComponent extends Component {
             console.log('progress', state);
           })
           .on('error', err => {
+            console.error(err);
             this.setState({
               downloadError: err,
               downloading: null

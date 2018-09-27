@@ -31,7 +31,7 @@ export default class Builds extends Component {
     activeBuild: null,
     buildError: null,
     player: null,
-    hostCode: null
+    hostCode: ''
   };
 
   componentDidMount() {

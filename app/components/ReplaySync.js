@@ -70,7 +70,7 @@ export default class ReplaySync extends Component {
     setCheckForReplays: PropTypes.func.isRequired,
     checkForReplays: PropTypes.bool.isRequired,
     connectionEnabled: PropTypes.bool.isRequired,
-    builds: PropTypes.objectOf(Build).isRequired
+    builds: PropTypes.objectOf(PropTypes.instanceOf(Build)).isRequired
   };
 
   constructor(props) {

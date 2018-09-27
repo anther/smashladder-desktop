@@ -213,8 +213,8 @@ export default class BuildLaunchAhk extends EventEmitter {
             .then(() => {
               resolve();
             })
-            .catch(() => {
-              reject();
+            .catch(error => {
+              reject(error);
             });
         });
       })
