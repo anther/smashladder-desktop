@@ -8,10 +8,10 @@ import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 import DolphinConfigurationUpdater from '../utils/DolphinConfigurationUpdater';
 
 import {
-	addRomPath,
-	updateAllowDolphinAnalytics,
-	updateSearchRomSubdirectories
-} from "./dolphinSettings";
+  addRomPath,
+  updateAllowDolphinAnalytics,
+  updateSearchRomSubdirectories
+} from './dolphinSettings';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -113,36 +113,39 @@ const saveBuild = (build: Build) => (dispatch, getState) => {
   const currentBuilds = { ...state.builds.builds };
   currentBuilds[build.dolphin_build_id] = build;
   dispatch({
-	  type: UPDATED_BUILD,
-	  payload: {
-		  builds: currentBuilds
-	  }
+    type: UPDATED_BUILD,
+    payload: {
+      builds: currentBuilds
+    }
   });
-  if(build.executablePath())
-  {
-    const addRom = (path)=>{
+  if (build.executablePath()) {
+    const addRom = path => {
       dispatch(addRomPath(path));
     };
-    const allowAnalytics = (set)=>{
+    const allowAnalytics = set => {
       dispatch(updateAllowDolphinAnalytics(set));
     };
-    const updateSearchRomSetting = (set)=>{
-      dispatch(updateSearchRomSubdirectories(set))
+    const updateSearchRomSetting = set => {
+      dispatch(updateSearchRomSubdirectories(set));
     };
-    DolphinConfigurationUpdater.copyInitialSettingsFromBuild(build.executablePath(), addRom, allowAnalytics, updateSearchRomSetting)
-        .then((()=>{
-            dispatch({
-                type: COPIED_BUILD_SETTINGS,
-                payload: {
-                    builds: currentBuilds
-                }
-            });
-        }))
-        .catch((error)=>{
-          console.error(error);
+    DolphinConfigurationUpdater.copyInitialSettingsFromBuild(
+      build.executablePath(),
+      addRom,
+      allowAnalytics,
+      updateSearchRomSetting
+    )
+      .then(() => {
+        dispatch({
+          type: COPIED_BUILD_SETTINGS,
+          payload: {
+            builds: currentBuilds
+          }
         });
+      })
+      .catch(error => {
+        console.error(error);
+      });
   }
-
 };
 
 export const setBuildPath = (
@@ -198,7 +201,7 @@ export const startGame = () => dispatch => {
 //   authotkeyAction(event);
 // });
 
-export const closeDolphin = () => (dispatch) => {
+export const closeDolphin = () => dispatch => {
   // const authentication = getAuthenticationFromState(getState);
   buildLauncher
     .close()
@@ -222,17 +225,17 @@ export const launchBuild = build => dispatch => {
   });
   buildLauncher
     .launch(build)
-    .then(({dolphinProcess}) => {
+    .then(({ dolphinProcess }) => {
       dispatch({
         type: LAUNCH_BUILD_SUCCESS,
         payload: {
           build
         }
       });
-      return dolphinProcess.stopsRunning.then(()=>{
-          dispatch({
-              type: BUILD_CLOSED
-          });
+      return dolphinProcess.stopsRunning.then(() => {
+        dispatch({
+          type: BUILD_CLOSED
+        });
       });
     })
     .catch(error => {
@@ -255,7 +258,7 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
       NetPlay: {
         NickName: state.login.player.username,
         HostCode: hostCode,
-        TraversalChoice: 'traversal',
+        TraversalChoice: 'traversal'
       }
     }
   )
@@ -263,7 +266,7 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
     .then(() => {
       dispatch({
         type: JOIN_BUILD_SUCCESS,
-          payload: {
+        payload: {
           build
         }
       });
@@ -288,26 +291,29 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
     build.executablePath(),
     {
       NetPlay: {
-        NickName: state.login.player.username
+        NickName: state.login.player.username,
+        TraversalChoice: 'traversal'
       }
     }
   )
     .then(() => buildLauncher.host(build, game))
-    .then(({dolphinProcess, result}) => {
+    .then(({ dolphinProcess, result }) => {
       authentication.apiPost(endpoints.OPENED_DOLPHIN);
       console.log(dolphinProcess, result);
-      authentication.apiPost(endpoints.DOLPHIN_HOST, { host_code: result.value });
+      authentication.apiPost(endpoints.DOLPHIN_HOST, {
+        host_code: result.value
+      });
       dispatch({
         type: HOST_BUILD_SUCCESS,
         payload: {
-            build,
-	        hostCode: result.value
+          build,
+          hostCode: result.value
         }
       });
-      return dolphinProcess.stopsRunning.then(()=>{
-          dispatch({
-            type: BUILD_CLOSED
-          });
+      return dolphinProcess.stopsRunning.then(() => {
+        dispatch({
+          type: BUILD_CLOSED
+        });
       });
     })
     .catch(error => {

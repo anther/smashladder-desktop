@@ -15,7 +15,6 @@ import MenuBuilder from './menu';
 
 let mainWindow = null;
 
-
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -63,17 +62,17 @@ app.on('ready', async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
+    width: 992,
     height: 728
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
 
-	mainWindow.webContents.on('new-window', function(event, url){
-		console.log('new window function');
-		event.preventDefault();
-		shell.openExternal(url);
-	});
+  mainWindow.webContents.on('new-window', (event, url) => {
+    console.log('new window function');
+    event.preventDefault();
+    shell.openExternal(url);
+  });
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event

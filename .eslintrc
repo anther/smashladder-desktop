@@ -11,7 +11,7 @@
   },
   "rules": {
     "useTabs": true,
-    "linebreak-style": ["error", "windows"],
+    "linebreak-style": ["error", "unix"],
     "react/destructuring-assignment": ["off"],
     "no-param-reassign": ["off"],
     "arrow-parens": ["off"],
