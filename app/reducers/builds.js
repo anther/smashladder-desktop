@@ -1,21 +1,21 @@
 import {
-  FETCH_BUILDS_SUCCESS,
-  FETCH_BUILDS_BEGIN,
-  FETCH_BUILDS_FAIL,
-  CLOSE_BUILD,
-  LAUNCH_BUILD_BEGIN,
-  LAUNCH_BUILD_FAIL,
-  LAUNCH_BUILD_SUCCESS,
-  UPDATED_BUILD,
-  HOST_BUILD_BEGIN,
-  JOIN_BUILD_BEGIN,
-  HOST_BUILD_SUCCESS,
-  JOIN_BUILD_SUCCESS,
-  HOST_BUILD_FAIL,
-  JOIN_BUILD_FAIL,
-  BUILD_CLOSED,
-  START_GAME_FAIL,
-  AUTOHOTKEY_EVENT
+	FETCH_BUILDS_SUCCESS,
+	FETCH_BUILDS_BEGIN,
+	FETCH_BUILDS_FAIL,
+	CLOSE_BUILD,
+	LAUNCH_BUILD_BEGIN,
+	LAUNCH_BUILD_FAIL,
+	LAUNCH_BUILD_SUCCESS,
+	UPDATED_BUILD,
+	HOST_BUILD_BEGIN,
+	JOIN_BUILD_BEGIN,
+	HOST_BUILD_SUCCESS,
+	JOIN_BUILD_SUCCESS,
+	HOST_BUILD_FAIL,
+	JOIN_BUILD_FAIL,
+	BUILD_CLOSED,
+	START_GAME_FAIL,
+	AUTOHOTKEY_EVENT, COPIED_BUILD_SETTINGS
 } from '../actions/builds';
 
 const initialState = {
@@ -37,6 +37,7 @@ export default (state = initialState, action) => {
     case FETCH_BUILDS_SUCCESS:
     case FETCH_BUILDS_FAIL:
     case UPDATED_BUILD:
+    case COPIED_BUILD_SETTINGS:
       return {
         ...state,
         ...action.payload,
@@ -57,6 +58,7 @@ export default (state = initialState, action) => {
     case JOIN_BUILD_SUCCESS:
       return {
         ...state,
+        activeBuild: action.payload.build,
         buildOpen: true,
         buildOpening: false,
         hostCode: action.payload ? action.payload.hostCode : null

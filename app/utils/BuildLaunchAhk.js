@@ -9,217 +9,218 @@ import BuildLauncher from './BuildLauncher';
 import Build from './BuildData';
 import Files from './Files';
 
-const { app } = require('electron').remote;
-
 export default class BuildLaunchAhk extends EventEmitter {
-  constructor() {
-    super();
-    this.hotkey = null;
-    this.buildLauncher = new BuildLauncher();
-    // require ('hazardous');
-    // const electron = require('electron');
-    console.log(app.getAppPath());
+	constructor(){
+		super();
+		this.buildLauncher = new BuildLauncher();
+		this.activeProcess = new DolphinWithHotkeyPet();
 
-    this.hotkeyLocation = Files.createApplicationPath(
-      './external/ahk/NetPlayHotkeySL.exe'
-    );
-    console.log('hotkey location', this.hotkeyLocation);
-  }
+		this.hotkeyLocation = Files.createApplicationPath(
+			'./external/ahk/NetPlayHotkeySL.exe'
+		);
+		console.log('hotkey location', this.hotkeyLocation);
+	}
 
-  async launchHotKey(command, build, successOnAction = [], failOnActions = []) {
-    if (typeof successOnAction === 'string') {
-      successOnAction = [successOnAction];
-    }
-    if (typeof failOnActions === 'string') {
-      failOnActions = [failOnActions];
-    }
-    console.log('hotkey before', this.hotkey);
-    return new Promise((resolve, reject) => {
-      return this.killHotkey().then(() => {
-        const parameters = [];
-        parameters.push('/force');
-        if (typeof command === 'string') {
-          parameters.push(command);
-        } else {
-          for (const i in command) {
-            if (command.hasOwnProperty(i)) {
-              parameters.push(command[i]);
-            }
-          }
-        }
-        this.hotkey = child.spawn(this.hotkeyLocation, parameters);
-        this.hotkey.on('error', err => {
-          this.hotkey.kill();
-          reject(new Error(`Hotkey Error: ${err}`));
-        });
-        if (successOnAction.length === 1 && successOnAction[0] === true) {
-          resolve(true);
-        }
-        this.hotkey.stdout.on('data', data => {
-          if (!data) {
-            console.log('Empty?');
-            return;
-          }
-          const strings = data.toString().split(/\r?\n/);
-          for (const string of strings) {
-            if (!string) {
-              continue;
-            }
-            const stdout = JSON.parse(string);
-            // console.log(stdout);
+	async launchHotKey(passedParameters: [], build, successOnAction = [], failOnActions = [], activeProcess){
+		return new Promise((resolve, reject) => {
+			console.log('launch hotkey with parameters', passedParameters);
+			const parameters = [];
+			parameters.push('/force');
+			passedParameters.forEach((passedParameter) => {
+				parameters.push(passedParameter);
+			});
 
-            const result = DolphinResponse.ahkResponse(stdout);
+			const hotkey = child.spawn(this.hotkeyLocation, parameters);
+			activeProcess.addHotkeyProcess(hotkey);
+			hotkey.on('error', err => {
+				hotkey.kill();
+				reject(new Error(`Hotkey Error: ${err}`));
+			});
+			hotkey.on('exit', () => {
+				reject(new Error('Closed Before Completing Requested Action'));
+			});
+			if(successOnAction.length === 1 && successOnAction[0] === true)
+			{
+				resolve({dolphinProcess: activeProcess, result: null, hotkeyProcess: hotkey});
+			}
+			hotkey.stdout.on('data', data => {
+				if(!data)
+				{
+					console.log('Empty?');
+					return;
+				}
+				const strings = data.toString().split(/\r?\n/);
+				for(const string of strings)
+				{
+					if(!string)
+					{
+						continue;
+					}
+					const stdout = JSON.parse(string);
+					const result = DolphinResponse.ahkResponse(stdout);
 
-            this.emit('ahkEvent', result);
-            // console.log(result);
-            if (DolphinActions.isCallable(result.action)) {
-              const callResult = DolphinActions.call(
-                result.action,
-                build,
-                result.value
-              );
-	            if (successOnAction.includes(result.action)) {
-		            resolve(callResult);
-	            }
-            }
-	          if (successOnAction.includes(result.action)) {
-		          resolve(result);
-	          }
-	          if (failOnActions.includes(result.action)) {
-		          reject(result.value);
-	          }
-          }
-        });
-        this.hotkey.on('exit', () => {
-          this.hotkey = null;
-          reject(new Error('Closed Before Completing Requested Action'));
-        });
-      });
-    });
-  }
+					this.emit('ahkEvent', result);
+					if(DolphinActions.isCallable(result.action))
+					{
+						const callResult = DolphinActions.call(
+							result.action,
+							build,
+							result.value
+						);
+						if(callResult && successOnAction.includes(result.action))
+						{
+							resolve({dolphinProcess: activeProcess, result: result, hotkeyProcess: hotkey});
+						}
+					}
+					if(successOnAction.includes(result.action))
+					{
+						resolve({dolphinProcess: activeProcess, result: result, hotkeyProcess: hotkey});
+					}
+					if(failOnActions.includes(result.action))
+					{
+						hotkey.kill();
+						reject(result);
+					}
+				}
+			});
+		});
+	}
 
-  async killHotkey() {
-    if (this.hotkey) {
-      return new Promise(resolve => {
-        console.log('waiting for hotkey to exit');
-        this.hotkey.on('exit', ()=>{
-          this.hotkey = null;
-          resolve();
-        });
-        this.hotkey.on('close', ()=>{
-          this.hotkey = null;
-          resolve();
-        });
-        this.hotkey.kill();
-      });
-    }
-    return Promise.resolve(true);
-  }
+	async startGame(){
+		return this.launchHotKey(
+			['launch'],
+			null,
+			['start_game_success'],
+			['start_game_error'],
+			this.activeProcess
+		);
+	}
 
-  async startGame() {
-    console.log('command to start game');
-    return this.launchHotKey(
-      'launch',
-      null,
-      'start_game_success',
-      'start_game_error'
-    );
-  }
+	async launch(build: Build){
+		if(!build)
+		{
+			throw new Error('Build is required!');
+		}
+		const parameters = ['launch'];
+		parameters.push('Temp Username');
+		parameters.push(build.name);
 
-  async launch(build: Build) {
-    if (!build) {
-      throw new Error('Build is required!');
-    }
-    return this.killHotkey().then(()=>this.buildLauncher
-      .launch(build, null, true))
-      .then(dolphinProcess => {
-        if (dolphinProcess) {
-          dolphinProcess.on('exit', () => {
-            this.killHotkey().catch(error => {
-              console.error(error);
-            });
-          });
-        }
-        const parameters = ['launch'];
-        parameters.push('Temp Username');
-        parameters.push(build.name);
-        return Promise.all([
-          dolphinProcess,
-          this.launchHotKey(parameters, build, [true])
-        ]);
-      })
-      .catch(error => {
-        throw error;
-      });
-  }
+		console.log('launch click?');
+		return this.startBuild(build, parameters, [true]);
+	}
 
-  async close() {
-    return this.buildLauncher.close();
-  }
+	async close(){
+		return this.buildLauncher.close();
+	}
 
-  async host(build: Build, gameLaunch) {
-    if (!gameLaunch) {
-      throw new Error('A Game is Required to host!');
-    }
-    const dolphinPromise = this.killHotkey().then(()=>this.buildLauncher
-      .launch(build, null, true))
-      .then(dolphinProcess => {
-        build.addLaunch();
-        if (dolphinProcess) {
-          dolphinProcess.on('exit', () => {
-            this.killHotkey();
-          });
-        }
-        return dolphinProcess;
-      });
-    const hotkeyPromise = dolphinPromise.then(() => {
-      const parameters = ['host'];
-      parameters.push('Username');
-      if (gameLaunch) {
-        if (gameLaunch.id) {
-          build.addGameLaunch(gameLaunch.id);
-        }
-        parameters.push(gameLaunch.dolphin_game_id_hint);
-        parameters.push(gameLaunch.name);
-        parameters.push(build.name);
-      }
-      return this.launchHotKey(parameters, build, 'host_code', [
-        'setup_netplay_host_failed',
-        'setup_netplay_host_failed_empty_list'
-      ]);
-    });
-    return Promise.all([dolphinPromise, hotkeyPromise]);
-  }
+	async join(build: Build, hostCode){
+		if(!hostCode)
+		{
+			throw new Error('IP Address or Host code is required to join!');
+		}
+		console.log('the host code', hostCode);
+		console.error('how we get here');
+		const parameters = ['join'];
+		parameters.push('UnusedUsername');
+		parameters.push(hostCode);
+		parameters.push(build.name);
 
-  async join(build, hostCode) {
-    if (!hostCode) {
-      throw new Error('IP Address or Host code is required to join!');
-    }
-    return this.killHotkey().then(()=>this.buildLauncher
-      .launch(build, null, true))
-      .then(dolphinProcess => {
-        if (!dolphinProcess) {
-          throw new Error('Dolphin already open!');
-        }
-        dolphinProcess.on('exit', () => {
-            this.killHotkey();
-        });
-        return new Promise((resolve, reject) => {
-          const parameters = ['join'];
-          parameters.push('Username');
-          parameters.push(hostCode);
-          parameters.push(build.name);
-          this.launchHotKey(parameters, build, ['lobby_join', 'player_list_info'])
-            .then(() => {
-              resolve();
-            })
-            .catch(error => {
-              reject(error);
-            });
-        });
-      })
-      .then(() => {
-        console.log('resolved?');
-      });
-  }
+		// ** Maybe find a the popup that displays that the join failed
+		return this.startBuild(build, parameters, ['lobby_join', 'player_list_info']);
+	}
+
+	async host(build: Build, gameLaunch){
+		if(!gameLaunch)
+		{
+			throw new Error('A Game is Required to host!');
+		}
+		const parameters = [];
+		parameters.push('host');
+		parameters.push('UsernameUnused');
+		if(gameLaunch.id)
+		{
+			build.addGameLaunch(gameLaunch.id);
+		}
+		parameters.push(gameLaunch.dolphin_game_id_hint);
+		parameters.push(gameLaunch.name);
+		parameters.push(build.name);
+
+		return this.startBuild(build, parameters, ['host_code'], [
+			'setup_netplay_host_failed',
+			'setup_netplay_host_failed_empty_list'
+		]);
+	}
+
+	async startBuild(build, parameters, successMessages, failMessages){
+		let theActiveProcess = null;
+		console.log('beginning basic launch process');
+		return this.activeProcess.murder()
+			.then(() => {
+				return this.buildLauncher.launch(build);
+			})
+			.then(dolphinProcess => {
+				this.activeProcess = new DolphinWithHotkeyPet(dolphinProcess);
+				theActiveProcess = this.activeProcess;
+				return this.launchHotKey(parameters, build, successMessages, failMessages, theActiveProcess);
+			})
+			.catch(error=>{
+				console.error(error);
+				throw error;
+			});
+	}
+
+}
+
+class DolphinWithHotkeyPet {
+	constructor(dolphinProcess){
+		this.hotkeyProcesses = new Set();
+		this.murdered = false;
+		if(!dolphinProcess)
+		{
+			console.log('had no dolphin process!');
+			this.stopsRunning = Promise.resolve();
+			return;
+		}
+		this.dolphinProcess = dolphinProcess;
+		this.stopsRunning = new Promise((resolve)=>{
+			if(this.murdered)
+			{
+				return resolve();
+			}
+
+			dolphinProcess.on('close', () => {
+				resolve();
+				this.murdered = true;
+				this.murder().catch((error) => {
+					console.error(error)
+				});
+			});
+		});
+	}
+
+	async murder(){
+		this.hotkeyProcesses.forEach((hotkeyProcess) => {
+			hotkeyProcess.kill();
+		});
+		if(this.murdered)
+		{
+			return this.stopRunning;
+		}
+		if(!this.dolphinProcess || this.dolphinProcess.exitCode !== null)
+		{
+			this.murdered = true;
+			return this.stopRunning;
+		}
+		this.dolphinProcess.kill();
+		return this.stopRunning;
+	}
+
+	addHotkeyProcess(hotkeyProcess){
+		// ...Not entirely sure why this list is stored since we're killing them as new ones are added...
+		this.hotkeyProcesses.forEach((process)=>{
+			process.kill();
+		});
+		this.hotkeyProcesses.add(hotkeyProcess);
+	}
+
 }

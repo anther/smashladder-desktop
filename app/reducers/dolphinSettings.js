@@ -10,16 +10,22 @@ const initialState = {
 
 export default (state = initialState, action) => {
 
+	const newState = {
+		...state,
+		...action.payload,
+	};
 	switch(action.type)
 	{
 		case ADD_ROM_PATH:
 		case REMOVE_ROM_PATH:
+			electronSettings.set('dolphinSettings.romPaths', action.payload.romPaths);
+			return newState;
 		case UPDATE_SEARCH_SUBDIRECTORIES:
+			electronSettings.set('dolphinSettings.searchRomSubdirectories', action.payload.searchRomSubdirectories);
+			return newState;
 		case UPDATE_ALLOW_DOLPHIN_ANALYTICS:
-			return {
-				...state,
-				...action.payload,
-			};
+			electronSettings.set('dolphinSettings.allowDolphinAnalytics', action.payload.allowDolphinAnalytics);
+			return newState;
 		default:
 			return state;
 	}

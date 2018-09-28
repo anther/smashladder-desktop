@@ -28,7 +28,7 @@ export default class DolphinConfigurationUpdater {
       throw error;
     }
     if (configLocation.length > 1) {
-      throw new Error('Found more than one Dolphin.ini');
+      throw new Error(`Found more than one Dolphin.ini ${configLocation.join(' ')}`);
     }
     if (configLocation.length === 0) {
       throw new Error('Could not find a Dolphin.ini to update');
@@ -48,11 +48,50 @@ export default class DolphinConfigurationUpdater {
     );
   }
 
+  static async copyInitialSettingsFromBuild(buildPath, addRomPath, updateAllowDolphinAnalytics, updateSearchRomSubdirectories) {
+	  const updater = new DolphinConfigurationUpdater(buildPath);
+	  const config = updater.loadConfiguration();
+
+	  DolphinConfigurationUpdater.forEachIsoEntries(config, (isoPath) => {
+	    console.log('attempting to add', isoPath);
+        addRomPath(isoPath);
+	  });
+	  if(config.General && config.General.RecursiveISOPaths === "True") // Only Update this if it's true, the default is typically false
+      {
+	    console.log('SEarch subdirectories was true');
+        updateSearchRomSubdirectories(true);
+      }
+	  if(config.Analytics && config.Analytics.Enabled === "True")
+      {
+	    console.log('Analytics was true');
+        updateAllowDolphinAnalytics(config.Analytics.Enabled === "True");
+      }
+      console.log('finished');
+  }
+
   static async mergeSettingsIntoDolphinIni(buildPath, settings) {
     const updater = new DolphinConfigurationUpdater(buildPath);
     const config = updater.loadConfiguration();
     _.merge(config, settings);
     return updater.saveConfiguration(config);
+  }
+
+  static forEachIsoEntries(config, callback){
+	  if (!config.General) {
+		  return;
+	  }
+	  let hasIsoEntry = false;
+	  let entryNumber = 0;
+	  do {
+		  const currentIsoPathName = `ISOPath${entryNumber}`;
+		  if (config.General[currentIsoPathName]) {
+			  hasIsoEntry = true;
+              callback(config.General[currentIsoPathName], currentIsoPathName, entryNumber);
+		  } else {
+			  hasIsoEntry = false;
+		  }
+		  entryNumber++;
+	  } while (hasIsoEntry);
   }
 
   static async updateInitialSettings(
@@ -66,22 +105,11 @@ export default class DolphinConfigurationUpdater {
     }
     console.log('the rom paths', romPaths);
     if (!_.isEmpty(romPaths)) {
-      let hasIsoEntry = false;
-      let entryNumber = 0;
-      // Set Paths
-      do {
-        const currentIsoPathName = `ISOPath${entryNumber}`;
-        console.log(
-          `removing ${currentIsoPathName} ${config.General[currentIsoPathName]}`
-        );
-        if (config.General[currentIsoPathName]) {
-          hasIsoEntry = true;
-          delete config.General[currentIsoPathName];
-        } else {
-          hasIsoEntry = false;
-        }
-        entryNumber++;
-      } while (hasIsoEntry);
+
+      DolphinConfigurationUpdater.forEachIsoEntries(config, (isoPath, currentIsoPathName) => {
+          console.log(`removing ${currentIsoPathName} ${config.General[currentIsoPathName]}`);
+	      delete config.General[currentIsoPathName];
+      });
 
       let newEntries = 0;
       _.forEach(romPaths, romPath => {

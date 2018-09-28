@@ -89,7 +89,7 @@ export default class Files {
 			{
 				results = results.concat(Files.findInDirectory(filename, filter)); // recurse
 			}
-			else if(filename.indexOf(filter) >= 0)
+			else if(filename.endsWith(filter))
 			{
 				console.log('-- found: ', filename);
 				results.push(filename);

@@ -1,7 +1,5 @@
 import child from 'child_process';
 import path from 'path';
-import DolphinResponse from "./DolphinResponse";
-import DolphinActions from "./DolphinActions";
 import DolphinChecker from "./DolphinChecker";
 import Build from "./BuildData";
 
@@ -10,67 +8,28 @@ export default class DolphinLauncher {
 		this.child = null;
 	}
 
-	async launch(build, parameters = [], closePrevious){
-		if(closePrevious)
-		{
-			if(!this.child)
-			{
-				return DolphinChecker.dolphinIsRunning()
-					.then((isRunning) => {
-						const errorMessage = 'Dolphin is already opened. Please close all instances of dolphin!';
-						if(isRunning)
-						{
-							throw errorMessage;
-						}
-					})
-					.then(() => {
-						return this.close();
-					})
-					.then(() => {
-						return this.launchChild(build, parameters)
-					})
-					.catch(error => {
-						throw error;
-					});
-
-			}
-			return this.close()
-				.then(() => {
-					return this.launchChild(build, parameters)
-				})
-		}
-
-		return this.launchChild(build, parameters);
-
-	}
-
-	async host(build: Build){
-		return this.launchChild(build);
-	}
-
-	async join(build: Build){
-		return this.launchChild(build);
-	}
-
-	_retrieveActiveChild(){
+	async launch(build){
 		if(this.child)
 		{
-			if(this.child.exitCode !== null)
-			{
-				this.child = null;
-			}
-			else
-			{
-				return this.child;
-			}
+			// Recurse back and open again after closing the build
+			return this.close()
+				.then(() => this.launch(build));
 		}
-		return null;
+		return DolphinChecker.dolphinIsRunning()
+			.then((isRunning) => {
+				const errorMessage = 'Dolphin is already opened. Please close all instances of dolphin!';
+				if(isRunning)
+				{
+					throw errorMessage;
+				}
+			})
+			.then(() => this.launchChild(build))
+			.catch(error => {throw error});
 	}
 
 	async close(){
-		if(this._retrieveActiveChild())
+		if(this.retrieveActiveDolphin())
 		{
-			console.log('the child', this.child);
 			const killPromise = new Promise((resolve) => {
 				this.child.on('exit', () => {
 					this.child = null;
@@ -80,35 +39,32 @@ export default class DolphinLauncher {
 			this.child.kill();
 			return killPromise;
 		}
-
-		return Promise.resolve();
-
+		return true;
 	}
 
-	async launchChild(build: Build, parameters = []){
+	async launchChild(build: Build){
 		return new Promise((resolve, reject) => {
-			if(!parameters)
+			if(this.retrieveActiveDolphin())
 			{
-				parameters = [];
+				console.log('has active alaredy');
+				return resolve(this.child);
 			}
-
 			if(!build.executablePath())
 			{
-				reject(new Error(`Attempted to launch ${build.name} but the path is not set!`));
-				return;
+				throw new Error(`Attempted to launch ${build.name} but where is the file?!`);
 			}
-
-			if(this._retrieveActiveChild())
-			{
-				// Only one child allowed at a time, may consider throwing an error instead
-				resolve(this.child);
-				return;
-			}
-
-			this.child = child.spawn(path.resolve(build.executablePath()), parameters, {
+			const childReference = this.child = child.spawn(path.resolve(build.executablePath()), [], {
 				cwd: path.resolve(path.dirname(build.executablePath()))
 			});
 
+			const removeChildReference = () => {
+				if(childReference === this.child)
+				{
+					this.child = null;
+				}
+			};
+			this.child.on('exit', removeChildReference);
+			this.child.on('close', removeChildReference);
 			this.child.on('error', (err) => {
 				if(err && err.toString().includes('ENOENT'))
 				{
@@ -116,57 +72,23 @@ export default class DolphinLauncher {
 				}
 				reject(new Error('Failed To Launch'));
 			});
-
-			this.child.stdout.on('data', (data) => {
-				resolve(this.child);
-				console.log(`stdout: ${  data}`);
-				if(!data)
-				{
-					console.log('Empty?');
-					return;
-				}
-				const strings = data.toString().split(/\r?\n/);
-				console.log(data);
-				for(const i in strings)
-				{
-					if(!strings.hasOwnProperty(i))
-					{
-						continue;
-					}
-					const stdout = strings[i];
-					if(!stdout)
-					{
-						continue;
-					}
-
-					const result = DolphinResponse.parse(stdout);
-					if(DolphinActions.isCallable(result.action))
-					{
-						build.changeIsSmartDolphin(true);
-						if(!build.isTesting)
-						{
-							DolphinActions.call(result.action, build, result.value)
-						}
-					}
-					else
-					{
-						console.warn('Unusable stdout', result);
-					}
-				}
-			});
-
-			const failTimeout = setTimeout(() => {
-				if(!this.child.pid)
-				{
-					reject(new Error('Child not found!'));
-				}
-			}, 5000);
-			if(this.child.pid)
-			{
-				clearTimeout(failTimeout);
-				resolve(this.child);
-			}
+			return resolve(this.child);
 		});
+	}
+
+	retrieveActiveDolphin(){
+		if(!this.child)
+		{
+			return null;
+		}
+		if(this.child.exitCode !== null)
+		{
+			this.child = null;
+		}
+		else
+		{
+			return this.child;
+		}
 	}
 
 }

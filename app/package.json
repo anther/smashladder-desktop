@@ -1,13 +1,13 @@
 {
-  "name": "electron-react-boilerplate",
-  "productName": "electron-react-boilerplate",
-  "version": "1.0.0",
-  "description": "Electron application boilerplate based on React, React Router, Webpack, React Hot Loader for rapid application development",
+  "name": "smashladder-dolphin-launcher",
+  "productName": "SmashLadder Dolphin Launcher",
+  "version": "2.0.1",
+  "description": "Interfaces with Smashladder.com",
   "main": "./main.prod.js",
   "author": {
-    "name": "C. T. Lin",
-    "email": "chentsulin@gmail.com",
-    "url": "https://github.com/chentsulin"
+    "name": "Anther Sledge",
+    "email": "anthrzy@gmail.com",
+    "url": "https://bitbucket.org/Anther/smashladder-launcher"
   },
   "scripts": {
     "electron-rebuild": "node -r babel-register ../internals/scripts/ElectronRebuild.js",

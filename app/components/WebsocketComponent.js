@@ -71,7 +71,8 @@ export default class WebsocketComponent extends Component {
       },
 
       startNetplay: message => {
-        this.props.joinBuild(message.dolphin_version, message.game_launch_name);
+        console.log('the message', message);
+        this.props.joinBuild(message.dolphin_version, message.parameters && message.parameters.host_code);
       },
 
       quitDolphin: () => {
@@ -213,28 +214,31 @@ export default class WebsocketComponent extends Component {
       } catch (error) {
         console.error(error);
       }
-      try {
-        if (message.functionCall) {
-          if (this.websocketCommands[message.functionCall]) {
-            console.log('payload', message.data);
-            if (message.data) {
-              if (message.data.dolphin_version) {
-                message.data.dolphin_version = this.fetchBuildFromDolphinVersion(
-                  message.data.dolphin_version
-                );
-              }
-              if (message.data.game_launch_name) {
-                const gameInfo = message.data.game_launch_name;
+      if(!message.functionCall){
+      	return;
+      }
+      if(!this.websocketCommands[message.functionCall]){
+	      console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
+      }
 
-                gameInfo.dolphin_game_id_hint = gameInfo.launch;
-                gameInfo.name = gameInfo.game;
-              }
-            }
-            this.websocketCommands[message.functionCall](message.data);
-          } else {
-            console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
+      try {
+        console.log('payload', message.data);
+        if (message.data) {
+          if (message.data.dolphin_version) {
+            message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
+          }
+          if (message.data.game_launch_name) {
+            const gameInfo = message.data.game_launch_name;
+
+            gameInfo.dolphin_game_id_hint = gameInfo.launch;
+            gameInfo.name = gameInfo.game;
+          }
+          if(message.parameters)
+          {
+          	message.data.parameters = message.parameters;
           }
         }
+        this.websocketCommands[message.functionCall](message.data);
       } catch (error) {
         console.error('websocket message error');
         console.error(error);

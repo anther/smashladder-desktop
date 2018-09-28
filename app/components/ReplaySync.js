@@ -82,7 +82,9 @@ export default class ReplaySync extends Component {
     );
     this.watcher = null;
     this.watchingPaths = [];
+    this.reinitializingTimeout = null;
     this.state = {
+      reinitializing: false,
       watching: null,
       sending: null,
       active: false,
@@ -154,6 +156,14 @@ export default class ReplaySync extends Component {
 
     if (!_.isEqual(this.watchingPaths.sort(), paths.sort())) {
       this.watchingPaths = paths;
+
+      // This is purely for display purposes
+      clearTimeout(this.reinitializingTimeout);
+      this.setState({reinitializing: `'Updating New Paths...`});
+      this.reinitializingTimeout = setTimeout(()=>{
+        this.setState({reinitializing: null});
+      }, 2000);
+
       console.log('gon watch', paths);
       this.watcher = watch(paths, { recursive: false }, (event, filePath) => {
         if (event === 'remove') {
@@ -197,12 +207,10 @@ export default class ReplaySync extends Component {
           this.props.authentication
             .apiPost(endpoints.SUBMIT_REPLAY_RESULT, sendData)
             .then(response => {
-              console.log('response', response);
               this.setState({
                 sending: false,
                 sentGame: gameData
               });
-              console.log(gameData);
               if (response.other_players) {
                 ReplaySync.createBetterFileName(file, {
                   others: response.other_players
@@ -211,6 +219,19 @@ export default class ReplaySync extends Component {
             })
             .catch(response => {
               console.error('response failed', response);
+
+              try{
+                const parsed = JSON.parse(response.error);
+                this.setState({
+                    lastError: parsed.error,
+                });
+              }
+              catch(jsonError)
+              {
+                this.setState({
+                    lastError: 'Last Attempt Failed',
+                })
+              }
               this.setState({ sending: false });
             });
         })
@@ -233,24 +254,33 @@ export default class ReplaySync extends Component {
 
   getSyncStatusStatement() {
     const { authentication, connectionEnabled } = this.props;
-    const { sending, checkForReplays } = this.state;
+    const { sending, checkForReplays, watching, reinitializing } = this.state;
 
     if (!authentication) {
-      return 'Invalid Authentication';
+      return {message: 'Invalid Authentication'};
     }
     if (sending) {
-      return 'Sending Game Data...';
+      return {message: 'Sending Game Data...'};
+    }
+    if(reinitializing){
+      return {message: reinitializing};
     }
     if (this.slippiGame) {
-      return 'Sending game result';
+      return {message: 'Sending game result'};
     }
     if (!connectionEnabled) {
-      return 'Connection Disabled';
+      return {message: 'Connection Disabled'};
     }
     if (!checkForReplays) {
-      return '...Not Enabled...';
+      return {isError: true, message: '...Not Enabled...'};
     }
-    return 'Waiting';
+    if(watching){
+      return {message: `Watching File ${path.basename(watching)}`};
+    }
+    if(this.state.lastError){
+      return {isError: true, message: this.state.lastError};
+    }
+    return {message: 'Waiting'};
   }
 
   checkForReplaysChange(event) {
@@ -272,7 +302,7 @@ export default class ReplaySync extends Component {
           {!this.isReady() && (
             <ProgressIndeterminate color={this.getProgressColor()} />
           )}
-          <h6 className="connection_state">{this.getSyncStatusStatement()}</h6>
+          <h6 className={`connection_state ${this.getSyncStatusStatement().isError ? 'error' : ''}`}>{this.getSyncStatusStatement().message}</h6>
           <div className="switch">
             <label>
               <span>No</span>
