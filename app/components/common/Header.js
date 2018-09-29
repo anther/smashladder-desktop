@@ -63,7 +63,7 @@ export default class Header extends Component {
 						<span className='logo-ladder'>Ladder</span>
 					</span>
 					<span className='launcher_name'>
-						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.2</span> </span>
+						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.3</span> </span>
 					</span>
 				</h3>
 			</div>
