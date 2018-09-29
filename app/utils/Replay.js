@@ -41,13 +41,11 @@ export default class Replay extends CacheableDataObject {
 		{
 			const directory = path.basename(path.dirname(this.id));
 			const dateString = fileName.slice(0, 6);
-			console.log(fileName);
-			console.log('attempt' , directory, dateString);
 			return this._fileDate = moment(`${directory}${dateString}`, "YYYY-MM-DDHHmmss", true);
 		}
 		else
 		{
-			return this._fileDate = null;
+			return this._fileDate = null; // Return really old date...
 		}
 	}
 

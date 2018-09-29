@@ -31,7 +31,7 @@ const replayLaunchFail = (error)=>{
 export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch) => {
 	const replayStatusPayload = {
 		build,
-		replayPath
+		replayPath,
 	};
 	dispatch({
 		type: LAUNCH_REPLAY_BEGIN,

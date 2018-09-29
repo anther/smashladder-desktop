@@ -38,17 +38,18 @@ export default class ReplayBrowser extends Component {
 				{
 					return;
 				}
-				replays.add(Replay.retrieve({id: file}));
+				const replay = Replay.retrieve({ id: file });
+				replays.add(replay);
 			});
 			aSlippiPath = slippiPath;
 			aSlippiBuild = build;
 		});
-		replays = Array.from(replays).sort( (a,b) => {
+		replays = Array.from(replays).sort((a, b) => {
 			return a.getFileDate() > b.getFileDate() ? -1 : 1;
 		});
 		const totalReplays = replays.length;
 
-		replays = replays.slice((state.replayPageNumber -1) * replaysPerPage, (state.replayPageNumber) * 10);
+		replays = replays.slice((state.replayPageNumber - 1) * replaysPerPage, (state.replayPageNumber) * 10);
 
 		if(!_.isEqual(replays, state.replays))
 		{
@@ -69,14 +70,15 @@ export default class ReplayBrowser extends Component {
 	}
 
 	render(){
-		const { replays, slippiPath, slippiBuild, replayPageNumber, totalReplays} = this.state;
-		const { launchReplay, launchReplayError, builds, meleeIsoPath, settingMeleeIsoPath } = this.props;
+		const { replays, slippiPath, slippiBuild, replayPageNumber, totalReplays } = this.state;
+		const { launchReplay, launchReplayError, builds, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 
 		console.log(replayPageNumber, totalReplays);
 
+		console.log('launched', launchedReplay);
 		return (
 			<div className='replay_browser'>
-			{replays.length > 0 &&
+				{replays.length > 0 &&
 				<React.Fragment>
 					<h4>Latest Replays</h4>
 					{launchReplayError &&
@@ -94,24 +96,26 @@ export default class ReplayBrowser extends Component {
 						/>
 					</ul>
 					<ul className='collection'>
-					{replays.map((replay) => (
-						<li className='collection-item'>
-							<ReplayComponent key={replay}
-							        builds={builds}
-							        slippiPath={slippiPath}
-							        slippiBuild={slippiBuild}
-							        meleeIsoPath={meleeIsoPath}
-				                 settingMeleeIsoPath={settingMeleeIsoPath}
-							        launchReplay={launchReplay}
-							        replay={replay}>
-								{replay}
-							</ReplayComponent>
-						</li>
-					))}
+						{replays.map((replay) => (
+							<li className='collection-item'>
+								<ReplayComponent key={replay}
+								                 builds={builds}
+								                 slippiPath={slippiPath}
+								                 slippiBuild={slippiBuild}
+								                 meleeIsoPath={meleeIsoPath}
+								                 launchedReplay={launchedReplay}
+								                 settingMeleeIsoPath={settingMeleeIsoPath}
+								                 launchReplay={launchReplay}
+								                 launchingReplay={launchingReplay}
+								                 replay={replay}>
+									{replay}
+								</ReplayComponent>
+							</li>
+						))}
 					</ul>
 
 				</React.Fragment>
-			}
+				}
 			</div>
 		)
 	}
@@ -124,7 +128,7 @@ class ReplayComponent extends Component {
 	}
 
 	replayViewClick(){
-		const { meleeIsoPath, launchReplay, replay, slippiBuild} = this.props;
+		const { meleeIsoPath, launchReplay, replay, slippiBuild } = this.props;
 
 		this.props.launchReplay({
 			build: slippiBuild,
@@ -133,8 +137,28 @@ class ReplayComponent extends Component {
 		});
 	}
 
+	getReplayDisplayString(){
+		const { replay, meleeIsoPath, launchedReplay, launchingReplay } = this.props;
+		if(!meleeIsoPath)
+		{
+			return 'Set Melee Iso Path';
+		}
+		if(replay.id === launchingReplay)
+		{
+			return 'Launching...'
+		}
+		else if(replay.id === launchedReplay)
+		{
+			return 'Launched?';
+		}
+		else
+		{
+			return 'Launch';
+		}
+	}
+
 	render(){
-		const { replay, meleeIsoPath, settingMeleeIsoPath } = this.props;
+		const { replay, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 		return (
 			<div className='replay'>
 				<div>
@@ -142,10 +166,10 @@ class ReplayComponent extends Component {
 					<div className='secondary-content'>
 						<Button
 
-							disabled={settingMeleeIsoPath}
+							disabled={settingMeleeIsoPath || launchingReplay}
 							onClick={this.onReplayViewClick}
-						   className={meleeIsoPath ? 'set': 'not_set'}>
-							{meleeIsoPath ? 'Launch' : 'Set Melee Iso Path' }
+							className={meleeIsoPath ? 'set no_check' : 'not_set'}>
+							{this.getReplayDisplayString()}
 						</Button>
 					</div>
 				</div>

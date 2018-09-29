@@ -36,6 +36,9 @@ a {
   }
   &.set {
     @extend .green, .lighten-2;
+    &.no_check:after{
+      content: '';
+    }
     &:after {
       content: '✔';
     }
