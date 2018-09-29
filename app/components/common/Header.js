@@ -4,6 +4,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ladderLogoIcon from "../../images/ladder_logo_icon.png";
 
+import electron from 'electron';
+
 export default class Header extends Component {
 	static propTypes = {
 		player: PropTypes.object,
@@ -61,7 +63,7 @@ export default class Header extends Component {
 						<span className='logo-ladder'>Ladder</span>
 					</span>
 					<span className='launcher_name'>
-						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.1</span> </span>
+						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.2</span> </span>
 					</span>
 				</h3>
 			</div>
