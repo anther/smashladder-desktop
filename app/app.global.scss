@@ -17,6 +17,31 @@ $ladder-highlight: #ff6c60;
   opacity: 0;
 }
 
+a {
+  cursor: pointer;
+}
+
+.btn {
+  &.not_set,
+  &.set {
+    &:after {
+      margin-left: 4px;
+    }
+  }
+  &.not_set {
+    @extend .red, .lighten-2;
+    &:after {
+      content: '❌';
+    }
+  }
+  &.set {
+    @extend .green, .lighten-2;
+    &:after {
+      content: '✔';
+    }
+  }
+}
+
 .error {
   @extend .red-text, .lighten-2;
 }
@@ -87,6 +112,7 @@ h6 {
 
 .login_information {
   @extend .teal, .white-text;
+  z-index: 2;
 
   .btn {
     @extend .white-text;
@@ -256,6 +282,10 @@ h6 {
   .connection_state {
     white-space: normal;
     min-height: 30px;
+  }
+
+  .collection {
+    min-height: 426px;
   }
 }
 

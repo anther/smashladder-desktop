@@ -1,5 +1,5 @@
-import { endpoints, SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
 import electronSettings from "electron-settings";
+import { endpoints, SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
 import getAuthenticationFromState from "../utils/getAuthenticationFromState";
 
 export const SET_LOGIN_KEY = 'SET_LOGIN_KEY'
@@ -22,6 +22,7 @@ export const ENABLE_DEVELOPMENT_URLS = 'ENABLE_DEVELOPMENT_URLS';
 export const setLoginKey = (loginCode) => {
 	return (dispatch, getState) => {
 		const currentState = getState();
+
 		const authentication = SmashLadderAuthentication.create({
 			loginCode,
 			productionUrls: currentState.login.productionUrls

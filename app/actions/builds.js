@@ -151,12 +151,10 @@ const saveBuild = (build: Build) => (dispatch, getState) => {
 export const setBuildPath = (
   build: Build,
   path,
-  initializeByLaunching = false
 ) => (dispatch, getState) => {
   build.path = path;
   dispatch(saveBuild(build, getState));
 
-  if (initializeByLaunching) {
     const state = getState();
     console.log('the settings');
     DolphinConfigurationUpdater.updateInitialSettings(build.executablePath(), {
@@ -168,7 +166,6 @@ export const setBuildPath = (
       .catch(error => {
         console.error(error);
       });
-  }
 };
 
 export const startGame = () => dispatch => {
@@ -324,6 +321,10 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
 
 const buildFailError = (type, build, error) => {
   console.error(error);
+  if(error && error.value)
+  {
+    error = error.value;
+  }
   return {
     type: HOST_BUILD_FAIL,
     payload: {

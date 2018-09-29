@@ -41,9 +41,6 @@ export default class BuildComponent extends Component {
     super(props);
     const { build } = this.props;
 
-    this.onSetBuildPathClick = this.setBuildPathClick.bind(this);
-    this.onUnsetBuildPathClick = this.unsetBuildPathClick.bind(this);
-
     const selectedGame = build.getPrimaryGame();
 
     this.state = {
@@ -56,6 +53,9 @@ export default class BuildComponent extends Component {
       downloadingProgress: null,
       downloadError: null
     };
+
+    this.onSetBuildPathClick = this.setBuildPathClick.bind(this);
+    this.onUnsetBuildPathClick = this.unsetBuildPathClick.bind(this);
 
     this.onHostClick = this.hostClick.bind(this);
     this.onCloseClick = this.closeClick.bind(this);
@@ -77,7 +77,8 @@ export default class BuildComponent extends Component {
     this.setState({
       settingBuildPath: true
     });
-    return Files.selectFile(build.path)
+
+    return Files.selectFile(build.executableDirectory())
       .then(selectedPath => {
         if (selectedPath) {
           this.props.setBuildPath(build, selectedPath);
@@ -284,9 +285,9 @@ export default class BuildComponent extends Component {
                   title={build.path}
                   onClick={this.onSetBuildPathClick}
                   onContextMenu={this.onUnsetBuildPathClick}
-                  className="btn-small"
+                  className="btn-small set"
                 >
-                  Path Set ✔
+                  Path Set
                 </Button>
               </span>
             )}
@@ -295,9 +296,9 @@ export default class BuildComponent extends Component {
                 <Button
                   disabled={settingBuildPath}
                   onClick={this.onSetBuildPathClick}
-                  className="btn-small"
+                  className="btn-small not_set"
                 >
-                  Path Not Set ❌
+                  Path Not Set
                 </Button>
               </span>
             )}

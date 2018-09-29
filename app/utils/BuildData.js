@@ -1,8 +1,22 @@
 import fs from 'fs';
 import path from 'path';
+import _ from 'lodash';
 import CacheableDataObject from './CacheableDataObject';
+import Files from "./Files";
+import DolphinConfigurationUpdater from "./DolphinConfigurationUpdater";
 
 export default class Build extends CacheableDataObject {
+  static getSlippiBuilds(builds){
+	  let paths = new Set();
+	  _.each(builds, build => {
+		  if (build.getSlippiPath()) {
+			  paths.add(build);
+		  }
+	  });
+	  paths = Array.from(paths);
+	  return paths;
+  }
+
   beforeConstruct() {
     this.games = [];
   }
@@ -26,6 +40,10 @@ export default class Build extends CacheableDataObject {
     return this.path;
   }
 
+  executableDirectory() {
+    return this.path ? path.resolve(path.dirname(this.path)) : null;
+  }
+
   addLaunch() {
     if (this.launches === undefined) {
       this.launches = 0;
@@ -47,12 +65,41 @@ export default class Build extends CacheableDataObject {
     if (this._slippiPath !== undefined) {
       return this._slippiPath;
     }
-    const slippiPath = `${path.dirname(this.path)}/Slippi`;
+    const slippiPath = `${path.resolve(path.dirname(this.path))}/Slippi`;
     if (fs.existsSync(slippiPath)) {
       return (this._slippiPath = slippiPath);
     }
 
     return (this._slippiPath = null);
+  }
+
+  getMeleeSettingsIniLocation(){
+	  const iniSettingsLocation = Files.findInDirectory(this.executableDirectory(), 'GALE01.ini');
+	  if(!iniSettingsLocation.length)
+	  {
+		  return null;
+	  }
+	  return iniSettingsLocation[0];
+  }
+
+  setSlippiToPlayback() {
+	  const settings = this.getMeleeSettingsIniLocation();
+	  if(!settings)
+      {
+        return false;
+      }
+	  DolphinConfigurationUpdater.setSlippiToPlayback(settings);
+	  return true;
+  }
+
+  setSlippiToRecord() {
+	  const settings = this.getMeleeSettingsIniLocation();
+	  if(!settings)
+      {
+        return false;
+      }
+	  DolphinConfigurationUpdater.setSlippiToPlayback(settings);
+	  return true;
   }
 
   hasDownload() {

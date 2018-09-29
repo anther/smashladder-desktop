@@ -8,12 +8,12 @@ export default class DolphinLauncher {
 		this.child = null;
 	}
 
-	async launch(build){
+	async launch(build, parameters){
 		if(this.child)
 		{
 			// Recurse back and open again after closing the build
 			return this.close()
-				.then(() => this.launch(build));
+				.then(() => this.launch(build, parameters));
 		}
 		return DolphinChecker.dolphinIsRunning()
 			.then((isRunning) => {
@@ -23,7 +23,7 @@ export default class DolphinLauncher {
 					throw errorMessage;
 				}
 			})
-			.then(() => this.launchChild(build))
+			.then(() => this.launchChild(build, parameters))
 			.catch(error => {throw error});
 	}
 
@@ -42,18 +42,18 @@ export default class DolphinLauncher {
 		return true;
 	}
 
-	async launchChild(build: Build){
+	async launchChild(build: Build, parameters = []){
 		return new Promise((resolve, reject) => {
 			if(this.retrieveActiveDolphin())
 			{
-				console.log('has active alaredy');
+				console.log('has active already');
 				return resolve(this.child);
 			}
 			if(!build.executablePath())
 			{
 				throw new Error(`Attempted to launch ${build.name} but where is the file?!`);
 			}
-			const childReference = this.child = child.spawn(path.resolve(build.executablePath()), [], {
+			const childReference = this.child = child.spawn(path.resolve(build.executablePath()), parameters, {
 				cwd: path.resolve(path.dirname(build.executablePath()))
 			});
 

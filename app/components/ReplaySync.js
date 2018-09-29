@@ -15,6 +15,7 @@ import multitry from '../utils/multitry';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import Build from '../utils/BuildData';
+import Replay from "../utils/CacheableDataObject";
 
 export default class ReplaySync extends Component {
   static createBetterFileName(originalFile, { others = [] }) {
@@ -34,9 +35,7 @@ export default class ReplaySync extends Component {
     } else {
       usernameList = '';
     }
-    const fileName = `${hour}${Numbers.forceTwoDigits(
-      date.getMinutes()
-    )}${usernameList}.slp`;
+    const fileName = `${hour}${Numbers.forceTwoDigits(date.getMinutes())}${Numbers.forceTwoDigits(date.getSeconds())}${usernameList}.slp`;
     const newName = `${folder}/${fileName}`;
 
     Files.ensureDirectoryExists(folder, 0o755, error => {
@@ -51,16 +50,13 @@ export default class ReplaySync extends Component {
   }
 
   static loadGame(file) {
-    return multitry(500, 5, () => {
-      const data = {};
-      data.game = new SlippiGame(file);
-      data.settings = data.game.getSettings();
-      data.metadata = data.game.getMetadata();
-      data.stats = data.game.getStats();
-      if (!data.settings || data.settings.stageId === 0) {
+    return multitry(2000, 5, () => {
+      const game = Replay.retrieve({id: file});
+      console.log('attempting to read game');
+      if (!game.isReadable()) {
         throw new Error('Invalid data');
       }
-      return data;
+      return game;
     });
   }
 
@@ -126,18 +122,6 @@ export default class ReplaySync extends Component {
     }
   }
 
-  getWatchableSlippiPaths() {
-    const { builds } = this.props;
-    let paths = new Set();
-    _.each(builds, build => {
-      if (build.getSlippiPath()) {
-        paths.add(build.getSlippiPath());
-      }
-    });
-    paths = Array.from(paths);
-    return paths;
-  }
-
   startWatchingIfSettingsAreGood() {
     const { authentication, connectionEnabled } = this.props;
     const { checkForReplays } = this.state;
@@ -152,7 +136,8 @@ export default class ReplaySync extends Component {
       this.disableWatch();
       return;
     }
-    const paths = this.getWatchableSlippiPaths();
+    const paths = Build.getSlippiBuilds(this.props.builds)
+        .map((build)=>(build.getSlippiPath()));
 
     if (!_.isEqual(this.watchingPaths.sort(), paths.sort())) {
       this.watchingPaths = paths;
@@ -194,16 +179,16 @@ export default class ReplaySync extends Component {
           });
 
           const game = {
-            metadata: gameData.metadata,
-            stats: gameData.stats,
-            settings: gameData.settings
+            metadata: gameData.getMetadata(),
+            stats: gameData.getStats(),
+            settings: gameData.getSettings(),
           };
           const sendData = {
             game: JSON.stringify(game),
             source: 'slippiLauncher'
           };
 
-          console.log('sending', sendData);
+          console.log('sending', game);
           this.props.authentication
             .apiPost(endpoints.SUBMIT_REPLAY_RESULT, sendData)
             .then(response => {

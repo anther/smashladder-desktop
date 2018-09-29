@@ -202,7 +202,7 @@ export default class WebsocketComponent extends Component {
           connectionStable: true
         });
         this.connectionBackoff.reset();
-      }, 8000);
+      }, 2000);
       this.resetAlonenessTimer();
     };
 

@@ -10,6 +10,10 @@ export default class Numbers {
 		return `${(n * 100).toFixed(fractionalDigits)}%`;
 	}
 
+	static stringIsNumeric(string){
+		return /^\d+$/.test(string);
+	}
+
 	static forceTwoDigits(number){
 		return ((number + 1) < 10 ? '0' : '') + number;
 	}

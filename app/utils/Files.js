@@ -32,16 +32,18 @@ export default class Files {
 		return path.join(appPath, location);
 	}
 
-	static selectFile(defaultPath = ''){
+	static selectFile(defaultPath = '', title){
 		return Files._openDialogSelectOne({
 			defaultPath,
+			title,
 			properties: ['openFile']
 		});
 	}
 
-	static selectDirectory(defaultPath = ''){
+	static selectDirectory(defaultPath = '', title){
 		return Files._openDialogSelectOne({
 			defaultPath,
+			title,
 			properties: ['openDirectory']
 		});
 	}
@@ -91,7 +93,6 @@ export default class Files {
 			}
 			else if(filename.endsWith(filter))
 			{
-				console.log('-- found: ', filename);
 				results.push(filename);
 			}
 		}

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { shell } from 'electron';
 
 import { Redirect } from 'react-router'
 
@@ -27,13 +28,23 @@ export default class Login extends Component {
 		super(props);
 		this.onLadderCodeChange = this.ladderCodeChange.bind(this);
 		this.onLoginButtonClick = this.loginButtonClick.bind(this);
+		this.getLoginCodeButtonClick = this.loginCodeButtonClick.bind(this);
 	}
+
 
 	componentDidMount(){
 		if(this.props.loginCode)
 		{
 			this.props.setLoginKey(this.props.loginCode);
 		}
+	}
+
+	loginCodeButtonClick(){
+		const { productionUrls } = this.props;
+		const authentication = SmashLadderAuthentication.create({
+			productionUrls: productionUrls
+		});
+		shell.openExternal(authentication.fullEndpointUrl(endpoints.LOGIN));
 	}
 
 	ladderCodeChange(event){
@@ -46,18 +57,18 @@ export default class Login extends Component {
 
 
 	render(){
-		const { isLoggingIn, player, loginErrors, showLoginButton, productionUrls } = this.props;
+		const { isLoggingIn, player, loginErrors, showLoginButton } = this.props;
 		if(player)
 		{
 			return <Redirect to="/builds"/>
 		}
-		const authentication = SmashLadderAuthentication.create({
-			productionUrls: productionUrls
-		});
+
 		return (
 			<form className='login_form'>
 				{!player &&
 				<React.Fragment>
+					<Button onClick={this.getLoginCodeButtonClick} className='btn-large green accent-4'>Retrieve A Login
+						Code!</Button>
 					<div className="input-field">
 						<input
 							placeholder='Paste Login Code Here'
@@ -70,10 +81,6 @@ export default class Login extends Component {
 						<Button onClick={this.onLoginButtonClick} className='login_button'>Try Again</Button>
 						}
 					</div>
-					<a className='retrieve_code'
-					   href={authentication.fullEndpointUrl(endpoints.LOGIN)}
-					   rel='noopener noreferrer'
-					   target='_blank'>Retrieve A Login Code</a>
 				</React.Fragment>
 				}
 

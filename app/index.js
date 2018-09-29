@@ -6,7 +6,12 @@ import { configureStore, history } from './store/configureStore';
 import './app.global.scss';
 import 'materialize-css/dist/js/materialize';
 
+import electronSettings from "electron-settings";
 const store = configureStore();
+
+console.log('settiongs', electronSettings.getAll());
+
+
 
 render(
   <AppContainer>

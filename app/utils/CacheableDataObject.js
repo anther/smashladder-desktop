@@ -22,6 +22,11 @@ export default class CacheableDataObject {
 		return this.newInstance().update(data);
 	}
 
+	static clearCache(){
+		const className = this.name;
+		CacheableDataObject.cache[className] = {};
+	}
+
 	update(data){
 		if(this.beforeUpdate(data) === false)
 		{
