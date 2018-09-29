@@ -17,7 +17,6 @@ const loginDatas = electronSettings.get('login', {
 	productionUrls: true
 });
 
-console.log('login settings', loginDatas);
 const initialState = {
 	loginErrors: [],
 	player: loginDatas.player,

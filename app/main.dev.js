@@ -10,10 +10,37 @@
  *
  * @flow
  */
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, shell, ipcMain} from 'electron';
+import { autoUpdater } from 'electron-updater';
 import MenuBuilder from './menu';
 
 let mainWindow = null;
+
+autoUpdater.autoDownload = false;
+ipcMain.on('autoUpdate-start', () => {
+	autoUpdater.downloadUpdate();
+});
+ipcMain.on('autoUpdate-initialize', (event) => {
+	autoUpdater.on('error', (error) => {
+	  event.sender.send('autoUpdate-error', error);
+	});
+
+	autoUpdater.on('update-available', () => {
+		event.sender.send('autoUpdate-update-available');
+	});
+
+	autoUpdater.on('update-not-available', () => {
+		event.sender.send('autoUpdate-update-not-available');
+	});
+
+	autoUpdater.on('update-downloaded', () => {
+		event.sender.send('autoUpdate-update-downloaded');
+		setImmediate(() => autoUpdater.quitAndInstall())
+	});
+
+	autoUpdater.checkForUpdates();
+});
+
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

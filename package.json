@@ -16,7 +16,7 @@
     "lint-fix": "yarn --silent lint --fix; exit 0",
     "lint-styles": "stylelint --ignore-path .eslintignore '**/*.*(css|scss)' --syntax scss",
     "lint-styles-fix": "yarn --silent lint-styles --fix; exit 0",
-    "package": "yarn build && electron-builder build --publish never",
+    "package": "yarn build && electron-builder build --publish onTag",
     "package-all": "yarn build && electron-builder build -mwl",
     "package-linux": "yarn build && electron-builder build --linux",
     "package-win": "yarn build && electron-builder build --win --x64",
@@ -24,6 +24,7 @@
     "postlint-fix": "prettier --ignore-path .eslintignore --single-quote --write '**/*.js'",
     "precommit": "lint-staged",
     "prestart": "yarn build",
+    "release": "build",
     "start": "cross-env NODE_ENV=production electron ./app/",
     "start-main-dev": "cross-env HOT=1 NODE_ENV=development electron -r babel-register ./app/main.dev.js",
     "start-renderer-dev": "cross-env NODE_ENV=development node --trace-warnings -r babel-register ./node_modules/webpack-dev-server/bin/webpack-dev-server --config webpack.config.renderer.dev.js",
@@ -45,8 +46,8 @@
     ]
   },
   "build": {
-    "productName": "SmashLadderDesktop",
-    "appId": "org.anther.SmashLadderDesktop",
+    "productName": "SmashLadder Desktop (Dolphin Launcher)",
+    "appId": "org.anther.smashladderdesktop",
     "asarUnpack": [
       "**/dolphin_downloads/**/*",
       "**/external/**/*"
@@ -76,6 +77,9 @@
       ]
     },
     "win": {
+      "publish": [
+        "github"
+      ],
       "target": [
         "nsis"
       ]
@@ -94,27 +98,29 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chentsulin/electron-react-boilerplate.git"
+    "url": "git+https://github.com/anther/smashladder-desktop.git",
+    "provider": "github",
+    "owner": "Anther Sledge"
   },
   "author": {
-    "name": "C. T. Lin",
-    "email": "chentsulin@gmail.com",
-    "url": "https://github.com/chentsulin"
+    "name": "Antoine Sledge",
+    "email": "anthrzy@gmail.com",
+    "url": "https://github.com/anther"
   },
   "license": "GPLv3",
   "bugs": {
-    "url": "https://github.com/chentsulin/electron-react-boilerplate/issues"
+    "url": "https://github.com/anther/smashladder-desktop/issues"
   },
   "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "redux",
-    "flow",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
+    "smashladder",
+    "melee",
+    "dolphin",
+    "launcher",
+    "replays",
+    "slippi",
+    "download",
+    "project m",
+    "super smash brothers"
   ],
   "homepage": "https://github.com/chentsulin/electron-react-boilerplate#readme",
   "jest": {

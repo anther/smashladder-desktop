@@ -16,10 +16,12 @@ export default class DolphinSettings extends Component {
 		updateAllowDolphinAnalytics: PropTypes.func.isRequired,
 		settingMeleeIsoPath: PropTypes.bool.isRequired,
 		requestMeleeIsoPath: PropTypes.func.isRequired,
+		meleeIsoPath: PropTypes.string,
 	};
 
 	static defaultProps = {
-		searchRomSubdirectories: null
+		searchRomSubdirectories: null,
+		meleeIsoPath: null,
 	};
 
 	constructor(props){
@@ -66,6 +68,10 @@ export default class DolphinSettings extends Component {
 			});
 	}
 
+	getRomPathsButtonText(){
+		return 'Add Rom Path';
+	}
+
 	render(){
 		const { romPaths, settingMeleeIsoPath, meleeIsoPath } = this.props;
 		const { selectingDirectory } = this.state;
@@ -76,15 +82,6 @@ export default class DolphinSettings extends Component {
 				<h6>Roms</h6>
 				<div className="input-field">
 					<Button
-						className={`btn-small ${romPaths.length > 0 ? 'set' : 'not_set'}`}
-						disabled={selectingDirectory}
-						onClick={this.onClickUpdateRomPath}
-					>
-						Add Rom Path
-					</Button>
-				</div>
-				<div className="input-field">
-					<Button
 	                    className={`btn-small ${meleeIsoPath ? 'set' : 'not_set'}`}
 						disabled={settingMeleeIsoPath}
 						onClick={this.onClickUpdateMeleeIsoPath}
@@ -92,20 +89,29 @@ export default class DolphinSettings extends Component {
 						Set Melee ISO Path
 					</Button>
 				</div>
-				<div className="rom_paths">
-					{_.map(romPaths, romPath => (
-						<div key={romPath} className="rom_path">
-							<div className="options">
-								<Button
-									onClick={this.props.removeRomPath.bind(this, romPath)}
-									className="btn-small"
-								>
-									X
-								</Button>
+				<div className="input-field">
+					<Button
+						className={`btn-small ${romPaths.length > 0 ? 'not_set' : 'set'}`}
+						disabled={selectingDirectory}
+						onClick={this.onClickUpdateRomPath}
+					>
+						{this.getRomPathsButtonText()}
+					</Button>
+					<div className="rom_paths">
+						{_.map(romPaths, romPath => (
+							<div key={romPath} className="rom_path">
+								<div className="options">
+									<Button
+										onClick={this.props.removeRomPath.bind(this, romPath)}
+										className="btn-small"
+									>
+										X
+									</Button>
+								</div>
+								<span className="path">{romPath}</span>
 							</div>
-							<span className="path">{romPath}</span>
-						</div>
-					))}
+						))}
+					</div>
 				</div>
 				<div className="search_subdirectories">
 					<label>

@@ -6,6 +6,7 @@ import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import * as ReplayActions  from '../actions/replays';
 import * as DolphinSettingsActions from '../actions/dolphinSettings';
+import * as AutoUpdateActions from '../actions/autoUpdates';
 import {
 	disableConnection,
 	enableConnection,
@@ -20,6 +21,7 @@ import { SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
 import Header from '../components/common/Header';
 import Layout from '../components/common/Layout';
 import ReplayBrowser from "../components/ReplayBrowser";
+import AutoUpdates from "../components/AutoUpdates";
 
 class BuildsPage extends Component<Props> {
 	constructor(props){
@@ -28,6 +30,7 @@ class BuildsPage extends Component<Props> {
 			loginCode: null,
 			productionUrls: null
 		};
+
 	}
 
 	static getDerivedStateFromProps(props, state){
@@ -76,6 +79,11 @@ class BuildsPage extends Component<Props> {
 						{...props}
 					/>
 				</div>
+				<div className='container'>
+					<AutoUpdates
+						{...props}
+						/>
+				</div>
 			</React.Fragment>
 		);
 	}
@@ -86,6 +94,7 @@ const mapStateToProps = state => ({
 	...state.builds,
 	...state.dolphinSettings,
 	...state.replays,
+	...state.autoUpdates,
 });
 
 function mapDispatchToProps(dispatch){
@@ -94,6 +103,7 @@ function mapDispatchToProps(dispatch){
 			...BuildActions,
 			...DolphinSettingsActions,
 			...ReplayActions,
+			...AutoUpdateActions,
 			logout,
 			enableConnection,
 			enableDevelopmentUrls,

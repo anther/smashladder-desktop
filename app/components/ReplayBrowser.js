@@ -73,9 +73,6 @@ export default class ReplayBrowser extends Component {
 		const { replays, slippiPath, slippiBuild, replayPageNumber, totalReplays } = this.state;
 		const { launchReplay, launchReplayError, builds, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 
-		console.log(replayPageNumber, totalReplays);
-
-		console.log('launched', launchedReplay);
 		return (
 			<div className='replay_browser'>
 				{replays.length > 0 &&
