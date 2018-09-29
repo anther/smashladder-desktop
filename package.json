@@ -46,10 +46,10 @@
     ]
   },
   "build": {
-    "productName": "SmashLadder Desktop (Dolphin Launcher)",
+    "productName": "SmashLadder Dolphin Launcher",
     "appId": "org.anther.smashladderdesktop",
     "asarUnpack": [
-      "**/dolphin_downloads/**/*",
+      "**/dolphin_downloads/hi.txt",
       "**/external/**/*"
     ],
     "files": [
@@ -107,7 +107,7 @@
     "email": "anthrzy@gmail.com",
     "url": "https://github.com/anther"
   },
-  "license": "GPLv3",
+  "license": "",
   "bugs": {
     "url": "https://github.com/anther/smashladder-desktop/issues"
   },
@@ -122,7 +122,7 @@
     "project m",
     "super smash brothers"
   ],
-  "homepage": "https://github.com/chentsulin/electron-react-boilerplate#readme",
+  "homepage": "https://www.smashladder.com/blogs/view/27dt/2018-09-29/replays-are-coming-to-smashladder",
   "jest": {
     "testURL": "http://localhost/",
     "moduleNameMapper": {
