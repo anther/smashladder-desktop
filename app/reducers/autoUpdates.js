@@ -10,7 +10,7 @@ const initialState = {
 	checkingForUpdates: false,
 	updateAvailable: null,
 	downloadingUpdate: false,
-	updateDownloaded: false,
+	updatwnloaded: false,
 };
 
 export default (state = initialState, action) => {
@@ -20,6 +20,7 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				checkingForUpdates: true,
+				autoUpdateError: null,
 			};
 		case CHECK_FOR_UPDATES_FAIL:
 			return {

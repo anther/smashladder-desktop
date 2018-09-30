@@ -78,7 +78,7 @@ export default class BuildComponent extends Component {
       settingBuildPath: true
     });
 
-    return Files.selectFile(build.executableDirectory())
+    return Files.selectFile(build.executableDirectory(), 'Select your Dolphin Executable')
       .then(selectedPath => {
         if (selectedPath) {
           this.props.setBuildPath(build, selectedPath);

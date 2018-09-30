@@ -53,7 +53,7 @@ export default class DolphinSettings extends Component {
 		this.setState({
 			selectingDirectory: true
 		});
-		Files.selectDirectory()
+		Files.selectDirectory('', 'Select a Rom Folder')
 			.then(selectedPath => {
 				this.setState({
 					selectingDirectory: false

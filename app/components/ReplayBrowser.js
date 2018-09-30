@@ -94,8 +94,8 @@ export default class ReplayBrowser extends Component {
 					</ul>
 					<ul className='collection'>
 						{replays.map((replay) => (
-							<li className='collection-item'>
-								<ReplayComponent key={replay}
+							<li key={replay.id} className='collection-item replay'>
+								<ReplayComponent
 								                 builds={builds}
 								                 slippiPath={slippiPath}
 								                 slippiBuild={slippiBuild}
@@ -157,20 +157,20 @@ class ReplayComponent extends Component {
 	render(){
 		const { replay, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 		return (
-			<div className='replay'>
+			<React.Fragment>
 				<div>
 					{replay.getFileDate() ? replay.getFileDate().calendar() : ''} {replay.getName()}
-					<div className='secondary-content'>
-						<Button
-
-							disabled={settingMeleeIsoPath || launchingReplay}
-							onClick={this.onReplayViewClick}
-							className={meleeIsoPath ? 'set no_check' : 'not_set'}>
-							{this.getReplayDisplayString()}
-						</Button>
-					</div>
 				</div>
-			</div>
+				<div className='secondary-content'>
+					<Button
+
+						disabled={settingMeleeIsoPath || launchingReplay}
+						onClick={this.onReplayViewClick}
+						className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
+						{this.getReplayDisplayString()}
+					</Button>
+				</div>
+			</React.Fragment>
 		);
 	}
 }

@@ -277,6 +277,17 @@ h6 {
   }
 }
 
+.replay_browser{
+  .collection-item{
+    display :flex;
+
+    .secondary-content{
+      flex: 1;
+      text-align: right;
+    }
+  }
+}
+
 .replays {
   margin-top: 10px;
   display: flex;
