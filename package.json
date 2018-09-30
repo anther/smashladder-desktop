@@ -50,8 +50,7 @@
     "appId": "org.anther.smashladderdesktop",
     "asarUnpack": [
       "**/dolphin_downloads/hi.txt",
-      "**/external/**/*",
-      "app/images/**/*"
+      "**/external/**/*"
     ],
     "files": [
       "dist/",
