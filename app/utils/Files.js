@@ -1,6 +1,6 @@
 import fs from "fs";
 // eslint-disable-next-line no-unused-vars
-import hazardous from 'hazardous';// This rewrites path for app.asar && needs to be before Path declaration
+import 'hazardous';// This rewrites path for app.asar && needs to be before Path declaration
 import path from "path";
 
 import sanitize from "sanitize-filename";
@@ -29,7 +29,7 @@ export default class Files {
 		{
 			appPath = './app';
 		}
-		return path.join(appPath, location);
+		return path.resolve(path.join(appPath, location));
 	}
 
 	static selectFile(defaultPath = '', title){

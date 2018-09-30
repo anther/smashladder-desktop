@@ -3,6 +3,7 @@ import Button from "./elements/Button";
 
 export default class AutoUpdates extends Component{
 	render(){
+		return null;
 		return (
 			<div className='auto_updates'>
 				{!this.props.checkingForUpdates && this.props.updateAvailable === null &&

@@ -16,7 +16,7 @@
     "lint-fix": "yarn --silent lint --fix; exit 0",
     "lint-styles": "stylelint --ignore-path .eslintignore '**/*.*(css|scss)' --syntax scss",
     "lint-styles-fix": "yarn --silent lint-styles --fix; exit 0",
-    "package": "yarn build && electron-builder build --publish always",
+    "package": "yarn build && electron-builder build --publish onTag",
     "package-all": "yarn build && electron-builder build -mwl",
     "package-linux": "yarn build && electron-builder build --linux",
     "package-win": "yarn build && electron-builder build --win --x64",
@@ -50,7 +50,8 @@
     "appId": "org.anther.smashladderdesktop",
     "asarUnpack": [
       "**/dolphin_downloads/hi.txt",
-      "**/external/**/*"
+      "**/external/**/*",
+      "app/images/**/*"
     ],
     "files": [
       "dist/",
@@ -225,6 +226,7 @@
     "electron-debug": "^2.0.0",
     "electron-settings": "^3.2.0",
     "electron-updater": "^3.1.2",
+    "fs-extra": "^7.0.0",
     "hazardous": "^0.3.0",
     "history": "^4.7.2",
     "ini": "^1.3.5",

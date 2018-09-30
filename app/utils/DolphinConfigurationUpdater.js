@@ -67,6 +67,12 @@ export default class DolphinConfigurationUpdater {
 		);
 	}
 
+	saveGeckoCodeConfiguration(config){
+		let stringified = ini.stringify(config, { whitespace: true });
+		stringified = DolphinConfigurationUpdater.eraseAll(stringified, ' = true');
+		this.saveFile(stringified);
+	}
+
 	static setSlippiToPlayback(configPath){
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
@@ -76,12 +82,6 @@ export default class DolphinConfigurationUpdater {
 			config['Gecko_Enabled']['$Slippi Playback'] = true;
 			updater.saveGeckoCodeConfiguration(config);
 		}
-	}
-
-	saveGeckoCodeConfiguration(config){
-		let stringified = ini.stringify(config, { whitespace: true });
-		stringified = DolphinConfigurationUpdater.eraseAll(stringified, ' = true');
-		this.saveFile(stringified);
 	}
 
 	static setSlippiToRecord(configPath){
@@ -163,10 +163,10 @@ export default class DolphinConfigurationUpdater {
 	}
 
 	static async updateInitialSettings(
-		buildPath,
+		build,
 		{ romPaths, searchRomSubdirectories, allowDolphinAnalytics }
 	){
-		const updater = new DolphinConfigurationUpdater(buildPath);
+		const updater = new DolphinConfigurationUpdater(build.executablePath());
 		const config = updater.loadMainSettingsConfiguration();
 		if(!config.General)
 		{

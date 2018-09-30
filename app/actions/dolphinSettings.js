@@ -3,6 +3,11 @@ import Files from "../utils/Files";
 
 export const ADD_ROM_PATH = 'ADD_ROM_PATH';
 export const REMOVE_ROM_PATH = 'REMOVE_ROM_PATH';
+
+export const SELECT_ROM_PATH_BEGIN = 'SELECT_ROM_PATH_BEGIN';
+export const SELECT_ROM_PATH_SUCCESS = 'SELECT_ROM_PATH_SUCCESS';
+export const SELECT_ROM_PATH_FAIL = 'SELECT_ROM_PATH_FAIL';
+
 export const UPDATE_SEARCH_SUBDIRECTORIES = 'UPDATE_SEARCH_SUBDIRECTORIES';
 export const UPDATE_ALLOW_DOLPHIN_ANALYTICS = 'UPDATE_ALLOW_DOLPHIN_ANALYTICS';
 export const UPDATE_MELEE_ISO_PATH = 'UPDATE_MELEE_ISO_PATH';
@@ -25,6 +30,32 @@ export const addRomPath = path => (dispatch, getState) => {
     }
   });
 };
+
+export const beginSelectingNewRomPath = (title) => (dispatch, getState) => {
+	const state = getState();
+	if(state.dolphinSettings.selectingRomPath)
+	{
+		console.error('already selecting a rom path...');
+		return;
+	}
+	dispatch({
+		type: SELECT_ROM_PATH_BEGIN
+	});
+	Files.selectDirectory('', title || 'Select a Rom Folder')
+		.then(selectedPath => {
+			dispatch({
+				type: SELECT_ROM_PATH_SUCCESS
+			});
+			dispatch(addRomPath(selectedPath))
+		})
+		.catch(error => {
+			dispatch({
+				type: SELECT_ROM_PATH_FAIL
+			});
+			console.error(error);
+		});
+};
+
 export const removeRomPath = path => (dispatch, getState) => {
   const state = getState();
   const paths = state.dolphinSettings.romPaths;

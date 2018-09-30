@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
 import Pagination from 'react-js-pagination';
 import _ from 'lodash';
+import { shell } from 'electron';
 import Build from "../utils/BuildData";
 import Files from "../utils/Files";
 import Button from "./elements/Button";
 import Replay from "../utils/Replay";
+import Constants from "../utils/Constants";
 
 
 export default class ReplayBrowser extends Component {
@@ -18,6 +20,7 @@ export default class ReplayBrowser extends Component {
 			slippiPath: null,
 			replayPageNumber: 1,
 			totalReplays: 0,
+			replaysPerPage: 7,
 		};
 
 		this.onPageChange = this.handlePageChange.bind(this);
@@ -26,7 +29,7 @@ export default class ReplayBrowser extends Component {
 
 	static getDerivedStateFromProps(props, state){
 		const paths = Build.getSlippiBuilds(props.builds);
-		const replaysPerPage = 10;
+		const replaysPerPage = state.replaysPerPage;
 		let replays = new Set();
 		let aSlippiPath = null;
 		let aSlippiBuild = null;
@@ -34,7 +37,7 @@ export default class ReplayBrowser extends Component {
 			const slippiPath = build.getSlippiPath();
 			const files = Files.findInDirectory(slippiPath, '.slp');
 			files.forEach((file) => {
-				if(file.endsWith('CurrentGame.slp'))
+				if(file.endsWith(Constants.SLIPPI_REPLAY_FILE_NAME))
 				{
 					return;
 				}
@@ -49,7 +52,7 @@ export default class ReplayBrowser extends Component {
 		});
 		const totalReplays = replays.length;
 
-		replays = replays.slice((state.replayPageNumber - 1) * replaysPerPage, (state.replayPageNumber) * 10);
+		replays = replays.slice((state.replayPageNumber - 1) * replaysPerPage, (state.replayPageNumber) * replaysPerPage);
 
 		if(!_.isEqual(replays, state.replays))
 		{
@@ -70,12 +73,12 @@ export default class ReplayBrowser extends Component {
 	}
 
 	render(){
-		const { replays, slippiPath, slippiBuild, replayPageNumber, totalReplays } = this.state;
+		const { replays, slippiPath, slippiBuild, replayPageNumber, totalReplays, replaysPerPage } = this.state;
 		const { launchReplay, launchReplayError, builds, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 
 		return (
 			<div className='replay_browser'>
-				{replays.length > 0 &&
+				{totalReplays > 0 &&
 				<React.Fragment>
 					<h4>Latest Replays</h4>
 					{launchReplayError &&
@@ -86,7 +89,7 @@ export default class ReplayBrowser extends Component {
 					<ul className='pagination'>
 						<Pagination
 							activePage={replayPageNumber}
-							itemsCountPerPage={10}
+							itemsCountPerPage={replaysPerPage}
 							totalItemsCount={totalReplays}
 							pageRangeDisplayed={5}
 							onChange={this.onPageChange}
@@ -122,6 +125,11 @@ class ReplayComponent extends Component {
 	constructor(props){
 		super(props);
 		this.onReplayViewClick = this.replayViewClick.bind(this);
+		this.onOpenInExplorer = this.openInExplorer.bind(this);
+	}
+
+	openInExplorer(){
+		shell.showItemInFolder(this.props.replay.filePath);
 	}
 
 	replayViewClick(){
@@ -146,7 +154,7 @@ class ReplayComponent extends Component {
 		}
 		else if(replay.id === launchedReplay)
 		{
-			return 'Launched?';
+			return 'Restart?';
 		}
 		else
 		{
@@ -154,14 +162,33 @@ class ReplayComponent extends Component {
 		}
 	}
 
+
+
 	render(){
 		const { replay, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 		return (
 			<React.Fragment>
-				<div>
-					{replay.getFileDate() ? replay.getFileDate().calendar() : ''} {replay.getName()}
+				<div className='main_content'>
+					<div className='game_data'>
+						<div className='match_time'>
+							{replay.getMatchTime()}
+						</div>
+						<div className='characters'>
+							{replay.getCharacters().map( (character, index) => (
+								<div key={`${character.name}${index}`} className='character'>
+									<img alt={character.name} src={character.getStockIcon()} />
+								</div>
+							))}
+						</div>
+					</div>
+					<div className='file_data'>
+						{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
+					</div>
+					<a onClick={this.onOpenInExplorer} className='file_name'>
+						{replay.getFileName()}
+					</a>
 				</div>
-				<div className='secondary-content'>
+				<div className='secondary-content action_buttons'>
 					<Button
 
 						disabled={settingMeleeIsoPath || launchingReplay}
@@ -169,6 +196,11 @@ class ReplayComponent extends Component {
 						className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
 						{this.getReplayDisplayString()}
 					</Button>
+					{false && replay.id === launchedReplay &&
+						<Button className='error_button'>
+							Delete Replay
+						</Button>
+					}
 				</div>
 			</React.Fragment>
 		);

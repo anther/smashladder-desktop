@@ -52,6 +52,7 @@ export const initializeAutoUpdater = () => dispatch => {
       dispatch({
         type: CHECK_FOR_UPDATES_FOUND_UPDATE
       });
+      dispatch(startAutoUpdate());
     },
     'autoUpdate-update-not-available': () => {
       console.log('An update is not available');

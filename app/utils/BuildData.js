@@ -98,7 +98,7 @@ export default class Build extends CacheableDataObject {
       {
         return false;
       }
-	  DolphinConfigurationUpdater.setSlippiToPlayback(settings);
+	  DolphinConfigurationUpdater.setSlippiToRecord(settings);
 	  return true;
   }
 

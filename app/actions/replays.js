@@ -1,8 +1,9 @@
+import fse from 'fs-extra';
+import path from 'path';
 import DolphinLauncher from "../utils/BuildLauncher";
 import { requestMeleeIsoPath } from "./dolphinSettings";
+import Constants from "../utils/Constants";
 
-const fs = require('fs');
-const path = require('path');
 const buildLauncher = new DolphinLauncher();
 
 export const CHECK_FOR_REPLAYS = 'CHECK_FOR_REPLAYS';
@@ -28,7 +29,7 @@ const replayLaunchFail = (error)=>{
 		}
 	};
 };
-export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch) => {
+export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch, getState) => {
 	const replayStatusPayload = {
 		build,
 		replayPath,
@@ -57,8 +58,7 @@ export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch) =>
 	const platform = process.platform;
 
 	let commands;
-	let command;
-	let destinationFile = path.join(slippiReplayDirectory, 'CurrentGame.slp');
+	let destinationFile = path.join(slippiReplayDirectory, Constants.SLIPPI_REPLAY_FILE_NAME);
 	const dolphinLaunchParameters = [];
 
 	switch(platform)
@@ -72,66 +72,70 @@ export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch) =>
 				`cd "${dolphinPath}"`,
 				`open "Dolphin.app" --args -b -e "${meleeIsoPath}"`,
 			];
-
-			// Join the commands with && which will execute the commands in sequence
-			command = commands.join(' && ');
 			break;
 		case "win32": // windows
-			// 1) Copy file to the playback dolphin build with the name CurrentGame.slp
-			// 2) Navigate to dolphin build path
-			// 3) Run dolphin with parameters to launch melee directly
-			commands = [
-				`copy "${replayPath}" "${destinationFile}"`,
-				`cd "${dolphinPath}"`,
-				`Dolphin.exe /b /e "${meleeIsoPath}"`,
-			];
 			dolphinLaunchParameters.push('/b');
 			dolphinLaunchParameters.push(`/e`);
 			dolphinLaunchParameters.push(`${meleeIsoPath}`);
-
-			// Join the commands with && which will execute the commands in sequence
-			command = commands.join(' && ');
 			break;
 		default:
 			return replayLaunchFail("The current platform is not supported");
 	}
 
-	fs.copyFile(replayPath, destinationFile, (error) => {
-		if(error)
-		{
-			return replayLaunchFail(`Error copying replay file: ${error.message}`);
-		}
-		if(!build.setSlippiToPlayback())
-		{
-			return dispatch(replayLaunchFail('Could not find a settings file to enable Slippi Replay Playback'));
-		}
+	buildLauncher.close()
+		.catch(error=>{
+			dispatch(replayLaunchFail(error));
+			throw error;
+		})
+		.then(()=>{
+			console.log('unlink done');
+			return fse.copyFile(replayPath, destinationFile);
+		})
+		.catch(error=>{
+			return dispatch(replayLaunchFail(`Error copying replay file: ${error.message}`));
+		})
+		.then(()=>{
+			console.log('change slippi to playback');
+			if(!build.setSlippiToPlayback())
+			{
+				return dispatch(replayLaunchFail('Could not find a settings file to enable Slippi Replay Playback'));
+			}
 
-		const cleanupDolphin = () =>{
-			build.setSlippiToRecord();
-			fs.unlink(destinationFile, (replayUnlinkError) => {
-				if(replayUnlinkError)
-				{
-					console.error(error);
-				}
-			});
-		};
-		buildLauncher.launch(build, dolphinLaunchParameters)
-			.then((dolphinProcess) => {
-				dispatch({
-					type: LAUNCH_REPLAY_SUCCESS,
-					payload: replayStatusPayload
+			const cleanupDolphin = () =>{
+				build.setSlippiToRecord();
+				fse.unlink(destinationFile, (replayUnlinkError) => {
+					if(replayUnlinkError)
+					{
+						console.error(replayUnlinkError);
+					}
 				});
-				dolphinProcess.on('close', () => {
-					cleanupDolphin();
+			};
+			console.log('launching build');
+			buildLauncher.launch(build, dolphinLaunchParameters)
+				.then((dolphinProcess) => {
 					dispatch({
-						type: LAUNCH_REPLAY_END,
-						payload: replayStatusPayload,
+						type: LAUNCH_REPLAY_SUCCESS,
+						payload: replayStatusPayload
 					});
+					dolphinProcess.on('close', () => {
+						const state = getState();
+						// This is to prevent a cleanup happening concurrently with another build launching
+						if(!state.replays.launchingReplay)
+						{
+							cleanupDolphin();
+							dispatch({
+								type: LAUNCH_REPLAY_END,
+								payload: replayStatusPayload,
+							});
+						}
+					})
 				})
-			})
-			.catch(launchErrors => {
-				cleanupDolphin();
-				replayLaunchFail(launchErrors);
-			})
-	});
+				.catch(launchErrors => {
+					cleanupDolphin();
+					dispatch(replayLaunchFail(launchErrors));
+				})
+		})
+		.catch((error)=>{
+			console.error(error);
+		});
 };

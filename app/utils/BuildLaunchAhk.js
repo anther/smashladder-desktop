@@ -8,6 +8,7 @@ import DolphinActions from './DolphinActions';
 import BuildLauncher from './BuildLauncher';
 import Build from './BuildData';
 import Files from './Files';
+import DolphinConfigurationUpdater from "./DolphinConfigurationUpdater";
 
 export default class BuildLaunchAhk extends EventEmitter {
 	constructor(){
@@ -154,6 +155,7 @@ export default class BuildLaunchAhk extends EventEmitter {
 	async startBuild(build, parameters, successMessages, failMessages){
 		let theActiveProcess = null;
 		console.log('beginning basic launch process');
+
 		return this.activeProcess.murder()
 			.then(() => {
 				return this.buildLauncher.launch(build);

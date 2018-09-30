@@ -1,11 +1,14 @@
 import StringManipulator from '../StringManipulator';
+import Files from "../Files";
 
 export default class MeleeCharacter {
-	static retrieve(id){
+	static retrieve(id, color){
 		const name = MeleeCharacter.characters[id];
 		if(name)
 		{
-			return MeleeCharacter.retrieveByName(name);
+			const character =  MeleeCharacter.retrieveByName(name, color);
+			character.color = color;
+			return character;
 		}
 		throw new Error(`not found ${id}`);
 	}
@@ -19,33 +22,37 @@ export default class MeleeCharacter {
 		throw new Error(`not found ${id}`);
 	}
 
-	static retrieveByName(name){
-		let found = null;
-		if(MeleeCharacter.cached[name])
+	static retrieveByName(name, color){
+		if(!MeleeCharacter.cache[name])
 		{
-			found = MeleeCharacter.cached[name];
-			return found;
+			MeleeCharacter.cache[name] = {};
 		}
-		found = MeleeCharacter.cached[name] = new MeleeCharacter(name);
-		return MeleeCharacter.cached[name];
+		if(!MeleeCharacter.cache[name][color])
+		{
+			MeleeCharacter.cache[name][color] = new MeleeCharacter(name);
+		}
+		return MeleeCharacter.cache[name][color];
 	}
 
-	stockIcon(number){
-		if(!number)
+	getStockIcon(){
+		if(this.stockIconPath)
 		{
-			number = 0;
+			return this.stockIconPath;
 		}
-		return `./images/characters/melee/stocks/${StringManipulator.slugify(this.name.toLowerCase())}/${number}.png`;
+		return this.stockIconPath = Files.createApplicationPath(
+			`./images/characters/melee/stocks/${StringManipulator.slugify(this.name.toLowerCase())}/${this.color}.png`
+		);
 	}
 
 	constructor(name){
 		this.name = name;
-		this.url = `./images/characters/melee/${StringManipulator.slugify(this.name)}.png`;
 	}
 
 }
 
-MeleeCharacter.cached = {};
+MeleeCharacter.cache ={
+
+};
 
 MeleeCharacter.characters = {
 	0: "Captain Falcon",

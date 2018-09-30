@@ -11,7 +11,9 @@ export default class DolphinSettings extends Component {
 		addRomPath: PropTypes.func.isRequired,
 		removeRomPath: PropTypes.func.isRequired,
 		romPaths: PropTypes.objectOf(PropTypes.string).isRequired,
+		selectingRomPath: PropTypes.bool.isRequired,
 		allowDolphinAnalytics: PropTypes.bool.isRequired,
+		beginSelectingNewRomPath: PropTypes.func.isRequired,
 		updateSearchRomSubdirectories: PropTypes.func.isRequired,
 		updateAllowDolphinAnalytics: PropTypes.func.isRequired,
 		settingMeleeIsoPath: PropTypes.bool.isRequired,
@@ -26,13 +28,11 @@ export default class DolphinSettings extends Component {
 
 	constructor(props){
 		super(props);
-		this.onClickUpdateRomPath = this.updateRomPathClick.bind(this);
 		this.onClickUpdateMeleeIsoPath = this.clickUpdateMeleeIsoPath.bind(this);
 		this.onUpdateSearchSubdirectories = this.updateSearchSubdirectoriesChange.bind(this);
 		this.onUpdateAllowDolphinAnalytics = this.updateAllowDolphinAnalytics.bind(this);
 
 		this.state = {
-			selectingDirectory: false,
 			settingMeleeIsoPath: false,
 		};
 	}
@@ -49,32 +49,12 @@ export default class DolphinSettings extends Component {
 		this.props.requestMeleeIsoPath();
 	}
 
-	updateRomPathClick(){
-		this.setState({
-			selectingDirectory: true
-		});
-		Files.selectDirectory('', 'Select a Rom Folder')
-			.then(selectedPath => {
-				this.setState({
-					selectingDirectory: false
-				});
-				this.props.addRomPath(selectedPath);
-			})
-			.catch(error => {
-				this.setState({
-					selectingDirectory: false
-				});
-				console.error(error);
-			});
-	}
-
 	getRomPathsButtonText(){
 		return 'Add Rom Path';
 	}
 
 	render(){
-		const { romPaths, settingMeleeIsoPath, meleeIsoPath } = this.props;
-		const { selectingDirectory } = this.state;
+		const { romPaths, settingMeleeIsoPath, meleeIsoPath, selectingRomPath, beginSelectingNewRomPath } = this.props;
 
 		return (
 			<div className="file_paths">
@@ -92,8 +72,8 @@ export default class DolphinSettings extends Component {
 				<div className="input-field">
 					<Button
 						className={`btn-small ${romPaths.length > 0 ? 'not_set' : 'set'}`}
-						disabled={selectingDirectory}
-						onClick={this.onClickUpdateRomPath}
+						disabled={selectingRomPath}
+						onClick={beginSelectingNewRomPath}
 					>
 						{this.getRomPathsButtonText()}
 					</Button>

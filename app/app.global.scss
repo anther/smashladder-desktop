@@ -36,7 +36,7 @@ a {
   }
   &.set {
     @extend .green, .lighten-2;
-    &.no_check:after{
+    &.no_check:after {
       content: '';
     }
     &:after {
@@ -277,11 +277,39 @@ h6 {
   }
 }
 
-.replay_browser{
-  .collection-item{
-    display :flex;
+.replay_browser {
+  .main_content {
+    min-width: 40%;
 
-    .secondary-content{
+    .game_data {
+      display: flex;
+      flex-direction: row;
+      .match_time {
+      }
+    }
+    .characters {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      flex: 1;
+      justify-content: flex-end;
+
+      .character {
+        margin: 0 -4px;
+        padding: 0 8px;
+      }
+    }
+  }
+  .action_buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .collection-item {
+    display: flex;
+
+    .secondary-content {
       flex: 1;
       text-align: right;
     }

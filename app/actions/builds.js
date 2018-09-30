@@ -8,9 +8,9 @@ import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 import DolphinConfigurationUpdater from '../utils/DolphinConfigurationUpdater';
 
 import {
-  addRomPath,
-  updateAllowDolphinAnalytics,
-  updateSearchRomSubdirectories
+	addRomPath, beginSelectingNewRomPath,
+	updateAllowDolphinAnalytics,
+	updateSearchRomSubdirectories
 } from './dolphinSettings';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
@@ -35,9 +35,13 @@ export const LAUNCH_BUILD_FAIL = 'LAUNCH_BUILD_FAIL';
 export const BUILD_CLOSED = 'BUILD_CLOSED';
 export const CLOSE_BUILD = 'CLOSE_BUILD';
 
-export const START_GAME_BEGIN = 'START_GAME';
+export const START_GAME_BEGIN = 'START_GAME_BEGIN';
 export const START_GAME_SUCCESS = 'START_GAME_SUCCESS';
 export const START_GAME_FAIL = 'START_GAME_FAIL';
+
+export const MERGE_SETTINGS_INTO_BUILD_BEGIN = 'MERGE_SETTINGS_INTO_BUILD_BEGIN';
+export const MERGE_SETTINGS_INTO_BUILD_SUCCESS = 'MERGE_SETTINGS_INTO_BUILD_SUCCESS';
+export const MERGE_SETTINGS_INTO_BUILD_FAIL = 'MERGE_SETTINGS_INTO_BUILD_FAIL';
 
 export const AUTOHOTKEY_EVENT = 'AUTOHOTKEY_ACTION';
 
@@ -154,18 +158,43 @@ export const setBuildPath = (
 ) => (dispatch, getState) => {
   build.path = path;
   dispatch(saveBuild(build, getState));
+  if(build.executablePath())
+  {
+    dispatch(mergeInitialSettingsIntoBuild(build));
+  }
+};
 
-    const state = getState();
-    console.log('the settings');
-    DolphinConfigurationUpdater.updateInitialSettings(build.executablePath(), {
-      ...state.dolphinSettings
-    })
-      .then(() => {
-        return true;
-      })
-      .catch(error => {
-        console.error(error);
+export const mergeInitialSettingsIntoBuild = (build) => (dispatch, getState) => {
+	const state = getState();
+	dispatch({
+        type: MERGE_SETTINGS_INTO_BUILD_BEGIN
+    });
+	if(!build)
+    {
+      const errorMessage = 'Programmer Error: No Build Provided...';
+      dispatch({
+	      type: MERGE_SETTINGS_INTO_BUILD_FAIL,
+          payload: errorMessage
       });
+      throw new Error(errorMessage);
+    }
+	DolphinConfigurationUpdater.updateInitialSettings(build, {
+		...state.dolphinSettings
+	})
+		.then(() => {
+            dispatch({
+                type: MERGE_SETTINGS_INTO_BUILD_SUCCESS,
+                payload: build
+            });
+			return true;
+		})
+		.catch(error => {
+            dispatch({
+                type: MERGE_SETTINGS_INTO_BUILD_FAIL,
+                payload: build
+            });
+			console.error(error);
+		});
 };
 
 export const startGame = () => dispatch => {
@@ -220,6 +249,7 @@ export const launchBuild = build => dispatch => {
       build
     }
   });
+  dispatch(mergeInitialSettingsIntoBuild(build));
   buildLauncher
     .launch(build)
     .then(({ dolphinProcess }) => {
@@ -249,6 +279,8 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
       hostCode
     }
   });
+  dispatch(mergeInitialSettingsIntoBuild(build));
+  build.setSlippiToRecord();
   DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
     build.executablePath(),
     {
@@ -284,6 +316,9 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
       game
     }
   });
+
+  dispatch(mergeInitialSettingsIntoBuild(build));
+  build.setSlippiToRecord();
   DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
     build.executablePath(),
     {
@@ -314,6 +349,11 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
       });
     })
     .catch(error => {
+        if(error && error.action === "setup_netplay_host_failed")
+        {
+          dispatch(beginSelectingNewRomPath(`Select Rom Folder that contains ${game.name}`));
+        }
+      console.log('the error', error);
       dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
       dispatch(closeDolphin());
     });

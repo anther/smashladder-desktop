@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import watch from 'node-watch';
 import fs from 'fs';
 import path from 'path';
-import SlippiGame from 'slp-parser-js';
 import _ from 'lodash';
 import PropTypes from 'prop-types';
 import Files from '../utils/Files';
@@ -15,7 +14,8 @@ import multitry from '../utils/multitry';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import Build from '../utils/BuildData';
-import Replay from "../utils/CacheableDataObject";
+import Replay from "../utils/Replay";
+import Constants from "../utils/Constants";
 
 export default class ReplaySync extends Component {
   static createBetterFileName(originalFile, { others = [] }) {
@@ -50,13 +50,17 @@ export default class ReplaySync extends Component {
   }
 
   static loadGame(file) {
-    return multitry(2000, 5, () => {
-      const game = Replay.retrieve({id: file});
-      console.log('attempting to read game');
-      if (!game.isReadable()) {
+    const replay = Replay.retrieve({id: file});
+    return multitry(1500, 3, () => {
+      replay.resetData();
+      if (!replay.isReadable()) {
         throw new Error('Invalid data');
       }
-      return game;
+      if(!replay.isNewish())
+      {
+        throw new Error('Replay is too old to attempt?');
+      }
+      return replay;
     });
   }
 
@@ -144,7 +148,7 @@ export default class ReplaySync extends Component {
 
       // This is purely for display purposes
       clearTimeout(this.reinitializingTimeout);
-      this.setState({reinitializing: `'Updating New Paths...`});
+      this.setState({reinitializing: `Updating New Paths...`});
       this.reinitializingTimeout = setTimeout(()=>{
         this.setState({reinitializing: null});
       }, 2000);
@@ -156,7 +160,7 @@ export default class ReplaySync extends Component {
         }
         fs.lstat(filePath, (err, stats) => {
           if (err) {
-            return console.log(err); // Handle error
+            return console.error(err); // Handle error
           }
 
           if (stats.isFile()) {
@@ -170,18 +174,30 @@ export default class ReplaySync extends Component {
 
   updateLastGame(file) {
     if (file && !this.slippiGame) {
+      if(file.endsWith(Constants.SLIPPI_REPLAY_FILE_NAME))
+      {
+        console.log('file is the watcher replay file, so we ignore this mofo');
+        return;
+      }
       this.setState({ watching: file });
       ReplaySync.loadGame(file)
-        .then(gameData => {
+        .catch(errors => {
+          console.log(`could not get legit data from replay ${file}`);
+          if(errors)
+          {
+            throw errors[0];
+          }
+        })
+        .then(replay => {
           this.setState({
             watching: null,
             sending: true
           });
 
           const game = {
-            metadata: gameData.getMetadata(),
-            stats: gameData.getStats(),
-            settings: gameData.getSettings(),
+            metadata: replay.getMetadata(),
+            stats: replay.getStats(),
+            settings: replay.getSettings(),
           };
           const sendData = {
             game: JSON.stringify(game),
@@ -194,7 +210,7 @@ export default class ReplaySync extends Component {
             .then(response => {
               this.setState({
                 sending: false,
-                sentGame: gameData
+                sentGame: replay
               });
               if (response.other_players) {
                 ReplaySync.createBetterFileName(file, {

@@ -31,6 +31,7 @@ class BuildsPage extends Component<Props> {
 			productionUrls: null
 		};
 
+		this.props.initializeAutoUpdater();
 	}
 
 	static getDerivedStateFromProps(props, state){
