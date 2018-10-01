@@ -71,7 +71,7 @@ export default class WebsocketComponent extends Component {
       },
 
       startNetplay: message => {
-        if(!message.forceClose)
+        if(!message.force_close)
         {
           console.log('the message', message);
           return;
@@ -225,7 +225,6 @@ export default class WebsocketComponent extends Component {
       }
 
       try {
-        console.log('payload', message.data);
         if (message.data) {
           if (message.data.dolphin_version) {
             message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
@@ -239,10 +238,6 @@ export default class WebsocketComponent extends Component {
           if(message.parameters)
           {
           	message.data.parameters = message.parameters;
-          }
-          if(message.force_close)
-          {
-            message.data.forceClose = true;
           }
         }
         this.websocketCommands[message.functionCall](message.data);
