@@ -1,4 +1,5 @@
 import child from 'child_process';
+import fs from "fs";
 import path from 'path';
 import DolphinChecker from "./DolphinChecker";
 import Build from "./BuildData";
@@ -52,6 +53,10 @@ export default class DolphinLauncher {
 			if(!build.executablePath())
 			{
 				throw new Error(`Attempted to launch ${build.name} but where is the file?!`);
+			}
+			if(!fs.existsSync(build.executablePath()))
+			{
+				throw new Error(`Dolphin executable not found at ${build.executablePath()}`);
 			}
 			const childReference = this.child = child.spawn(path.resolve(build.executablePath()), parameters, {
 				cwd: path.resolve(path.dirname(build.executablePath()))

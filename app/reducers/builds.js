@@ -15,7 +15,7 @@ import {
 	JOIN_BUILD_FAIL,
 	BUILD_CLOSED,
 	START_GAME_FAIL,
-	AUTOHOTKEY_EVENT, COPIED_BUILD_SETTINGS
+	AUTOHOTKEY_EVENT, COPIED_BUILD_SETTINGS, MERGE_SETTINGS_INTO_BUILD_FAIL
 } from '../actions/builds';
 
 const initialState = {
@@ -29,6 +29,10 @@ const initialState = {
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case MERGE_SETTINGS_INTO_BUILD_FAIL:
+      return{
+          ...state,
+      };
     case FETCH_BUILDS_BEGIN:
       return {
         ...state,

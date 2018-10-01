@@ -59,7 +59,7 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				...defaultLoginState,
-				productionUrls: state.login.productionUrls,
+				productionUrls: state.productionUrls,
 			};
 		case LOGIN_SUCCESS:
 		case SET_LOGIN_KEY:

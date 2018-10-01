@@ -194,7 +194,10 @@ export const mergeInitialSettingsIntoBuild = (build) => (dispatch, getState) => 
 		.catch(error => {
             dispatch({
                 type: MERGE_SETTINGS_INTO_BUILD_FAIL,
-                payload: build
+                payload: {
+                    build: build,
+                    error: error.toString ? error.toString() : error
+                }
             });
 			console.error(error);
 		});
@@ -283,7 +286,13 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
     }
   });
   dispatch(mergeInitialSettingsIntoBuild(build));
-  build.setSlippiToRecord();
+    try {
+        build.setSlippiToRecord();
+    }
+    catch(error) {
+        dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
+        return;
+    }
   DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
     build.executablePath(),
     {
@@ -319,9 +328,14 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
       game
     }
   });
-
-  dispatch(mergeInitialSettingsIntoBuild(build));
-  build.setSlippiToRecord();
+  try {
+      dispatch(mergeInitialSettingsIntoBuild(build));
+      build.setSlippiToRecord();
+  }
+  catch(error) {
+	  dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
+	  return;
+  }
   DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
     build.executablePath(),
     {
@@ -358,8 +372,8 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
               hostBuild.apply(this, [build, game])));
         }
       console.log('the error', error);
-      dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
       dispatch(closeDolphin());
+      dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
     });
 };
 
@@ -369,12 +383,17 @@ const buildFailError = (type, build, error) => {
   {
     error = error.value;
   }
+  if(error.toString)
+  {
+      error = error.toString();
+  }
+  console.log('why not show', error);
   return {
     type: HOST_BUILD_FAIL,
     payload: {
       buildError: {
         for: build.id,
-        error: String(error)
+        error: String(error),
       }
     }
   };
