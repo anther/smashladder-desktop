@@ -149,7 +149,6 @@ export default class WebsocketComponent extends Component {
     if (!this.reconnectTimeout) {
       const nextRetry = this.connectionBackoff.next();
       const estimatedWhen = new Date(Date.now() + nextRetry);
-      console.log(estimatedWhen);
       this.retryingCounter = setInterval(() => {
         const time = Math.floor((estimatedWhen.getTime() - Date.now()) / 1000);
         this.setState({
@@ -157,7 +156,6 @@ export default class WebsocketComponent extends Component {
         });
       }, 1000);
 
-      console.log('next retry', nextRetry);
       this.reconnectTimeout = setTimeout(() => {
         const { authentication } = this.props;
         if (this.websocket) {

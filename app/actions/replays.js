@@ -6,22 +6,12 @@ import Constants from "../utils/Constants";
 
 const buildLauncher = new DolphinLauncher();
 
-export const CHECK_FOR_REPLAYS = 'CHECK_FOR_REPLAYS';
-
 export const LAUNCH_REPLAY_BEGIN = 'LAUNCH_REPLAY_BEGIN';
 export const LAUNCH_REPLAY_SUCCESS = 'LAUNCH_REPLAY_SUCCESS';
 export const LAUNCH_REPLAY_FAIL = 'LAUNCH_REPLAY_FAIL';
 export const LAUNCH_REPLAY_END = 'LAUNCH_REPLAY_END';
 
-export const setCheckForReplays = (yes) => {
-	return {
-		type: CHECK_FOR_REPLAYS,
-		payload: yes
-	};
-};
-
 const replayLaunchFail = (error)=>{
-	console.error(error);
 	return {
 		type: LAUNCH_REPLAY_FAIL,
 		payload: {

@@ -31,7 +31,7 @@ export const addRomPath = path => (dispatch, getState) => {
   });
 };
 
-export const beginSelectingNewRomPath = (title) => (dispatch, getState) => {
+export const beginSelectingNewRomPath = (title, successfullyAddedCallback) => (dispatch, getState) => {
 	const state = getState();
 	if(state.dolphinSettings.selectingRomPath)
 	{
@@ -43,10 +43,18 @@ export const beginSelectingNewRomPath = (title) => (dispatch, getState) => {
 	});
 	Files.selectDirectory('', title || 'Select a Rom Folder')
 		.then(selectedPath => {
+			if(!selectedPath)
+			{
+				throw new Error('No Path was Selected');
+			}
 			dispatch({
 				type: SELECT_ROM_PATH_SUCCESS
 			});
-			dispatch(addRomPath(selectedPath))
+			dispatch(addRomPath(selectedPath));
+			if(successfullyAddedCallback)
+			{
+				dispatch(successfullyAddedCallback);
+			}
 		})
 		.catch(error => {
 			dispatch({

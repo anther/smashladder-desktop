@@ -9,12 +9,13 @@ import BuildLauncher from './BuildLauncher';
 import Build from './BuildData';
 import Files from './Files';
 import DolphinConfigurationUpdater from "./DolphinConfigurationUpdater";
+import DolphinProcessWithHotkeyPets from "./DolphinProcessWithHotkeyPets";
 
 export default class BuildLaunchAhk extends EventEmitter {
 	constructor(){
 		super();
 		this.buildLauncher = new BuildLauncher();
-		this.activeProcess = new DolphinWithHotkeyPet();
+		this.activeProcess = new DolphinProcessWithHotkeyPets();
 
 		this.hotkeyLocation = Files.createApplicationPath(
 			'./external/ahk/NetPlayHotkeySL.exe'
@@ -38,7 +39,7 @@ export default class BuildLaunchAhk extends EventEmitter {
 				reject(new Error(`Hotkey Error: ${err}`));
 			});
 			hotkey.on('exit', () => {
-				reject(new Error('Closed Before Completing Requested Action'));
+				reject(new Error(`Closed Before Completing Requested Action ${successOnAction.join(', ')}`));
 			});
 			if(successOnAction.length === 1 && successOnAction[0] === true)
 			{
@@ -161,7 +162,7 @@ export default class BuildLaunchAhk extends EventEmitter {
 				return this.buildLauncher.launch(build);
 			})
 			.then(dolphinProcess => {
-				this.activeProcess = new DolphinWithHotkeyPet(dolphinProcess);
+				this.activeProcess = new DolphinProcessWithHotkeyPets(dolphinProcess);
 				theActiveProcess = this.activeProcess;
 				return this.launchHotKey(parameters, build, successMessages, failMessages, theActiveProcess);
 			})
@@ -169,60 +170,6 @@ export default class BuildLaunchAhk extends EventEmitter {
 				console.error(error);
 				throw error;
 			});
-	}
-
-}
-
-class DolphinWithHotkeyPet {
-	constructor(dolphinProcess){
-		this.hotkeyProcesses = new Set();
-		this.murdered = false;
-		if(!dolphinProcess)
-		{
-			console.log('had no dolphin process!');
-			this.stopsRunning = Promise.resolve();
-			return;
-		}
-		this.dolphinProcess = dolphinProcess;
-		this.stopsRunning = new Promise((resolve)=>{
-			if(this.murdered)
-			{
-				return resolve();
-			}
-
-			dolphinProcess.on('close', () => {
-				resolve();
-				this.murdered = true;
-				this.murder().catch((error) => {
-					console.error(error)
-				});
-			});
-		});
-	}
-
-	async murder(){
-		this.hotkeyProcesses.forEach((hotkeyProcess) => {
-			hotkeyProcess.kill();
-		});
-		if(this.murdered)
-		{
-			return this.stopRunning;
-		}
-		if(!this.dolphinProcess || this.dolphinProcess.exitCode !== null)
-		{
-			this.murdered = true;
-			return this.stopRunning;
-		}
-		this.dolphinProcess.kill();
-		return this.stopRunning;
-	}
-
-	addHotkeyProcess(hotkeyProcess){
-		// ...Not entirely sure why this list is stored since we're killing them as new ones are added...
-		this.hotkeyProcesses.forEach((process)=>{
-			process.kill();
-		});
-		this.hotkeyProcesses.add(hotkeyProcess);
 	}
 
 }

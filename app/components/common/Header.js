@@ -25,7 +25,6 @@ export default class Header extends Component {
 
 	render(){
 		const { player, logout, productionUrls, enableDevelopmentUrls, enableProductionUrls } = this.props;
-		console.log('the props', this.props);
 		return (
 			<div id="main-heading">
 				{player &&

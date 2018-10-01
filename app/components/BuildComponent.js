@@ -51,8 +51,11 @@ export default class BuildComponent extends Component {
 
       downloading: null,
       downloadingProgress: null,
-      downloadError: null
+      downloadError: null,
+      glowing: true,
     };
+
+    this.glowTimeout = null;
 
     this.onSetBuildPathClick = this.setBuildPathClick.bind(this);
     this.onUnsetBuildPathClick = this.unsetBuildPathClick.bind(this);
@@ -70,6 +73,18 @@ export default class BuildComponent extends Component {
     this.onDownloadClick = this.downloadClick.bind(this);
 
     this.onSelectedGameChange = this.selectedGameChange.bind(this);
+  }
+
+  componentDidMount() {
+    this.glowTimeout = setTimeout(()=>{
+      this.setState({
+          glowing: false
+      })
+    })
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.glowTimeout);
   }
 
   setBuildPathClick() {
@@ -271,7 +286,7 @@ export default class BuildComponent extends Component {
 
   render() {
     const { build, buildOpen, buildOpening, hostCode, buildError } = this.props;
-    const { settingBuildPath } = this.state;
+    const { settingBuildPath, glowing, selectedGame, downloading, downloadingProgress, unzipStatus } = this.state;
 
     const error = this.state.error || buildError;
     return (
@@ -337,7 +352,7 @@ export default class BuildComponent extends Component {
                     <Select
                       className="select_game"
                       onChange={this.onSelectedGameChange}
-                      value={this.state.selectedGame}
+                      value={selectedGame}
                     >
                       {build.getPossibleGames().map(game => (
                         <option value={game.id} key={game.id}>
@@ -352,36 +367,36 @@ export default class BuildComponent extends Component {
             {!build.path &&
               build.hasDownload() && (
                 <React.Fragment>
-                  {!this.state.downloading && (
+                  {!downloading && (
                     <Button
-                      className="download_build"
+                      className={`download_build ${glowing ? 'pulse' : ''}`}
                       onClick={this.onDownloadClick}
                     >
                       Download <span className="download_arrow">⇩</span>
                     </Button>
                   )}
-                  {this.state.downloading && (
+                  {downloading && (
                     <React.Fragment>
                       <span className="downloading_status">
                         <div>
                           <span className="text">
-                            {this.state.downloading}{' '}
+                            {downloading}{' '}
                           </span>
-                          {this.state.downloadingProgress && (
+                          {downloadingProgress && (
                             <span className="percent">
-                              {Math.floor(this.state.downloadingProgress * 100)}
+                              {Math.floor(downloadingProgress * 100)}
                               %
                             </span>
                           )}
                         </div>
-                        <div className="nowrap">{this.state.unzipStatus}</div>
+                        <div className="nowrap">{unzipStatus}</div>
                       </span>
-                      {this.state.downloadingProgress && (
+                      {downloadingProgress && (
                         <ProgressDeterminate
-                          percent={this.state.downloadingProgress * 100}
+                          percent={downloadingProgress * 100}
                         />
                       )}
-                      {!this.state.downloadingProgress && (
+                      {!downloadingProgress && (
                         <ProgressIndeterminate />
                       )}
                     </React.Fragment>

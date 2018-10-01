@@ -71,7 +71,7 @@ export default class DolphinSettings extends Component {
 				</div>
 				<div className="input-field">
 					<Button
-						className={`btn-small ${romPaths.length > 0 ? 'not_set' : 'set'}`}
+						className={`btn-small ${romPaths.length > 0 ? 'set' : 'not_set'}`}
 						disabled={selectingRomPath}
 						onClick={beginSelectingNewRomPath}
 					>

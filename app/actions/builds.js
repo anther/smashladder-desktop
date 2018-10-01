@@ -227,15 +227,15 @@ export const startGame = () => dispatch => {
 //   authotkeyAction(event);
 // });
 
-export const closeDolphin = () => dispatch => {
-  // const authentication = getAuthenticationFromState(getState);
+export const closeDolphin = () => (dispatch, getState) => {
+  const authentication = getAuthenticationFromState(getState);
   buildLauncher
     .close()
     .then(() => {
       dispatch({
         type: CLOSE_BUILD
       });
-      // authentication.apiPost(endpoints.CLOSED_DOLPHIN);
+      authentication.apiPost(endpoints.CLOSED_DOLPHIN);
     })
     .catch(error => {
       console.error(error);
@@ -351,7 +351,8 @@ export const hostBuild = (build, game) => (dispatch, getState) => {
     .catch(error => {
         if(error && error.action === "setup_netplay_host_failed")
         {
-          dispatch(beginSelectingNewRomPath(`Select Rom Folder that contains ${game.name}`));
+          dispatch(beginSelectingNewRomPath(`Select Rom Folder That Contains ${game.name}`,
+              hostBuild.apply(this, [build, game])));
         }
       console.log('the error', error);
       dispatch(buildFailError(HOST_BUILD_FAIL, build, error));

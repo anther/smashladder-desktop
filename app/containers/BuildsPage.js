@@ -7,6 +7,7 @@ import * as BuildActions from '../actions/builds';
 import * as ReplayActions  from '../actions/replays';
 import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import * as AutoUpdateActions from '../actions/autoUpdates';
+import * as ReplayWatchActions from '../actions/replayWatch';
 import {
 	disableConnection,
 	enableConnection,
@@ -32,6 +33,7 @@ class BuildsPage extends Component<Props> {
 		};
 
 		this.props.initializeAutoUpdater();
+		this.props.beginWatchingForReplayChanges();
 	}
 
 	static getDerivedStateFromProps(props, state){
@@ -42,6 +44,7 @@ class BuildsPage extends Component<Props> {
 		{
 			return {
 				loginCode: props.loginCode,
+				productionUrls: props.productionUrls,
 				authentication: SmashLadderAuthentication.create({
 					loginCode: props.loginCode,
 					session_id: props.sessionId,
@@ -96,6 +99,7 @@ const mapStateToProps = state => ({
 	...state.dolphinSettings,
 	...state.replays,
 	...state.autoUpdates,
+	...state.replayWatch,
 });
 
 function mapDispatchToProps(dispatch){
@@ -105,6 +109,7 @@ function mapDispatchToProps(dispatch){
 			...DolphinSettingsActions,
 			...ReplayActions,
 			...AutoUpdateActions,
+			...ReplayWatchActions,
 			logout,
 			enableConnection,
 			enableDevelopmentUrls,

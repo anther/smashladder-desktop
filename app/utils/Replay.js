@@ -4,11 +4,13 @@ import  path from "path";
 import moment from 'moment';
 import md5File from 'md5-file/promise';
 import electronSettings from 'electron-settings';
+import fs from "fs";
 import CacheableDataObject from "./CacheableDataObject";
 import MeleeCharacter from "./replay/MeleeCharacter";
 import MeleeStage from "./replay/MeleeStage";
 import SmashFrame from "./replay/SlippiFrame";
 import Numbers from "./Numbers";
+import Files from "./Files";
 
 export default class Replay extends CacheableDataObject {
 
@@ -26,6 +28,7 @@ export default class Replay extends CacheableDataObject {
 		this.rawData = {
 			settings: {},
 			metadata: {},
+			stats: {},
 		};
 	}
 
@@ -102,10 +105,9 @@ export default class Replay extends CacheableDataObject {
 		{
 			return this.metadata.lastFrame.asTime();
 		}
-		else
-		{
+		
 			return '????';
-		}
+		
 	}
 
 	isReadable(){
@@ -114,13 +116,14 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	getStats(){
-		if(this.isReadable())
+		if(!this.isReadable())
 		{
 			return null;
 		}
 		if(this.stats === null){
 			const game = this.retrieveSlippiGame();
 			this.stats = game.getStats();
+			this.rawData.stats = _.cloneDeep(this.stats);
 		}
 		return this.stats;
 	}
@@ -245,6 +248,37 @@ export default class Replay extends CacheableDataObject {
 
 	toString(){
 		return this.id;
+	}
+
+	createBetterFileName({ others = [] }) {
+		const date = new Date();
+		const root = path.dirname(originalFile);
+
+		const folder = `${root}/${date.getFullYear()}-${Numbers.forceTwoDigits(
+			date.getMonth()
+		)}-${Numbers.forceTwoDigits(date.getDate())}`;
+		const hour = Numbers.forceTwoDigits(date.getHours());
+		let usernameList = '';
+		if (others.length) {
+			usernameList = others
+				.map(other => other.username.replace(/[^a-z0-9]/gi, '_'))
+				.join('-');
+			usernameList = `_with-${usernameList}`;
+		} else {
+			usernameList = '';
+		}
+		const fileName = `${hour}${Numbers.forceTwoDigits(date.getMinutes())}${Numbers.forceTwoDigits(date.getSeconds())}${usernameList}.slp`;
+		const newName = `${folder}/${fileName}`;
+
+		Files.ensureDirectoryExists(folder, 0o755, error => {
+			if (!error) {
+				fs.rename(originalFile, newName, renameError => {
+					if (renameError) {
+						throw renameError;
+					}
+				});
+			}
+		});
 	}
 
 }
