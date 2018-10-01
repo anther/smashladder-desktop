@@ -12,6 +12,7 @@ import {
 	updateAllowDolphinAnalytics,
 	updateSearchRomSubdirectories
 } from './dolphinSettings';
+import { startReplayBrowser } from "./replayBrowse";
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -68,6 +69,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
           builds
         }
       });
+      dispatch(startReplayBrowser());
       return response;
     })
     .catch(() => {
@@ -78,6 +80,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
           builds
         }
       });
+      dispatch(startReplayBrowser());
     });
 };
 

@@ -71,7 +71,11 @@ export default class WebsocketComponent extends Component {
       },
 
       startNetplay: message => {
-        console.log('the message', message);
+        if(!message.forceClose)
+        {
+          console.log('the message', message);
+          return;
+        }
         this.props.joinBuild(message.dolphin_version, message.parameters && message.parameters.host_code);
       },
 
@@ -215,6 +219,7 @@ export default class WebsocketComponent extends Component {
       if(!message.functionCall){
       	return;
       }
+      console.log('received message', message);
       if(!this.websocketCommands[message.functionCall]){
 	      console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
       }
@@ -234,6 +239,10 @@ export default class WebsocketComponent extends Component {
           if(message.parameters)
           {
           	message.data.parameters = message.parameters;
+          }
+          if(message.force_close)
+          {
+            message.data.forceClose = true;
           }
         }
         this.websocketCommands[message.functionCall](message.data);

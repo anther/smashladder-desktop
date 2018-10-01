@@ -15,6 +15,7 @@ import Files from "./Files";
 export default class Replay extends CacheableDataObject {
 
 	beforeConstruct(){
+		this.ignoreNewnessRestriction = false;
 		this.resetData();
 	}
 
@@ -30,15 +31,41 @@ export default class Replay extends CacheableDataObject {
 			metadata: {},
 			stats: {},
 		};
+		this.build = null;
+		this.possibleErrors = {
+			noSettings: false,
+			noMetadata: false,
+			noStats: false,
+		};
+	}
+
+	setBuild(build){
+		this.build = build;
+	}
+
+	getBuild(){
+		return this.build;
+	}
+
+	getErrorReasons(){
+		if(this.possibleErrors.noMetadata)
+		{
+			return 'No Metadata found';
+		}
+		return 'Something interesting went wrong';
 	}
 
 	isNewish(){
+		if(this.ignoreNewnessRestriction)
+		{
+			return true;
+		}
 		const fileDate = this.getFileDate();
 		if(!fileDate)
 		{
 			return false;
 		}
-		return fileDate.isAfter(moment().subtract(30,'minutes'));
+		return fileDate.isAfter(moment().subtract(30, 'minutes'));
 	}
 
 	hasDefaultFileName(){
@@ -115,16 +142,30 @@ export default class Replay extends CacheableDataObject {
 		return !this.hasErrors;
 	}
 
+	getSerializableData(){
+		this.getMetadata();
+		this.getStats();
+		return {
+			metadata: this.rawData.metadata,
+			stats: this.rawData.stats,
+			settings: this.rawData.settings,
+		};
+	}
+
 	getStats(){
+		console.log('asking for stats');
 		if(!this.isReadable())
 		{
+			console.log('not readable?!');
 			return null;
 		}
 		if(this.stats === null){
+			console.log('was null');
 			const game = this.retrieveSlippiGame();
 			this.stats = game.getStats();
 			this.rawData.stats = _.cloneDeep(this.stats);
 		}
+		console.log('the stats', this.stats);
 		return this.stats;
 	}
 
@@ -188,7 +229,7 @@ export default class Replay extends CacheableDataObject {
 			{
 				this.settings = cachedSettings.settings;
 				this.metadata = cachedSettings.metadata;
-				this.stats = cachedSettings.stats !== null ? cachedSettings.stats : null;
+				this.stats = _.isEmpty(cachedSettings.stats) ? null : cachedSettings.stats;
 			}
 			else
 			{
@@ -206,6 +247,7 @@ export default class Replay extends CacheableDataObject {
 
 			if(_.isEmpty(this.metadata))
 			{
+				this.possibleErrors.noMetadata = true;
 				this.hasErrors = true;
 				return;
 			}

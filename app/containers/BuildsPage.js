@@ -8,6 +8,7 @@ import * as ReplayActions  from '../actions/replays';
 import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import * as AutoUpdateActions from '../actions/autoUpdates';
 import * as ReplayWatchActions from '../actions/replayWatch';
+import * as ReplayBrowseActions from '../actions/replayBrowse';
 import {
 	disableConnection,
 	enableConnection,
@@ -100,6 +101,7 @@ const mapStateToProps = state => ({
 	...state.replays,
 	...state.autoUpdates,
 	...state.replayWatch,
+	...state.replayBrowse,
 });
 
 function mapDispatchToProps(dispatch){
@@ -110,6 +112,7 @@ function mapDispatchToProps(dispatch){
 			...ReplayActions,
 			...AutoUpdateActions,
 			...ReplayWatchActions,
+			...ReplayBrowseActions,
 			logout,
 			enableConnection,
 			enableDevelopmentUrls,

@@ -135,7 +135,6 @@ export const logout = () => (dispatch, getState) => {
 	dispatch({
 		type: LOGOUT_BEGIN
 	});
-	electronSettings.set('login', null)
 	authentication.apiPost(endpoints.LOGOUT, { logout: true }).then(() => {
 		dispatch({
 			type: LOGOUT_SUCCESS

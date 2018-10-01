@@ -1,7 +1,7 @@
-import Build from "../utils/BuildData";
 import fs from "fs";
 import watch from 'node-watch';
 import _ from 'lodash';
+import Build from "../utils/BuildData";
 import Constants from "../utils/Constants";
 import { endpoints } from "../utils/SmashLadderAuthentication";
 import Replay from "../utils/Replay";
@@ -129,7 +129,7 @@ export const enableReplayWatching = () => (dispatch) => {
 };
 
 export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getState) => {
-	console.info('watch process counter ' + watchProcessCounter);
+	console.info(`watch process counter ${watchProcessCounter}`);
 	if(!filePath)
 	{
 		console.error('got an invalid file path...');
@@ -185,12 +185,7 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 	{
 		throw new Error('Even if file is verified, we are not logged in');
 	}
-	replay.getMetadata();
-	const sendableGameData = {
-		metadata: replay.rawData.metadata,
-		stats: replay.rawData.stats,
-		settings: replay.rawData.settings,
-	};
+	const sendableGameData = replay.getSerializableData();
 	const sendData = {
 		game: JSON.stringify(sendableGameData),
 		source: 'slippiLauncher'
@@ -241,7 +236,7 @@ const loadGame = (file) => {
 	return multitry(1500, 2, () => {
 		replay.resetData();
 		if (!replay.isReadable()) {
-			throw new Error('Invalid data');
+			throw new Error(replay.getErrorReasons());
 		}
 		if(!replay.isNewish())
 		{

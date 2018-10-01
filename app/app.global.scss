@@ -30,6 +30,9 @@ a {
   }
   &.not_set {
     @extend .red, .lighten-2;
+    &.no_check:after {
+      content: '';
+    }
     &:after {
       content: '❌';
     }
@@ -309,6 +312,11 @@ h6 {
 
   .collection-item {
     display: flex;
+
+    .input-field{
+      margin-top: 0;
+      margin-bottom: 4px;
+    }
 
     .secondary-content {
       flex: 1;

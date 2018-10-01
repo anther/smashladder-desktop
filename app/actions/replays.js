@@ -20,9 +20,11 @@ const replayLaunchFail = (error)=>{
 	};
 };
 export const launchReplay = (params) => (dispatch, getState) => {
-	const {replayPath, build} = params;
 	const state = getState();
+	const { replay } = params;
 	const meleeIsoPath = state.dolphinSettings.meleeIsoPath;
+	const build = replay.getBuild();
+	const replayPath = replay.filePath;
 
 	const replayStatusPayload = {
 		build,

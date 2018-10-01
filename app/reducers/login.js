@@ -10,12 +10,13 @@ import {
 	ENABLE_CONNECTION, ENABLE_DEVELOPMENT_URLS, ENABLE_PRODUCTION_URLS
 } from '../actions/login';
 
-const loginDatas = electronSettings.get('login', {
+const defaultLoginState = {
 	player: null,
 	loginCode: null,
 	sessionId: null,
 	productionUrls: true
-});
+};
+const loginDatas = electronSettings.get('login', defaultLoginState);
 
 const initialState = {
 	loginErrors: [],
@@ -54,11 +55,11 @@ export default (state = initialState, action) => {
 				connectionEnabled: false
 			};
 		case LOGOUT_BEGIN:
+			electronSettings.set('login', defaultLoginState);
 			return {
 				...state,
-				loginCode: null,
-				sessionId: null,
-				player: null,
+				...defaultLoginState,
+				productionUrls: state.login.productionUrls,
 			};
 		case LOGIN_SUCCESS:
 		case SET_LOGIN_KEY:

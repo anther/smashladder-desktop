@@ -172,17 +172,17 @@ export default class DolphinConfigurationUpdater {
 		{
 			config.General = {};
 		}
-		console.log('the rom paths', romPaths);
+		// console.log('the rom paths', romPaths);
 		if(!_.isEmpty(romPaths))
 		{
 			DolphinConfigurationUpdater.forEachIsoEntries(
 				config,
 				(isoPath, currentIsoPathName) => {
-					console.log(
-						`removing ${currentIsoPathName} ${
-							config.General[currentIsoPathName]
-							}`
-					);
+					// console.log(
+					// 	`removing ${currentIsoPathName} ${
+					// 		config.General[currentIsoPathName]
+					// 		}`
+					// );
 					delete config.General[currentIsoPathName];
 				}
 			);
@@ -190,7 +190,7 @@ export default class DolphinConfigurationUpdater {
 			let newEntries = 0;
 			_.forEach(romPaths, romPath => {
 				const currentIsoPathName = `ISOPath${newEntries}`;
-				console.log(`adding ${currentIsoPathName} - ${romPath}`);
+				// console.log(`adding ${currentIsoPathName} - ${romPath}`);
 				config.General[currentIsoPathName] = romPath;
 				newEntries++;
 			});
