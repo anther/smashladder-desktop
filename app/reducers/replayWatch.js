@@ -19,6 +19,8 @@ const initialState = {
 	lastReplaySubmissionError: null,
 	verifyingReplayFile: null,
 	watchForNewReplaysEndReason: null,
+	replayWatchProcess: null,
+	replayWatchProcessCounter: 0,
 };
 
 export default (state = initialState, action) => {
@@ -27,17 +29,16 @@ export default (state = initialState, action) => {
 		case WATCH_DIRECTORIES_BEGIN:
 			return {
 				...state,
-				replayWatchPaths: action.payload,
-				watchForNewReplaysEndReason: null,
-			};
-		case WATCH_DIRECTORIES_SUCCESS:
-			return {
-				...state,
-				watchingForNewReplays: true,
-				replayWatchPaths: action.payload,
+				replayWatchProcess: action.payload.replayWatchProcess,
+				replayWatchProcessCounter: state.replayWatchProcessCounter += 1,
+				replayWatchPaths: action.payload.replayWatchPaths,
 				watchForNewReplaysEndReason: null,
 			};
 		case WATCH_DIRECTORIES_END:
+			if(state.replayWatchProcess)
+			{
+				state.replayWatchProcess.close();
+			}
 			return {
 				...state,
 				watchingForNewReplays: false,
@@ -45,6 +46,10 @@ export default (state = initialState, action) => {
 				watchForNewReplaysEndReason: action.payload,
 			};
 		case WATCH_DIRECTORIES_FAIL:
+			if(state.replayWatchProcess)
+			{
+				state.replayWatchProcess.close();
+			}
 			return {
 				...state,
 				watchingForNewReplays: false,
@@ -66,14 +71,17 @@ export default (state = initialState, action) => {
 				sendingReplay: null,
 			};
 		case ENABLE_REPLAY_UPLOADS:
+			electronSettings.set('settings.replayWatchEnabled', true);
 			return {
 				...state,
-				replayWatchEnabled: electronSettings.set('settings.replayWatchEnabled', true),
+				replayWatchEnabled: true,
 			};
 		case DISABLE_REPLAY_UPLOADS:
+			electronSettings.set('settings.replayWatchEnabled', false);
 			return {
 				...state,
-				replayWatchEnabled: electronSettings.set('settings.replayWatchEnabled', false),
+				replayWatchEnabled: false,
+				replayWatchPaths: [],
 			};
 		case VERIFY_FILE_START:
 			return {

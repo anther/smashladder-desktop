@@ -1,8 +1,6 @@
 import Build from "../utils/BuildData";
 import fs from "fs";
 import watch from 'node-watch';
-import path from 'path';
-import Files from '../utils/Files';
 import _ from 'lodash';
 import Constants from "../utils/Constants";
 import { endpoints } from "../utils/SmashLadderAuthentication";
@@ -11,7 +9,6 @@ import multitry from "../utils/multitry";
 import getAuthenticationFromState from "../utils/getAuthenticationFromState";
 
 export const WATCH_DIRECTORIES_BEGIN = 'WATCH_DIRECTORIES_BEGIN';
-export const WATCH_DIRECTORIES_SUCCESS = 'WATCH_DIRECTORIES_SUCCESS';
 export const WATCH_DIRECTORIES_END = 'WATCH_DIRECTORIES_END';
 export const WATCH_DIRECTORIES_FAIL = 'WATCH_DIRECTORIES_FAIL';
 
@@ -26,20 +23,24 @@ export const SEND_REPLAY_FAIL = 'SEND_REPLAY_FAIL';
 export const ENABLE_REPLAY_UPLOADS = 'ENABLE_REPLAY_UPLOADS';
 export const DISABLE_REPLAY_UPLOADS = 'DISABLE_REPLAY_UPLOADS';
 
-let replayWatchProcess = null;
 
 export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
+	console.log('begin watching');
 	const state = getState();
 	const authentication = getAuthenticationFromState(getState);
 	const connectionEnabled = state.login.connectionEnabled;
-	const checkForReplays = state.replays.checkForReplays;
+	const replayWatchEnabled = state.replayWatch.replayWatchEnabled;
 	const watchingPaths = state.replayWatch.replayWatchPaths;
+	let replayWatchProcess = state.replayWatch.replayWatchProcess;
+	const replayWatchProcessCounter = state.replayWatch.replayWatchProcessCounter;
 
 	const builds = { ...state.builds.builds };
 	if (!connectionEnabled) {
+		console.log('connection is disabled');
 		return;
 	}
-	if (!checkForReplays) {
+	if (!replayWatchEnabled) {
+		console.log('watch is not enabled');
 		if(replayWatchProcess)
 		{
 			dispatch(stopWatchingForReplayChanges('Disabled'));
@@ -54,53 +55,59 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	const paths = Build.getSlippiBuilds(builds)
 		.map((build)=>(build.getSlippiPath()));
 
-	if (!_.isEqual(watchingPaths.sort(), paths.sort())) {
+	if (_.isEqual(watchingPaths.sort(), paths.sort())) {
+		console.log('already wtaching same paths?');
+		return;
+	}
+	// This is purely for display purposes
+	// clearTimeout(this.reinitializingTimeout);
+	// this.setState({reinitializing: `Updating New Paths...`});
+	// this.reinitializingTimeout = setTimeout(()=>{
+	// 	this.setState({reinitializing: null});
+	// }, 2000);
+
+	try{
+
+		if(replayWatchProcess)
+		{
+			dispatch(stopWatchingForReplayChanges('Starting a new watch process'));
+		}
+		replayWatchProcess = watch(paths, { recursive: false }, (event, filePath) => {
+			if (event === 'remove') {
+				return;
+			}
+			fs.lstat(filePath, (err, stats) => {
+				if (err) {
+					return console.error(err); // Handle error
+				}
+
+				if (stats.isFile()) {
+					dispatch(checkReplay(filePath, replayWatchProcessCounter));
+				}
+			});
+		});
 		dispatch({
 			type: WATCH_DIRECTORIES_BEGIN,
+			payload: {
+				replayWatchProcess,
+				replayWatchPaths: paths,
+			},
+		});
+		console.log('watching paths', paths);
+	}
+	catch(error)
+	{
+		console.log('error with replay watching');
+		console.error(error);
+		dispatch({
+			type: WATCH_DIRECTORIES_FAIL,
 			payload: paths,
 		});
-		// This is purely for display purposes
-		// clearTimeout(this.reinitializingTimeout);
-		// this.setState({reinitializing: `Updating New Paths...`});
-		// this.reinitializingTimeout = setTimeout(()=>{
-		// 	this.setState({reinitializing: null});
-		// }, 2000);
-
-		try{
-
-			replayWatchProcess = watch(watchingPaths, { recursive: false }, (event, filePath) => {
-				if (event === 'remove') {
-					return;
-				}
-				fs.lstat(filePath, (err, stats) => {
-					if (err) {
-						return console.error(err); // Handle error
-					}
-
-					if (stats.isFile()) {
-						dispatch(checkReplay(filePath));
-					}
-				});
-			});
-		}
-		catch(error)
-		{
-			console.log('error with replay watching');
-			console.error(error);
-			dispatch({
-				type: WATCH_DIRECTORIES_FAIL,
-				payload: paths,
-			});
-			dispatch(stopWatchingForReplayChanges());
-		}
+		dispatch(stopWatchingForReplayChanges());
 	}
 };
 
 export const stopWatchingForReplayChanges = (reason) => {
-	if (replayWatchProcess) {
-		replayWatchProcess.close();
-		replayWatchProcess = null;
-	}
 	return({
 		type: WATCH_DIRECTORIES_END,
 		payload: reason,
@@ -118,9 +125,11 @@ export const enableReplayWatching = () => (dispatch) => {
 	dispatch({
 		type: ENABLE_REPLAY_UPLOADS
 	});
+	dispatch(beginWatchingForReplayChanges());
 };
 
-export const checkReplay = (filePath) => (dispatch, getState) => {
+export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getState) => {
+	console.info('watch process counter ' + watchProcessCounter);
 	if(!filePath)
 	{
 		console.error('got an invalid file path...');
@@ -227,8 +236,9 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 };
 
 const loadGame = (file) => {
+	console.log('load game attempt ' , file);
 	const replay = Replay.retrieve({id: file});
-	return multitry(1500, 3, () => {
+	return multitry(1500, 2, () => {
 		replay.resetData();
 		if (!replay.isReadable()) {
 			throw new Error('Invalid data');
@@ -239,4 +249,4 @@ const loadGame = (file) => {
 		}
 		return replay;
 	});
-}
+};

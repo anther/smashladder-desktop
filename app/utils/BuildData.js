@@ -7,14 +7,14 @@ import DolphinConfigurationUpdater from "./DolphinConfigurationUpdater";
 
 export default class Build extends CacheableDataObject {
   static getSlippiBuilds(builds){
-	  let paths = new Set();
+	  let foundBuilds = new Set();
 	  _.each(builds, build => {
 		  if (build.getSlippiPath()) {
-			  paths.add(build);
+			  foundBuilds.add(build);
 		  }
 	  });
-	  paths = Array.from(paths);
-	  return paths;
+	  foundBuilds = Array.from(foundBuilds);
+	  return foundBuilds;
   }
 
   beforeConstruct() {
@@ -65,12 +65,14 @@ export default class Build extends CacheableDataObject {
     if (this._slippiPath !== undefined) {
       return this._slippiPath;
     }
-    const slippiPath = `${path.resolve(path.dirname(this.path))}/Slippi`;
+    const slippiPath = path.join(this.executableDirectory(), 'Slippi');
     if (fs.existsSync(slippiPath)) {
+    console.log('path exists');
       return (this._slippiPath = slippiPath);
     }
+    console.log('path does not exist');
 
-    return (this._slippiPath = null);
+    return this._slippiPath = null;
   }
 
   getMeleeSettingsIniLocation(){
