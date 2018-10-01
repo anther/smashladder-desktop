@@ -19,7 +19,11 @@ const replayLaunchFail = (error)=>{
 		}
 	};
 };
-export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch, getState) => {
+export const launchReplay = (params) => (dispatch, getState) => {
+	const {replayPath, build} = params;
+	const state = getState();
+	const meleeIsoPath = state.dolphinSettings.meleeIsoPath;
+
 	const replayStatusPayload = {
 		build,
 		replayPath,
@@ -38,7 +42,9 @@ export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch, ge
 	if(!meleeIsoPath)
 	{
 		dispatch(replayLaunchFail('A Melee Iso is Required'));
-		return dispatch(requestMeleeIsoPath());
+		const binder = launchReplay.bind(null, params);
+		console.log('binding with', binder, params);
+		return dispatch(requestMeleeIsoPath(binder));
 	}
 	if(!slippiReplayDirectory)
 	{
@@ -108,9 +114,9 @@ export const launchReplay = ({replayPath, build, meleeIsoPath}) => (dispatch, ge
 						payload: replayStatusPayload
 					});
 					dolphinProcess.on('close', () => {
-						const state = getState();
+						const closeState = getState();
 						// This is to prevent a cleanup happening concurrently with another build launching
-						if(!state.replays.launchingReplay)
+						if(!closeState.replays.launchingReplay)
 						{
 							cleanupDolphin();
 							dispatch({

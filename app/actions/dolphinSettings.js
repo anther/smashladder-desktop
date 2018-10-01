@@ -16,6 +16,7 @@ export const SET_MELEE_ISO_PATH_ACTIVE_ALREADY = 'SET_MELEE_ISO_PATH_ACTIVE_ALRE
 export const SET_MELEE_ISO_PATH_BEGIN = 'SET_MELEE_ISO_PATH_BEGIN';
 export const SET_MELEE_ISO_PATH_SUCCESS = 'SET_MELEE_ISO_PATH_SUCCESS';
 export const SET_MELEE_ISO_PATH_FAIL = 'SET_MELEE_ISO_PATH_FAIL';
+export const UNSET_MELEE_ISO_PATH = 'UNSET_MELEE_ISO_PATH';
 
 export const addRomPath = path => (dispatch, getState) => {
   const state = getState();
@@ -31,7 +32,7 @@ export const addRomPath = path => (dispatch, getState) => {
   });
 };
 
-export const beginSelectingNewRomPath = (title, successfullyAddedCallback) => (dispatch, getState) => {
+export const beginSelectingNewRomPath = (title, onSuccessCallback) => (dispatch, getState) => {
 	const state = getState();
 	if(state.dolphinSettings.selectingRomPath)
 	{
@@ -51,9 +52,9 @@ export const beginSelectingNewRomPath = (title, successfullyAddedCallback) => (d
 				type: SELECT_ROM_PATH_SUCCESS
 			});
 			dispatch(addRomPath(selectedPath));
-			if(successfullyAddedCallback)
+			if(onSuccessCallback)
 			{
-				dispatch(successfullyAddedCallback);
+				dispatch(onSuccessCallback);
 			}
 		})
 		.catch(error => {
@@ -76,7 +77,12 @@ export const removeRomPath = path => (dispatch, getState) => {
   });
 };
 
-export const requestMeleeIsoPath = () => (dispatch, getState) => {
+export const unsetMeleeIsoPath = () => {
+	return {
+		type: UNSET_MELEE_ISO_PATH
+	};
+};
+export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) => {
     const state = getState();
 
     if(state.dolphinSettings.settingMeleeIsoPath)
@@ -92,12 +98,20 @@ export const requestMeleeIsoPath = () => (dispatch, getState) => {
 
 	Files.selectFile('', 'Select your Melee Iso!')
 		.then(selectedPath => {
+			if(!selectedPath)
+			{
+				throw new Error('No path was selected');
+			}
             dispatch({
 	            type: SET_MELEE_ISO_PATH_SUCCESS,
 	            payload: {
 		            meleeIsoPath: selectedPath
 	            }
             });
+			if(onSuccessCallback)
+			{
+				dispatch(onSuccessCallback());
+			}
 		})
 		.catch(error => {
 			console.error(error);

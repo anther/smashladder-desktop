@@ -28,7 +28,6 @@ export default class DolphinSettings extends Component {
 
 	constructor(props){
 		super(props);
-		this.onClickUpdateMeleeIsoPath = this.clickUpdateMeleeIsoPath.bind(this);
 		this.onUpdateSearchSubdirectories = this.updateSearchSubdirectoriesChange.bind(this);
 		this.onUpdateAllowDolphinAnalytics = this.updateAllowDolphinAnalytics.bind(this);
 
@@ -43,10 +42,6 @@ export default class DolphinSettings extends Component {
 
 	updateAllowDolphinAnalytics(event){
 		this.props.updateAllowDolphinAnalytics(event.target.checked);
-	}
-
-	clickUpdateMeleeIsoPath(){
-		this.props.requestMeleeIsoPath();
 	}
 
 	getRomPathsButtonText(){
@@ -64,7 +59,8 @@ export default class DolphinSettings extends Component {
 					<Button
 	                    className={`btn-small ${meleeIsoPath ? 'set' : 'not_set'}`}
 						disabled={settingMeleeIsoPath}
-						onClick={this.onClickUpdateMeleeIsoPath}
+						onClick={this.props.requestMeleeIsoPath}
+	                    onContextMenu={this.props.unsetMeleeIsoPath}
 					>
 						Set Melee ISO Path
 					</Button>

@@ -133,12 +133,11 @@ class ReplayComponent extends Component {
 	}
 
 	replayViewClick(){
-		const { meleeIsoPath, launchReplay, replay, slippiBuild } = this.props;
+		const { launchReplay, replay, slippiBuild } = this.props;
 
-		this.props.launchReplay({
+		launchReplay({
 			build: slippiBuild,
 			replayPath: replay.filePath,
-			meleeIsoPath: meleeIsoPath,
 		});
 	}
 
