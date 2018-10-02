@@ -12,8 +12,9 @@
  */
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
-import MenuBuilder from './menu';
 import _ from 'lodash';
+import AutoLaunch from 'auto-launch';
+import MenuBuilder from './menu';
 
 let mainWindow = null;
 
@@ -46,6 +47,17 @@ ipcMain.on('autoUpdate-initialize', (event) => {
 });
 
 
+const autoLaunch = new AutoLaunch({
+	name: 'SmashLadder Dolphin Launcher',
+	path: app.getPath('exe'),
+});
+autoLaunch.isEnabled().then((isEnabled) => {
+	if (!isEnabled) autoLaunch.enable();
+}).catch((error)=>{
+	console.error(error);
+});
+
+
 if(process.env.NODE_ENV === 'production')
 {
 	const sourceMapSupport = require('source-map-support');
@@ -73,9 +85,6 @@ const installExtensions = async () => {
 	).catch(console.log);
 };
 
-/**
- * Add event listeners...
- */
 
 app.on('window-all-closed', () => {
 	// Respect the OSX convention of having the application in memory even
@@ -85,6 +94,19 @@ app.on('window-all-closed', () => {
 		app.quit();
 	}
 });
+
+// to make singleton instance
+const isSecondInstance = app.makeSingleInstance(() => {
+	// Someone tried to run a second instance, we should focus our window.
+	if (mainWindow) {
+		if (mainWindow.isMinimized()) mainWindow.restore();
+		mainWindow.focus();
+	}
+});
+
+if (isSecondInstance) {
+	app.quit()
+}
 
 app.on('ready', async () => {
 	if(

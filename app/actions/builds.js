@@ -45,6 +45,10 @@ export const MERGE_SETTINGS_INTO_BUILD_BEGIN = 'MERGE_SETTINGS_INTO_BUILD_BEGIN'
 export const MERGE_SETTINGS_INTO_BUILD_SUCCESS = 'MERGE_SETTINGS_INTO_BUILD_SUCCESS';
 export const MERGE_SETTINGS_INTO_BUILD_FAIL = 'MERGE_SETTINGS_INTO_BUILD_FAIL';
 
+export const SYNC_BUILDS_BEGIN = 'SYNC_BUILDS_BEGIN';
+export const SYNC_BUILDS_SUCCESS = 'SYNC_BUILDS_SUCCESS';
+export const SYNC_BUILDS_FAIL = 'SYNC_BUILDS_FAIL';
+
 export const AUTOHOTKEY_EVENT = 'AUTOHOTKEY_ACTION';
 
 const buildLauncher = new BuildLaunchAhk();
@@ -171,6 +175,38 @@ export const setBuildPath = (
   {
     dispatch(mergeInitialSettingsIntoBuild(build));
   }
+  dispatch(syncBuildsWithServer());
+};
+
+const syncBuildsWithServer = () => (dispatch, getState) => {
+      const authentication = getAuthenticationFromState(getState);
+      const { builds } = getState().builds;
+
+      const buildIds = {};
+      _.each(builds, (build)=>{
+          if(!build.executablePath())
+          {
+              return;
+          }
+          buildIds[build.dolphin_build_id] = build.dolphin_build_id;
+      });
+
+      dispatch({
+          type: SYNC_BUILDS_BEGIN
+      });
+      authentication.apiPost(endpoints.SET_ACTIVE_BUILDS, {build_ids: buildIds})
+          .then(()=>{
+              dispatch({
+                  type: SYNC_BUILDS_SUCCESS
+              });
+          })
+          .catch((error)=>{
+              console.error(error);
+              dispatch({
+                  type: SYNC_BUILDS_FAIL
+              });
+          });
+
 };
 
 export const mergeInitialSettingsIntoBuild = (build) => (dispatch, getState) => {

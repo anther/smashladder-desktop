@@ -9,7 +9,6 @@ export const endpoints = {
   SUBMIT_REPLAY_RESULT: 'dolphin/slippi_replay',
   LOGIN: 'dolphin/credentials_link',
   DOLPHIN_BUILDS: 'dolphin/all_builds',
-  SYNC_BUILDS: 'dolphin/sync_builds',
   CLOSED_DOLPHIN: 'dolphin/closed_host',
   OPENED_DOLPHIN: 'dolphin/opened_dolphin',
   UPDATE_BUILD_PREFERENCES: 'matchmaking/update_active_build_preferences',
@@ -17,6 +16,7 @@ export const endpoints = {
   REPORT_MATCH_GAME: 'dolphin/report_match_game',
   RETRIEVE_MATCH_GAME_ID: 'dolphin/prepare_match_game',
   DOLPHIN_PLAYER_JOINED: 'dolphin/player_list_update',
+  SET_ACTIVE_BUILDS: 'matchmaking/set_active_builds',
   WEBSOCKET_URL: productionUrls =>
     productionUrls === false
       ? 'ws://localhost:100'
