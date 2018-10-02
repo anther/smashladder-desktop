@@ -72,19 +72,27 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 		{
 			dispatch(stopWatchingForReplayChanges('Starting a new watch process'));
 		}
-		replayWatchProcess = watch(paths, { recursive: false }, (event, filePath) => {
+		const limitedReplayUpdate = _.debounce((event, filePath) => {
+			console.log('lmited replay send ', event);
 			if (event === 'remove') {
 				return;
 			}
 			fs.lstat(filePath, (err, stats) => {
 				if (err) {
-					return console.error(err); // Handle error
+					return console.error(err);
 				}
 
 				if (stats.isFile()) {
 					dispatch(checkReplay(filePath, replayWatchProcessCounter));
 				}
 			});
+		}, 15000, {
+			'leading': true,
+			'trailing': true
+		});
+		replayWatchProcess = watch(paths, { recursive: false }, (event, filePath) => {
+			console.log('want to upload but... we should wait');
+			limitedReplayUpdate(event, filePath);
 		});
 		dispatch({
 			type: WATCH_DIRECTORIES_BEGIN,
@@ -230,11 +238,11 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 		});
 };
 
-const loadGame = (file) => {
+const loadGame = async (file) => {
 	console.log('load game attempt ' , file);
 	const replay = Replay.retrieve({id: file});
-	return multitry(1500, 2, () => {
-		replay.resetData();
+	replay.resetData();
+	return multitry(1000, 1, () => {
 		if (!replay.isReadable()) {
 			throw new Error(replay.getErrorReasons());
 		}

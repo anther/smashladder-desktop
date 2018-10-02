@@ -5,12 +5,16 @@ import {
 	CHECK_FOR_UPDATES_NO_UPDATES, UPDATE_DOWNLOAD_BEGIN, UPDATE_DOWNLOAD_FAIL, UPDATE_DOWNLOAD_SUCCESS
 } from "../actions/autoUpdates";
 
+
+export const activeUpdateStates = {
+	DOWNLOADING: 'DOWNLOADING',
+	DOWNLOADED: 'DOWNLOADED'
+};
 const initialState = {
 	autoUpdateError: null,
-	checkingForUpdates: false,
 	updateAvailable: null,
-	downloadingUpdate: false,
-	updatwnloaded: false,
+	activeUpdate: null,
+	checkingForUpdates: false,
 };
 
 export default (state = initialState, action) => {
@@ -46,20 +50,19 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				autoUpdateError: null,
-				downloadingUpdate: true,
+				activeUpdate: activeUpdateStates.DOWNLOADING,
 			};
 		case UPDATE_DOWNLOAD_SUCCESS:
 			return {
 				...state,
 				autoUpdateError: null,
-				updateDownloaded: true,
+				activeUpdate: activeUpdateStates.DOWNLOADED,
 			};
 		case UPDATE_DOWNLOAD_FAIL:
 			return {
 				...state,
 				autoUpdateError: action.payload,
-				updateDownloaded: false,
-				downloadingUpdate: false,
+				activeUpdate: null,
 			};
 		default:
 			return state;

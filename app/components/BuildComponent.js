@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { clipboard } from 'electron';
+import { clipboard, remote, shell } from 'electron';
 import path from 'path';
 import _ from 'lodash';
 import unzipper from 'unzipper';
@@ -72,6 +72,8 @@ export default class BuildComponent extends Component {
     this.onJoinCodeCancel = this.joinCodeCancel.bind(this);
     this.onDownloadClick = this.downloadClick.bind(this);
 
+    this.onBuildNameClick = this.buildNameClick.bind(this);
+
     this.onSelectedGameChange = this.selectedGameChange.bind(this);
   }
 
@@ -80,11 +82,15 @@ export default class BuildComponent extends Component {
       this.setState({
           glowing: false
       })
-    })
+    }, 10000)
   }
 
   componentWillUnmount() {
     clearTimeout(this.glowTimeout);
+  }
+
+  buildNameClick() {
+    shell.showItemInFolder(this.props.build.executablePath());
   }
 
   setBuildPathClick() {
@@ -118,7 +124,7 @@ export default class BuildComponent extends Component {
 
     const { build } = this.props;
 
-    const basePath = Files.createApplicationPath('./dolphin_downloads');
+    const basePath = path.join(remote.app.getPath('userData'), 'dolphin_downloads');
 
     const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
     const extension = path.extname(build.download_file);
@@ -299,7 +305,6 @@ export default class BuildComponent extends Component {
                   disabled={settingBuildPath}
                   title={build.path}
                   onClick={this.onSetBuildPathClick}
-                  onContextMenu={this.onUnsetBuildPathClick}
                   className="btn-small set"
                 >
                   Path Set
@@ -319,7 +324,20 @@ export default class BuildComponent extends Component {
             )}
           </div>
 
-          <span className="build_name">{build.name}</span>
+            {!!build.path &&
+              <a onClick={this.onBuildNameClick}
+                 className="build_name">{build.name}</a>
+            }
+            {!build.path &&
+              <span className="build_name">{build.name}</span>
+            }
+
+            {!!build.path &&
+              <div className='remove_build_path'>
+                <Button onClick={this.onUnsetBuildPathClick}
+                        className='btn-small not_set ' />
+              </div>
+            }
         </div>
 
         {!this.state.enterJoinCode && (
@@ -368,12 +386,19 @@ export default class BuildComponent extends Component {
               build.hasDownload() && (
                 <React.Fragment>
                   {!downloading && (
-                    <Button
-                      className={`download_build ${glowing ? 'pulse' : ''}`}
-                      onClick={this.onDownloadClick}
-                    >
-                      Download <span className="download_arrow">⇩</span>
-                    </Button>
+                      <div className='download_pls'>
+                        <div className='installer'>
+                          <Button
+                            className={`download_build ${glowing ? 'pulse' : ''}`}
+                            onClick={this.onDownloadClick}
+                          >
+                            Install <span className="download_arrow">⇩</span>
+                          </Button>
+                        </div>
+                        <span className='download_description'>
+                            If you do not already have <span className='build_name'>{build.name}</span> click here to install it.
+                        </span>
+                      </div>
                   )}
                   {downloading && (
                     <React.Fragment>

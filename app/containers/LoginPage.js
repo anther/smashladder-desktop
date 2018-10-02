@@ -14,9 +14,11 @@ class LoginPage extends Component<Props> {
 				<Header
 					productionUrls={this.props.productionUrls}
 				/>
-				<Login
-					{...this.props}
-				/>
+				<div className="row">
+					<Login
+						{...this.props}
+					/>
+				</div>
 			</Layout>
 		);
 	}

@@ -89,7 +89,7 @@ export default class ReplaySync extends Component {
             <ProgressIndeterminate color={this.getProgressColor()} />
           )}
           <h6 className={`connection_state ${this.getSyncStatusStatement().isError ? 'error' : ''}`}>{this.getSyncStatusStatement().message}</h6>
-          <div className="switch">
+            <div className="switch">
             <label>
               <span>No</span>
               <input

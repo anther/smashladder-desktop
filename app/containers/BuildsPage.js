@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
-import * as ReplayActions  from '../actions/replays';
+import * as ReplayActions from '../actions/replays';
 import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import * as AutoUpdateActions from '../actions/autoUpdates';
 import * as ReplayWatchActions from '../actions/replayWatch';
@@ -61,34 +61,47 @@ class BuildsPage extends Component<Props> {
 			...this.props,
 			...this.state,
 		};
+		const { activeUpdate } = props;
 		return (
 			<React.Fragment>
 				<Layout>
 					<Header
 						{...props}
 					/>
-					<Builds {...props} />
-					<WebsocketComponent
-						{...props}
-					/>
-					<ReplaySync
-						{...props}
-					/>
-					<DolphinSettings
-						{...props}
-					/>
+					{!activeUpdate &&
+					<React.Fragment>
+						<div className='col m8'>
+							<Builds {...props} />
+						</div>
+						<div className="col m4 connecties">
+							<WebsocketComponent
+								{...props}
+							/>
+							<ReplaySync
+								{...props}
+							/>
+							<DolphinSettings
+								{...props}
+							/>
+						</div>
 
+					</React.Fragment>
+					}
 				</Layout>
+				{!activeUpdate &&
 				<div className='container'>
 					<ReplayBrowser
 						{...props}
 					/>
 				</div>
+				}
+				{activeUpdate &&
 				<div className='container'>
 					<AutoUpdates
 						{...props}
-						/>
+					/>
 				</div>
+				}
 			</React.Fragment>
 		);
 	}

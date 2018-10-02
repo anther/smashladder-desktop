@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 import electronSettings from 'electron-settings';
 import _ from 'lodash';
+import fs from 'fs';
 import { endpoints } from '../utils/SmashLadderAuthentication';
 import Build from '../utils/BuildData';
 import BuildLaunchAhk from '../utils/BuildLaunchAhk';
@@ -104,6 +105,10 @@ const combineWithSavedBuildData = (rawBuildData, savedBuildData) => {
     }
     build = buildList[build.dolphin_build_id] || Build.create(build);
     buildList[build.dolphin_build_id] = build;
+    if(!fs.existsSync(build.executablePath()))
+    {
+        build.pathError = true;
+    }
   });
   return buildList;
 };
@@ -148,6 +153,7 @@ const saveBuild = (build: Build) => (dispatch, getState) => {
             builds: currentBuilds
           }
         });
+        dispatch(startReplayBrowser());
       })
       .catch(error => {
         console.error(error);
@@ -242,6 +248,7 @@ export const closeDolphin = () => (dispatch, getState) => {
         type: CLOSE_BUILD
       });
       authentication.apiPost(endpoints.CLOSED_DOLPHIN);
+      dispatch(startReplayBrowser());
     })
     .catch(error => {
       console.error(error);
@@ -318,7 +325,7 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
     });
 };
 
-export const hostBuild = (build, game) => (dispatch, getState) => {
+export const hostBuild = (build, game) => async (dispatch, getState) => {
   const authentication = getAuthenticationFromState(getState);
   const state = getState();
   dispatch({

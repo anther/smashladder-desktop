@@ -201,6 +201,19 @@ h6 {
     padding-left: 0;
     padding-right: 0;
 
+    .download_pls{
+      display: flex;
+      flex-direction: row;
+      .download_description{
+        margin-left: 16px;
+      }
+
+      .build_name{
+        font-weight: bold;
+      }
+    }
+
+
     .enter_join_code {
       display: flex;
       .cancel {
@@ -259,9 +272,25 @@ h6 {
     .build_heading {
       display: flex;
 
+      .remove_build_path{
+        flex: 1;
+        text-align: right;
+
+        .btn{
+          &:after{
+            margin-left: 0;
+          }
+          padding: 0 8px;
+          margin-left: 8px;
+        }
+
+      }
+
       .build_name {
+        color: inherit;
         margin-left: 16px;
         font-size: 19px;
+
       }
 
       .has_path i,
@@ -377,4 +406,9 @@ h6 {
   .search_subdirectories {
     margin-top: 8px;
   }
+}
+
+
+.auto_updates{
+  text-align: center;
 }

@@ -1,28 +1,40 @@
-import React , { Component } from 'react';
+import React, { Component } from 'react';
 import Button from "./elements/Button";
+import LoaderFlashing from "./elements/LoaderFlashing";
+import { activeUpdateStates } from "../reducers/autoUpdates";
 
-export default class AutoUpdates extends Component{
+export default class AutoUpdates extends Component {
 	render(){
-		return null;
+		const {
+			checkingForUpdates,
+			updateAvailable,
+			activeUpdate,
+			initializeAutoUpdater,
+			startAutoUpdate,
+		} = this.props;
+
 		return (
 			<div className='auto_updates'>
-				{!this.props.checkingForUpdates && this.props.updateAvailable === null &&
+				{false && !checkingForUpdates && updateAvailable === null &&
 				<Button className='btn-small'
-				   onClick={this.props.initializeAutoUpdater}>Check for updates
+				        onClick={initializeAutoUpdater}>Check for updates
 				</Button>
 				}
-				{this.props.checkingForUpdates &&
-					<span>Checking For Updates...</span>
+				{false && checkingForUpdates &&
+				<span>Checking For Updates...</span>
 				}
-				{this.props.updateAvailable &&
-					<Button className='btn-small'
-				        onClick={this.props.startAutoUpdate}>Download And Install Update
-					</Button>
+				{updateAvailable &&
+				<Button className='btn-small'
+				        onClick={startAutoUpdate}>Download And Install Update
+				</Button>
 				}
-				{this.props.downloadingUpdate &&
-					<h5>Update is Downloading</h5>
+				{activeUpdate === activeUpdateStates.DOWNLOADING &&
+					<React.Fragment>
+						<h5>An Update is Downloading</h5>
+						<LoaderFlashing/>
+					</React.Fragment>
 				}
-				{this.props.updateDownloaded &&
+				{activeUpdate === activeUpdateStates.DOWNLOADED &&
 					<h5>Update Downloaded! The Application will now restart</h5>
 				}
 			</div>

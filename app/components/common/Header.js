@@ -40,13 +40,13 @@ export default class Header extends Component {
 					</span>
 					{player.id === 1 &&
 					<React.Fragment>
-						{productionUrls &&
+						{productionUrls !== false &&
 						<a className='waves-effect waves-teal btn-flat btn-small'
 						   onClick={enableDevelopmentUrls}>Production Urls
 						</a>
 						}
 
-						{!productionUrls &&
+						{productionUrls === false &&
 						<a className='waves-effect waves-teal btn-flat btn-small'
 						   onClick={enableProductionUrls}>Developer Urls
 						</a>
@@ -62,7 +62,7 @@ export default class Header extends Component {
 						<span className='logo-ladder'>Ladder</span>
 					</span>
 					<span className='launcher_name'>
-						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.8</span> </span>
+						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta 2.0.9</span> </span>
 					</span>
 				</h3>
 			</div>

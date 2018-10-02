@@ -5,9 +5,11 @@ import Build from "../utils/BuildData";
 import Files from "../utils/Files";
 import Constants from "../utils/Constants";
 import Replay from "../utils/Replay";
+import { beginWatchingForReplayChanges } from "./replayWatch";
 
 
 export const REPLAY_BROWSE_START = 'REPLAY_BROWSE_START';
+export const REPLAY_BROWSE_FAIL = 'REPLAY_BROWSE_FAIL';
 export const REPLAY_BROWSE_END = 'REPLAY_BROWSE_END';
 
 export const REPLAY_BROWSE_UPDATE_START = 'REPLAY_BROWSE_UPDATE_START';
@@ -36,9 +38,26 @@ export const startReplayBrowser = () => (dispatch, getState) => {
 		replayBrowseWatchProcess.close();
 	}
 	const slippiBuildPaths = slippiBuilds.map( (build) => build.getSlippiPath() );
+	if(slippiBuildPaths.length === 0)
+	{
+		dispatch({
+			type: REPLAY_BROWSE_FAIL
+		});
+		return;
+	}
+
+	console.log('creating new limit');
+	const limitedUpdateBrowsedReplayList = _.debounce(() => {
+		console.log('lmited browse replay list');
+		dispatch(updateBrowsedReplayList());
+	}, 20000,{
+		leading: false,
+		trailing: true,
+	});
 	const newWatcher = watch(slippiBuildPaths, { recursive: true }, (event, filePath) => {
 		// Just brute force it for now, people with thousands of games will suffer...
-		dispatch(updateBrowsedReplayList());
+		console.log('file updated');
+		limitedUpdateBrowsedReplayList();
 	});
 	dispatch({
 		type: REPLAY_BROWSE_START,
@@ -48,7 +67,6 @@ export const startReplayBrowser = () => (dispatch, getState) => {
 		}
 	});
 	dispatch(updateBrowsedReplayList());
-
 };
 
 const updateBrowsedReplayList = () => (dispatch, getState) => {
@@ -120,20 +138,22 @@ export const deleteReplay = (filePath) => (dispatch) => {
 	});
 	fs.unlink(filePath, (error) => {
 		if(error){
-			return dispatch({
+			console.error(error);
+			dispatch({
 				type: DELETE_REPLAY_FAIL,
 				payload: filePath
 			});
+			throw error;
 		}
 		dispatch({
 			type: DELETE_REPLAY_SUCCESS,
 			payload: filePath
 		});
+		dispatch(updateBrowsedReplayList());
 	});
 };
 
 export const stopReplayBrowser = () => {
-
 	return {
 		type: REPLAY_BROWSE_END
 	};

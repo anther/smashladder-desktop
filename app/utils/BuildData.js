@@ -9,7 +9,7 @@ export default class Build extends CacheableDataObject {
   static getSlippiBuilds(builds){
 	  let foundBuilds = new Set();
 	  _.each(builds, build => {
-		  if (build.getSlippiPath()) {
+		  if (build.getSlippiPath(true)) {
 			  foundBuilds.add(build);
 		  }
 	  });
@@ -19,6 +19,7 @@ export default class Build extends CacheableDataObject {
 
   beforeConstruct() {
     this.games = [];
+    this.pathError = false;
   }
 
   addLadder(ladder) {
@@ -58,19 +59,17 @@ export default class Build extends CacheableDataObject {
     this.gameLaunches++;
   }
 
-  getSlippiPath() {
+  getSlippiPath(forceRecheck = false) {
     if (!this.path) {
       return null;
     }
-    if (this._slippiPath !== undefined) {
+    if (this._slippiPath !== undefined && !forceRecheck) {
       return this._slippiPath;
     }
     const slippiPath = path.join(this.executableDirectory(), 'Slippi');
     if (fs.existsSync(slippiPath)) {
-    console.log('path exists');
       return (this._slippiPath = slippiPath);
     }
-    console.log('path does not exist');
 
     return this._slippiPath = null;
   }

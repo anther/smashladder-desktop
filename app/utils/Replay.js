@@ -20,6 +20,7 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	resetData(){
+		this.hasSavedCachedSettings = false;
 		this.stats = null;
 		this.settings = {};
 		this.metadata = {};
@@ -189,7 +190,8 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	loadCachedSettings(){
-		const settings =  electronSettings.get(`replayCache.settings.${this.getMd5()}`);
+		// const settings =  electronSettings.get(`replayCache.settings.${this.getMd5()}`);
+		const settings = null;
 		if(settings)
 		{
 			this.hasSavedCachedSettings = true;
@@ -208,9 +210,9 @@ export default class Replay extends CacheableDataObject {
 		};
 		if(settings)
 		{
-			this.hasSavedCachedSettings = true;
+			// this.hasSavedCachedSettings = true;
 		}
-		electronSettings.set(`replayCache.settings.${this.getMd5()}`, settings);
+		// electronSettings.set(`replayCache.settings.${this.getMd5()}`, settings);
 	}
 
 	retrieveSlippiGame(){
@@ -218,10 +220,6 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	parseMetadata(){
-		if(this.game !== null)
-		{
-			return;
-		}
 		try
 		{
 			const cachedSettings = this.loadCachedSettings();
@@ -231,7 +229,7 @@ export default class Replay extends CacheableDataObject {
 				this.metadata = cachedSettings.metadata;
 				this.stats = _.isEmpty(cachedSettings.stats) ? null : cachedSettings.stats;
 			}
-			else
+			else if(fs.existsSync(this.filePath))
 			{
 				const game = this.retrieveSlippiGame();
 				this.settings = game.getSettings();

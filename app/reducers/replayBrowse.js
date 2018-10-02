@@ -1,7 +1,7 @@
 import {
 	DELETE_REPLAY_BEGIN,
 	DELETE_REPLAY_FAIL,
-	DELETE_REPLAY_SUCCESS,
+	DELETE_REPLAY_SUCCESS, REPLAY_BROWSE_FAIL,
 	REPLAY_BROWSE_START,
 	REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS, REPLAY_BROWSE_UPDATE_SUCCESS, REPLAY_BROWSER_CHANGE_PAGE_NUMBER
 } from "../actions/replayBrowse";
@@ -32,6 +32,12 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				deletingReplay: null,
+			};
+		case REPLAY_BROWSE_FAIL:
+			return {
+				...state,
+				replayBrowseWatchProcess: null,
+				replayWatchBuilds: null,
 			};
 		case REPLAY_BROWSE_START:
 			return {

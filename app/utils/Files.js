@@ -86,7 +86,14 @@ export default class Files {
 		for(let i = 0; i < files.length; i++)
 		{
 			const filename = path.join(startPath, files[i]);
-			const stat = fs.lstatSync(filename);
+			let stat = null;
+			try{
+				stat = fs.lstatSync(filename);
+			}
+			catch(error){
+				console.error(error);
+				continue;
+			}
 			if(stat.isDirectory())
 			{
 				results = results.concat(Files.findInDirectory(filename, filter)); // recurse
