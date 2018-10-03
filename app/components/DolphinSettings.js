@@ -30,11 +30,21 @@ export default class DolphinSettings extends Component {
 		super(props);
 		this.onUpdateSearchSubdirectories = this.updateSearchSubdirectoriesChange.bind(this);
 		this.onUpdateAllowDolphinAnalytics = this.updateAllowDolphinAnalytics.bind(this);
+		this.onSetMeleeIsoPathClick = this.setMeleeIsoPathClick.bind(this);
 
 		this.onSelectRomPathClick = this.selectRomPathClick.bind(this);
+		this.onUnsetRomPathClick = this.unsetRomPathClick.bind(this);
 		this.state = {
 			settingMeleeIsoPath: false,
 		};
+	}
+
+	setMeleeIsoPathClick(){
+		this.props.requestMeleeIsoPath();
+	}
+
+	unsetRomPathClick(){
+		this.props.unsetMeleeIsoPath();
 	}
 
 	selectRomPathClick(){
@@ -58,18 +68,8 @@ export default class DolphinSettings extends Component {
 
 		return (
 			<div className="file_paths">
-				<h5>Dolphin Settings</h5>
+				<h5>Settings</h5>
 				<h6>Roms</h6>
-				<div className="input-field">
-					<Button
-	                    className={`btn-small ${meleeIsoPath ? 'set' : 'not_set'}`}
-						disabled={settingMeleeIsoPath}
-						onClick={this.props.requestMeleeIsoPath}
-	                    onContextMenu={this.props.unsetMeleeIsoPath}
-					>
-						Set Melee ISO Path
-					</Button>
-				</div>
 				<div className="input-field">
 					<Button
 						className={`btn-small ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
@@ -113,6 +113,21 @@ export default class DolphinSettings extends Component {
 					/>
 					<span>Send Dolphin Analytics</span>
 				</label>
+				<h6>Replays</h6>
+				<div className="input-field joined_inputs">
+					<Button
+						className={`btn-small ${meleeIsoPath ? 'set' : 'not_set'}`}
+						disabled={settingMeleeIsoPath}
+						onClick={this.onSetMeleeIsoPathClick}
+					>
+						Set Melee ISO Path
+					</Button>
+					<Button
+						className='btn-small not_set remove_path'
+						onClick={this.onUnsetRomPathClick}
+					/>
+
+				</div>
 			</div>
 		);
 	}

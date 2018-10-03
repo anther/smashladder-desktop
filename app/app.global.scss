@@ -21,6 +21,15 @@ a {
   cursor: pointer;
 }
 
+.joined_inputs{
+  display: flex;
+  flex-direction: row;
+  .btn{
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
 .btn {
   &.not_set,
   &.set {
@@ -46,6 +55,12 @@ a {
       content: '✔';
     }
   }
+}
+.btn.remove_path{
+  &:after{
+    margin-left: 0;
+  }
+  padding: 0 8px;
 }
 
 .error {
@@ -275,15 +290,6 @@ h6 {
       .remove_build_path{
         flex: 1;
         text-align: right;
-
-        .btn{
-          &:after{
-            margin-left: 0;
-          }
-          padding: 0 8px;
-          margin-left: 8px;
-        }
-
       }
 
       .build_name {
@@ -327,7 +333,6 @@ h6 {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      flex: 1;
       justify-content: flex-end;
 
       .character {
@@ -340,6 +345,30 @@ h6 {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+
+
+    .main_buttons{
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+
+      .file_name_holder{
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+      .file_name{
+      }
+    }
+
+  }
+
+  .stage{
+    img{
+      height: 64px;
+      border-radius: 4px;
+    }
   }
 
   .collection-item {

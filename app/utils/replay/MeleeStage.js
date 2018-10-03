@@ -1,3 +1,5 @@
+import Files from "../Files";
+
 const StringManipulator = require('../StringManipulator');
 
 export default class MeleeStage {
@@ -24,7 +26,14 @@ export default class MeleeStage {
 	}
 
 	imageUrl(){
-		return `images/stages/melee/${  StringManipulator.slugify(this.name.toLowerCase())  }.png`;
+		if (this._imagePath) {
+			return this._imagePath;
+		}
+		return (this._imagePath = Files.createApplicationPath(
+			`./external/stages/melee/${StringManipulator.slugify(
+				this.name.toLowerCase()
+			)}.png`
+		));
 	}
 }
 

@@ -134,7 +134,7 @@ export default class Replay extends CacheableDataObject {
 			return this.metadata.lastFrame.asTime();
 		}
 		
-			return '????';
+			return 'Time Unavailable (Dolphin Probably Exited before Match Ended)';
 		
 	}
 
@@ -272,6 +272,15 @@ export default class Replay extends CacheableDataObject {
 
 	get filePath(){
 		return this.id;
+	}
+
+	getStage(){
+		this.parseMetadata();
+		if(this.settings && this.settings.stage)
+		{
+			return this.settings.stage;
+		}
+		return null;
 	}
 
 	getCharacters(){

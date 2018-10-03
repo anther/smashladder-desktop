@@ -337,7 +337,7 @@ export default class BuildComponent extends Component {
             {!!build.path &&
               <div className='remove_build_path'>
                 <Button onClick={this.onUnsetBuildPathClick}
-                        className='btn-small not_set ' />
+                        className='btn-small not_set remove_path' />
               </div>
             }
         </div>

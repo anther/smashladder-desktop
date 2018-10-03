@@ -56,11 +56,7 @@ export default class ReplayComponent extends Component {
 	}
 
 	getReplayDisplayString(){
-		const { replay, meleeIsoPath, launchedReplay, launchingReplay } = this.props;
-		if(!meleeIsoPath)
-		{
-			return 'Set Melee Iso Path';
-		}
+		const { replay, launchedReplay, launchingReplay } = this.props;
 		if(replay.id === launchingReplay)
 		{
 			return 'Launching...'
@@ -78,27 +74,31 @@ export default class ReplayComponent extends Component {
 	render(){
 		const { replay, meleeIsoPath, settingMeleeIsoPath, launchedReplay, launchingReplay } = this.props;
 		const { deleteQuestion } = this.state;
+		const stage = replay.getStage();
+		const characters = replay.getCharacters();
 		return (
 			<React.Fragment>
 				<div className='main_content'>
 					<div className='game_data'>
-						<div className='match_time'>
-							{replay.getMatchTime()}
-						</div>
+						{stage &&
+							<div className='stage'>
+								<img alt={stage.name} src={stage.imageUrl()} />
+							</div>
+						}
 						<div className='characters'>
-							{replay.getCharacters().map((character, index) => (
+							{characters.map((character, index) => (
 								<div key={`${character.name}${index}`} className='character'>
 									<img alt={character.name} src={character.getStockIcon()}/>
 								</div>
 							))}
 						</div>
+						<div className='match_time'>
+							{replay.getMatchTime()}
+						</div>
 					</div>
 					<div className='file_data'>
 						{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
 					</div>
-					<a onClick={this.onOpenInExplorer} className='file_name'>
-						{replay.getFileName()}
-					</a>
 				</div>
 				<div className='secondary-content action_buttons'>
 					<React.Fragment>
@@ -119,15 +119,14 @@ export default class ReplayComponent extends Component {
 							</React.Fragment>
 						}
 						{!deleteQuestion &&
-						<React.Fragment>
+						<div className='main_buttons'>
 							<div className='input-field'>
-							<Button
-
-								disabled={settingMeleeIsoPath || launchingReplay}
-								onClick={this.onReplayViewClick}
-								className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
-								{this.getReplayDisplayString()}
-							</Button>
+								<Button
+									disabled={settingMeleeIsoPath || launchingReplay}
+									onClick={this.onReplayViewClick}
+									className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
+									{this.getReplayDisplayString()}
+								</Button>
 							</div>
 							{false &&
 							<div className='input-field'>
@@ -145,11 +144,28 @@ export default class ReplayComponent extends Component {
 								</Button>
 							</div>
 							}
-						</React.Fragment>
+							<div className='file_name_holder'>
+								<a onClick={this.onOpenInExplorer} className='file_name'>
+									{replay.getFileName()}
+								</a>
+							</div>
+						</div>
 						}
 					</React.Fragment>
 				</div>
 			</React.Fragment>
 		);
+	}
+}
+
+class StocksDisplay extends Component
+{
+
+	render(){
+		const character = this.props.character;
+		return (
+			<div className='player'>
+			</div>
+		)
 	}
 }
