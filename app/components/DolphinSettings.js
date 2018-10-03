@@ -31,9 +31,14 @@ export default class DolphinSettings extends Component {
 		this.onUpdateSearchSubdirectories = this.updateSearchSubdirectoriesChange.bind(this);
 		this.onUpdateAllowDolphinAnalytics = this.updateAllowDolphinAnalytics.bind(this);
 
+		this.onSelectRomPathClick = this.selectRomPathClick.bind(this);
 		this.state = {
 			settingMeleeIsoPath: false,
 		};
+	}
+
+	selectRomPathClick(){
+		this.props.beginSelectingNewRomPath();
 	}
 
 	updateSearchSubdirectoriesChange(event){
@@ -69,7 +74,7 @@ export default class DolphinSettings extends Component {
 					<Button
 						className={`btn-small ${romPaths.length > 0 ? 'set' : 'not_set'}`}
 						disabled={selectingRomPath}
-						onClick={beginSelectingNewRomPath}
+						onClick={this.onSelectRomPathClick}
 					>
 						{this.getRomPathsButtonText()}
 					</Button>

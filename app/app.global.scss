@@ -290,7 +290,10 @@ h6 {
         color: inherit;
         margin-left: 16px;
         font-size: 19px;
-
+        &.has_path:hover{
+          @extend .blue-text, .lighten-2;
+          cursor: pointer;
+        }
       }
 
       .has_path i,

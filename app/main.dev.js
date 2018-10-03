@@ -10,13 +10,18 @@
  *
  * @flow
  */
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, Menu, Tray, nativeImage } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import _ from 'lodash';
 import AutoLaunch from 'auto-launch';
-import MenuBuilder from './menu';
+import electronSettings from 'electron-settings';
+import path from "path";
+import Files from './utils/Files';
+
 
 let mainWindow = null;
+
+const LAUNCH_AT_STARTUP_KEY = 'launchAtStartup';
 
 autoUpdater.autoDownload = false;
 ipcMain.on('autoUpdate-start', () => {
@@ -46,20 +51,6 @@ ipcMain.on('autoUpdate-initialize', event => {
   autoUpdater.checkForUpdates();
 });
 
-const autoLaunch = new AutoLaunch({
-  name: 'SmashLadder Dolphin Launcher',
-  path: app.getPath('exe'),
-  isHidden: true
-});
-autoLaunch
-  .isEnabled()
-  .then(isEnabled => {
-    if (!isEnabled) autoLaunch.enable();
-  })
-  .catch(error => {
-    console.error(error);
-  });
-
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -70,7 +61,6 @@ if (
   process.env.DEBUG_PROD === 'true'
 ) {
   require('electron-debug')();
-  const path = require('path');
   const p = path.join(__dirname, '..', 'app', 'node_modules');
   require('module').globalPaths.push(p);
 }
@@ -106,6 +96,36 @@ if (isSecondInstance) {
   app.quit();
 }
 
+
+let tray = null;
+let debugTray = { send: () => {} };
+app.on('ready', async () => {
+	const imagePath = Files.createApplicationPath('./external/android-icon-36x36.png');
+	const trayImage = nativeImage.createFromPath(imagePath);
+	ipcMain.on('debugTray', (event) => {
+		debugTray = event.sender;
+		event.sender.send('debugTray', imagePath);
+	});
+
+
+	tray = new Tray(trayImage);
+	updateTray();
+
+	tray.on('click', () => {
+		if(mainWindow.isMinimized())
+		{
+			mainWindow.show();
+		}
+		else
+		{
+			mainWindow.show();
+		}
+	});
+	tray.on('double-click', () => {
+		mainWindow.show();
+	});
+	tray.setToolTip('SmashLadder Dolphin Launcher');
+});
 app.on('ready', async () => {
   if (
     process.env.NODE_ENV === 'development' ||
@@ -128,24 +148,115 @@ app.on('ready', async () => {
     shell.openExternal(url);
   });
 
-  // @TODO: Use 'ready-to-show' event
-  //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
+  mainWindow.on('minimize', (event) => {
+	  event.preventDefault();
+	  mainWindow.hide();
+  });
+
   mainWindow.webContents.on('did-finish-load', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
-    if (process.env.START_MINIMIZED) {
+    const autoLaunched = (process.argv || []).indexOf('--hidden') !== -1;
+	  if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
-    } else {
+    } else if(!autoLaunched){
       mainWindow.show();
       mainWindow.focus();
+    } if(autoLaunched){
+      mainWindow.hide();
+      mainWindow.minimize();
     }
+
   });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
 });
+
+
+const setupAutoLaunch = async () => {
+	const autoLaunch = new AutoLaunch({
+		name: 'SmashLadder Dolphin Launcher',
+		path: app.getPath('exe'),
+		isHidden: true,
+	});
+	let launchAtStartup = await electronSettings.get(LAUNCH_AT_STARTUP_KEY);
+	if(launchAtStartup === undefined)
+	{
+		try{
+			const isEnabled = await autoLaunch.isEnabled();
+			if(!isEnabled)
+			{
+				autoLaunch.enable();
+				launchAtStartup = true;
+				electronSettings.set(LAUNCH_AT_STARTUP_KEY, launchAtStartup);
+			}
+		}
+		catch (error) {
+			console.error(error);
+		}
+	}
+	return {
+		autoLaunch,
+		launchAtStartup,
+	};
+};
+
+const updateTray = async () => {
+	const { autoLaunch, launchAtStartup } = await setupAutoLaunch();
+	const contextMenu = Menu.buildFromTemplate([
+		{
+			label: app.getVersion(),
+			enabled: false,
+		},
+		{
+			type: 'separator',
+		},
+		{
+			label: 'Launch At Startup',
+			checked: !!launchAtStartup,
+			type: 'checkbox',
+			click: () => {
+				debugTray.send('debugTray', `launch at startup ${launchAtStartup}`);
+				if(launchAtStartup)
+				{
+					autoLaunch.disable()
+						.then(()=>{
+							electronSettings.set(LAUNCH_AT_STARTUP_KEY, false);
+							updateTray();
+						})
+						.catch((error)=>{
+							if(debugTray)
+							{
+								debugTray.send('debugTray', error);
+							}
+						});
+				}
+				else
+				{
+					autoLaunch.enable()
+						.then(()=>{
+							electronSettings.set(LAUNCH_AT_STARTUP_KEY, true);
+							updateTray();
+						})
+						.catch((error)=>{
+							if(debugTray)
+							{
+								debugTray.send('debugTray', error);
+							}
+						});
+				}
+			}
+		},
+		{
+			label: 'Quit',
+			click:  () => {
+				app.quit();
+			}
+		}
+	]);
+	tray.setContextMenu(contextMenu);
+};

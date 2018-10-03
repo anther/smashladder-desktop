@@ -4,8 +4,9 @@ import 'hazardous';// This rewrites path for app.asar && needs to be before Path
 import path from "path";
 
 import sanitize from "sanitize-filename";
+import electron from "electron";
 
-const { dialog, app } = require('electron').remote;
+const { dialog, app } = electron.remote || electron;
 
 export default class Files {
 

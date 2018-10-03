@@ -325,8 +325,10 @@ export default class BuildComponent extends Component {
           </div>
 
             {!!build.path &&
-              <a onClick={this.onBuildNameClick}
-                 className="build_name">{build.name}</a>
+              <a
+                 title='Show in Explorer'
+                 onClick={this.onBuildNameClick}
+                 className="build_name has_path">{build.name}</a>
             }
             {!build.path &&
               <span className="build_name">{build.name}</span>

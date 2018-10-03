@@ -1,7 +1,7 @@
 {
   "name": "smashladder-dolphin-launcher",
   "productName": "SmashLadder Dolphin Launcher",
-  "version": "2.0.10",
+  "version": "2.0.13",
   "description": "Interfaces with Smashladder.com",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
@@ -46,10 +46,10 @@
     ]
   },
   "build": {
+    "compression": "normal",
     "productName": "SmashLadder Dolphin Launcher",
     "appId": "org.anther.smashladderdesktop",
     "asarUnpack": [
-      "**/dolphin_downloads/hi.txt",
       "**/external/**/*"
     ],
     "files": [

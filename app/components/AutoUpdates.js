@@ -15,19 +15,6 @@ export default class AutoUpdates extends Component {
 
 		return (
 			<div className='auto_updates'>
-				{false && !checkingForUpdates && updateAvailable === null &&
-				<Button className='btn-small'
-				        onClick={initializeAutoUpdater}>Check for updates
-				</Button>
-				}
-				{false && checkingForUpdates &&
-				<span>Checking For Updates...</span>
-				}
-				{updateAvailable &&
-				<Button className='btn-small'
-				        onClick={startAutoUpdate}>Download And Install Update
-				</Button>
-				}
 				{activeUpdate === activeUpdateStates.DOWNLOADING &&
 					<React.Fragment>
 						<h5>An Update is Downloading</h5>

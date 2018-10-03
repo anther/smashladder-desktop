@@ -9,6 +9,7 @@ import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import * as AutoUpdateActions from '../actions/autoUpdates';
 import * as ReplayWatchActions from '../actions/replayWatch';
 import * as ReplayBrowseActions from '../actions/replayBrowse';
+import * as trayActions from '../actions/tray';
 import {
 	disableConnection,
 	enableConnection,
