@@ -134,36 +134,44 @@ const saveBuild = (build: Build) => (dispatch, getState) => {
       builds: currentBuilds
     }
   });
-  if (build.executablePath()) {
-    const addRom = path => {
-      dispatch(addRomPath(path));
-    };
-    const allowAnalytics = set => {
-      dispatch(updateAllowDolphinAnalytics(set));
-    };
-    const updateSearchRomSetting = set => {
-      dispatch(updateSearchRomSubdirectories(set));
-    };
-    DolphinConfigurationUpdater.copyInitialSettingsFromBuild(
-      build.executablePath(),
-      addRom,
-      allowAnalytics,
-      updateSearchRomSetting
-    )
-      .then(() => {
-        dispatch({
-          type: COPIED_BUILD_SETTINGS,
-          payload: {
-            builds: currentBuilds
-          }
-        });
-        dispatch(startReplayBrowser());
-      })
-      .catch(error => {
-        console.error(error);
-      });
-  }
+
+  dispatch(copyBuildSettings(build));
+
 };
+
+const copyBuildSettings = (build: Build) => (dispatch, getState) => {
+    const state = getState();
+	const currentBuilds = { ...state.builds.builds };
+	if (build.executablePath()) {
+		const addRom = path => {
+			dispatch(addRomPath(path));
+		};
+		const allowAnalytics = set => {
+			dispatch(updateAllowDolphinAnalytics(set));
+		};
+		const updateSearchRomSetting = set => {
+			dispatch(updateSearchRomSubdirectories(set));
+		};
+		DolphinConfigurationUpdater.copyInitialSettingsFromBuild(
+			build.executablePath(),
+			addRom,
+			allowAnalytics,
+			updateSearchRomSetting
+		)
+			.then(() => {
+				dispatch({
+					type: COPIED_BUILD_SETTINGS,
+					payload: {
+						builds: currentBuilds
+					}
+				});
+				dispatch(startReplayBrowser());
+			})
+			.catch(error => {
+				console.error(error);
+			});
+	}
+}
 
 export const setBuildPath = (
   build: Build,
@@ -211,6 +219,7 @@ const syncBuildsWithServer = () => (dispatch, getState) => {
 
 export const mergeInitialSettingsIntoBuild = (build) => (dispatch, getState) => {
 	const state = getState();
+	dispatch(copyBuildSettings(build));
 	dispatch({
         type: MERGE_SETTINGS_INTO_BUILD_BEGIN
     });
