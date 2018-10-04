@@ -86,7 +86,7 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 					dispatch(checkReplay(filePath, replayWatchProcessCounter));
 				}
 			});
-		}, 15000, {
+		}, 2000, {
 			'leading': true,
 			'trailing': true
 		});

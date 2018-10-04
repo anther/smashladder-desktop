@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import _ from 'lodash';
 import CacheableDataObject from './CacheableDataObject';
@@ -9,7 +8,7 @@ export default class Build extends CacheableDataObject {
   static getSlippiBuilds(builds){
 	  let foundBuilds = new Set();
 	  _.each(builds, build => {
-		  if (build.getSlippiPath(true)) {
+		  if (build.getSlippiPath()) {
 			  foundBuilds.add(build);
 		  }
 	  });
@@ -66,11 +65,12 @@ export default class Build extends CacheableDataObject {
     if (this._slippiPath !== undefined && !forceRecheck) {
       return this._slippiPath;
     }
-    const slippiPath = path.join(this.executableDirectory(), 'Slippi');
-    if (fs.existsSync(slippiPath)) {
-      return (this._slippiPath = slippiPath);
+    const expectedSlippiPath = path.join(this.executableDirectory(), 'Slippi');
+    if(DolphinConfigurationUpdater.hasSlippiConfiguration(this.getMeleeSettingsIniLocation()))
+    {
+        Files.ensureDirectoryExistsSync(expectedSlippiPath);
+        return this._slippiPath = expectedSlippiPath;
     }
-
     return this._slippiPath = null;
   }
 

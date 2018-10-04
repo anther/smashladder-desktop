@@ -328,7 +328,14 @@ export default class BuildComponent extends Component {
               <a
                  title='Show in Explorer'
                  onClick={this.onBuildNameClick}
-                 className="build_name has_path">{build.name}</a>
+                 className="build_name has_path">
+                  <span className='name'>{build.name}</span>
+                  {build.getSlippiPath() &&
+                    <img
+                        title='Has Replays'
+                        alt='Has Slippi' src={Files.createApplicationPath('./external/dolphin/slippi/36x36.png')} />
+                  }
+               </a>
             }
             {!build.path &&
               <span className="build_name">{build.name}</span>

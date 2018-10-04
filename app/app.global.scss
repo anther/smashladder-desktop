@@ -296,9 +296,19 @@ h6 {
         color: inherit;
         margin-left: 16px;
         font-size: 19px;
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+
         &.has_path:hover{
           @extend .blue-text, .lighten-2;
           cursor: pointer;
+        }
+        img{
+          display: inline;
+          max-height: 24px;
+          margin-left: 4px;
+
         }
       }
 

@@ -73,6 +73,17 @@ export default class DolphinConfigurationUpdater {
 		this.saveFile(stringified);
 	}
 
+	static hasSlippiConfiguration(configPath){
+		const updater = new DolphinConfigurationUpdater(configPath);
+		const config = updater.loadAConfiguration(configPath);
+		if(!config['Gecko_Enabled'])
+		{
+			return false;
+		}
+
+		return !!(config['Gecko_Enabled']['$Slippi Recording'] || config['Gecko_Enabled']['$Slippi Playback']);
+	}
+
 	static setSlippiToPlayback(configPath){
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);

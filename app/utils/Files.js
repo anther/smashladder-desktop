@@ -75,6 +75,15 @@ export default class Files {
 		})
 	}
 
+    static ensureDirectoryExistsSync(directoryPath, mask = 0o755){
+		try{
+			return fs.mkdirSync(directoryPath, mask);
+		}
+		catch(error){
+			console.log('directory already exists', directoryPath);
+		}
+    }
+
 	static findInDirectory(startPath, filter){
 		let results = [];
 
