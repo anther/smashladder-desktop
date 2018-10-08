@@ -22,6 +22,9 @@ export const DELETE_REPLAY_BEGIN = 'DELETE_REPLAY_BEGIN';
 export const DELETE_REPLAY_SUCCESS = 'DELETE_REPLAY_SUCCESS';
 export const DELETE_REPLAY_FAIL = 'DELETE_REPLAY_FAIL';
 
+export const VIEW_REPLAY_DETAILS_BEGIN = 'VIEW_REPLAY_DETAILS_BEGIN';
+export const VIEW_REPLAY_DETAILS_END = 'VIEW_REPLAY_DETAILS_END';
+
 
 export const startReplayBrowser = () => (dispatch, getState) => {
 	const state = getState();
@@ -128,6 +131,21 @@ const displayReplaysBasedOnCurrentPage = () => (dispatch, getState) => {
 		payload: {
 			activeBrowseReplays: replays,
 		}
+	});
+};
+
+export const viewReplayDetails = (replay) => (dispatch, getState) => {
+	console.log(getState().replayBrowse);
+	if(replay === getState().replayBrowse.viewingReplayDetails)
+	{
+		return dispatch({
+			type: VIEW_REPLAY_DETAILS_END,
+			payload: null,
+		});
+	}
+	return dispatch({
+		type: VIEW_REPLAY_DETAILS_BEGIN,
+		payload: replay
 	});
 };
 

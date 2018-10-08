@@ -1,23 +1,40 @@
+import CacheableDataObject from "../utils/CacheableDataObject";
 import {
-	DELETE_REPLAY_BEGIN,
-	DELETE_REPLAY_FAIL,
-	DELETE_REPLAY_SUCCESS, REPLAY_BROWSE_FAIL,
-	REPLAY_BROWSE_START,
-	REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS, REPLAY_BROWSE_UPDATE_SUCCESS, REPLAY_BROWSER_CHANGE_PAGE_NUMBER
+    DELETE_REPLAY_BEGIN,
+    DELETE_REPLAY_FAIL,
+    DELETE_REPLAY_SUCCESS,
+    REPLAY_BROWSE_FAIL,
+    REPLAY_BROWSE_START,
+    REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS,
+    REPLAY_BROWSE_UPDATE_SUCCESS,
+    REPLAY_BROWSER_CHANGE_PAGE_NUMBER,
+    VIEW_REPLAY_DETAILS_BEGIN, VIEW_REPLAY_DETAILS_END
 } from "../actions/replayBrowse";
 
 const initialState = {
 	activeBrowseReplays: [],
 	replayPageNumber: 1,
 	allReplays: new Set(),
-	replaysPerPage: 7,
+	replaysPerPage: 4,
 	replayBrowseWatchProcess: null,
 	replayWatchBuilds: null,
+	viewingReplayDetails: null,
 };
+CacheableDataObject.clearCache();
 
 export default (state = initialState, action) => {
 	switch(action.type)
 	{
+		case VIEW_REPLAY_DETAILS_BEGIN:
+			return {
+				...state,
+				viewingReplayDetails: action.payload
+			};
+		case VIEW_REPLAY_DETAILS_END:
+			return {
+				...state,
+				viewingReplayDetails: null
+			};
 		case DELETE_REPLAY_BEGIN:
 			return {
 				...state,

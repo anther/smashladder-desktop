@@ -3,14 +3,14 @@ import _ from 'lodash';
 import  path from "path";
 import moment from 'moment';
 import md5File from 'md5-file/promise';
-import electronSettings from 'electron-settings';
 import fs from "fs";
 import CacheableDataObject from "./CacheableDataObject";
-import MeleeCharacter from "./replay/MeleeCharacter";
 import MeleeStage from "./replay/MeleeStage";
 import SmashFrame from "./replay/SlippiFrame";
 import Numbers from "./Numbers";
 import Files from "./Files";
+import SlippiStock from "./replay/SlippiStock";
+import SlippiPlayer from "./replay/SlippiPlayer";
 
 export default class Replay extends CacheableDataObject {
 
@@ -27,6 +27,7 @@ export default class Replay extends CacheableDataObject {
 		this.game = null;
 		this.hasErrors = null;
 		this._md5 = null;
+        this._parsedMetaData = false;
 		this.rawData = {
 			settings: {},
 			metadata: {},
@@ -154,20 +155,53 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	getStats(){
-		console.log('asking for stats');
 		if(!this.isReadable())
 		{
 			console.log('not readable?!');
 			return null;
 		}
 		if(this.stats === null){
-			console.log('was null');
 			const game = this.retrieveSlippiGame();
 			this.stats = game.getStats();
 			this.rawData.stats = _.cloneDeep(this.stats);
+			this.updateStats();
 		}
-		console.log('the stats', this.stats);
 		return this.stats;
+	}
+
+	updateStats(){
+		const stockData = this.stats.stocks;
+		this.stats.stocks = [];
+		console.log('replay at getstats', this);
+        for(let stock of stockData)
+        {
+            this.stats.stocks.push(SlippiStock.create(stock));
+        }
+        this.stats.stocks.sort((a,b)=>{
+            if(a.startFrame.frame === null)
+            {
+                return -1;
+            }
+            if(b.startFrame.frame === null)
+            {
+                return 1;
+            }
+            return a.startFrame.frame > b.startFrame.frame ? 1 : -1;
+        });
+        let deathIndex = 1;
+        for(let stock of this.stats.stocks)
+        {
+            stock.deathIndex = deathIndex++;
+        }
+        this.getPlayers().forEach((player)=>{
+        	console.log('adding stocks to player', this.stats.stocks);
+        	player.addStocks(this.stats.stocks);
+
+        	console.log('the stats', this.stats);
+        	player.addConversions(this.stats.conversions);
+        	player.addActions(this.stats.actionCounts);
+        	player.addOverall(this.stats.overall);
+		});
 	}
 
 	getSettings(){
@@ -220,6 +254,9 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	parseMetadata(){
+		if(!_.isEmpty(this.metadata)){
+			return true;
+		}
 		try
 		{
 			const cachedSettings = this.loadCachedSettings();
@@ -245,6 +282,7 @@ export default class Replay extends CacheableDataObject {
 
 			if(_.isEmpty(this.metadata))
 			{
+				console.log('metadata was empty');
 				this.possibleErrors.noMetadata = true;
 				this.hasErrors = true;
 				return;
@@ -257,8 +295,17 @@ export default class Replay extends CacheableDataObject {
 			return;
 		}
 
-		this.settings.players.forEach((player, index)=> {
-			this.settings.players[index].character = MeleeCharacter.retrieve(player.characterId, player.characterColor);
+		if(this._parsedMetaData)
+		{
+			console.log('parse skipped');
+			return;
+		}
+		console.log('parse done', this);
+		this._parsedMetaData = true;
+
+        this.settings.players = this.settings.players.map((player)=> {
+			console.log('replacing player at ', this.settings.players);
+			return SlippiPlayer.create(player)
 		});
 		this.settings.stage = MeleeStage.retrieve(this.settings.stageId);
 		this.metadata.startAt = moment(this.metadata.startAt, "YYYY-MM-DDTHH:mm:ssZ", true);
@@ -284,15 +331,19 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	getCharacters(){
-		if(this.settings && this.settings.players)
+		console.log('the players? ', this.getPlayers());
+		return this.getPlayers().map((player)=>(
+			player.character
+		));
+	}
+
+	getPlayers(){
+		if(!this.settings || !this.settings.players)
 		{
-			const characters = [];
-			this.settings.players.forEach((player)=>{
-				characters.push(player.character);
-			});
-			return characters;
+			console.error('has no players!');
+			return [];
 		}
-		return [];
+		return this.settings.players;
 	}
 
 	toString(){

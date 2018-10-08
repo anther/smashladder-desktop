@@ -3,6 +3,7 @@
  *        See https://github.com/webpack-contrib/sass-loader#imports
  */
 @import '~@fortawesome/fontawesome-free/css/all.css';
+@import '~@fortawesome/fontawesome-free/scss/fontawesome';
 @import '~materialize-css/sass/materialize';
 
 $ladder-header: #323232;
@@ -28,6 +29,10 @@ a {
     margin-left: 0;
     margin-right: 0;
   }
+}
+
+.connecties{
+  max-width: 360px;
 }
 
 .btn {
@@ -299,6 +304,7 @@ h6 {
         display: inline-flex;
         flex-direction: row;
         align-items: center;
+        margin-right: 16px;
 
         &.has_path:hover{
           @extend .blue-text, .lighten-2;
@@ -330,37 +336,118 @@ h6 {
 }
 
 .replay_browser {
+
+  .pagination{
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .detailed_stats{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 8px 0;
+
+    .stat{
+      display: flex;
+      justify-content: space-between;
+
+      .value{
+        @extend .blue-text, .darken-2;
+        margin-left: 16px;
+        font-weight: 700;
+      }
+    }
+  }
+
+  .stocks{
+    display: flex;
+    flex-direction: row;
+    cursor: default;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    .stock_icon{
+      &.dead{
+        opacity: .4;
+      }
+
+      &.self_destructed:after{
+        content: "SD";
+      }
+
+      .damage{
+        display: none;
+        &.active{
+          display: block;
+          cursor: default;
+          font-size: 9px;
+        }
+        &:after{
+          content: "%";
+        }
+      }
+    }
+  }
+
   .main_content {
-    min-width: 40%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 
     .game_data {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
+      .details{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
       .match_time {
+        align-self: center;
       }
     }
     .characters {
       display: flex;
       flex-direction: row;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      justify-content: center;
 
       .character {
         margin: 0 -4px;
         padding: 0 8px;
+
+        &:after{
+          content: " vs ";
+        }
+        &:last-child:after{
+          content: "";
+        }
       }
     }
   }
   .action_buttons {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 4px -20px -13px -20px;
+
+    .btn{
+      @extend .btn-flat;
+      border-radius: 0;
+    }
 
 
     .main_buttons{
       display: flex;
-      flex-direction: column;
-      height: 100%;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100%;
+      flex-wrap: wrap;
+
+      .title{
+        flex: 1 0 100%;
+      }
 
       .file_name_holder{
         flex: 1;

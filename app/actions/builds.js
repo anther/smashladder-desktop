@@ -35,7 +35,12 @@ export const LAUNCH_BUILD_SUCCESS = 'LAUNCH_BUILD_SUCCESS';
 export const LAUNCH_BUILD_FAIL = 'LAUNCH_BUILD_FAIL';
 
 export const BUILD_CLOSED = 'BUILD_CLOSED';
-export const CLOSE_BUILD = 'CLOSE_BUILD';
+export const CLOSE_BUILD_BEGIN = 'CLOSE_BUILD_BEGIN';
+export const CLOSE_BUILD_SUCCESS = 'CLOSE_BUILD_SUCCESS';
+export const CLOSE_BUILD_FAIL = 'CLOSE_BUILD_FAIL';
+export const CLOSE_BUILD_SEND_BEGIN = 'CLOSE_BUILD_SEND_BEGIN';
+export const CLOSE_BUILD_SEND_SUCCESS = 'CLOSE_BUILD_SEND_SUCCESS';
+export const CLOSE_BUILD_SEND_FAIL = 'CLOSE_BUILD_SEND_FAIL';
 
 export const START_GAME_BEGIN = 'START_GAME_BEGIN';
 export const START_GAME_SUCCESS = 'START_GAME_SUCCESS';
@@ -286,17 +291,35 @@ export const startGame = () => dispatch => {
 
 export const closeDolphin = () => (dispatch, getState) => {
   const authentication = getAuthenticationFromState(getState);
+    dispatch({
+        type: CLOSE_BUILD_BEGIN
+    });
   buildLauncher
     .close()
     .then(() => {
       dispatch({
-        type: CLOSE_BUILD
+        type: CLOSE_BUILD_SUCCESS
       });
-      authentication.apiPost(endpoints.CLOSED_DOLPHIN);
+      dispatch({
+        type: CLOSE_BUILD_SEND_BEGIN
+      });
+      authentication.apiPost(endpoints.CLOSED_DOLPHIN)
+          .then(()=>{
+              dispatch({
+                type: CLOSE_BUILD_SEND_SUCCESS
+              });
+          }).catch(()=>{
+              dispatch({
+                type: CLOSE_BUILD_SEND_FAIL
+              });
+          });
       dispatch(startReplayBrowser());
     })
     .catch(error => {
       console.error(error);
+        dispatch({
+            type: CLOSE_BUILD_FAIL
+        });
     });
 };
 

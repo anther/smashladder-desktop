@@ -20,54 +20,50 @@ export default class ReplayBrowser extends Component {
 			replayPageNumber,
 			allReplays,
 			replaysPerPage,
-			launchReplay,
 			launchReplayError,
-			builds,
-			meleeIsoPath,
-			settingMeleeIsoPath,
-			launchedReplay,
-			launchingReplay,
-			checkReplay,
-			deleteReplay
+			viewingReplayDetails
 		} = this.props;
 
-		// console.log('REPLAYS', activeBrowseReplays);
-		// console.log(totalReplays);
+		if(viewingReplayDetails)
+		{
+			return (
+				<div className='replay_browser'>
+					<ReplayComponent
+						{...this.props}
+						detailed
+						replay={viewingReplayDetails}
+					/>
+				</div>
+			)
+		}
 
 		return (
 			<div className='replay_browser'>
 				{allReplays.size > 0 &&
 				<React.Fragment>
-					<h4>Latest Replays</h4>
+					<h5>Latest Replays</h5>
 					{launchReplayError &&
 					<div className='error'>
 						{launchReplayError}
 					</div>
 					}
-					<ul className='pagination'>
+					<div className='pagination_holder'>
 						<Pagination
 							activePage={replayPageNumber}
 							itemsCountPerPage={replaysPerPage}
 							totalItemsCount={allReplays.size}
-							pageRangeDisplayed={10}
+							pageRangeDisplayed={5}
 							onChange={this.onPageChange}
+							hideFirstLastPages
 						/>
-					</ul>
+					</div>
 					<ul className='collection'>
 						{activeBrowseReplays.map((replay) => (
 							<li key={replay.id} className='collection-item replay'>
 								<ReplayComponent
-									deleteReplay={deleteReplay}
-									checkReplay={checkReplay}
-									builds={builds}
-									meleeIsoPath={meleeIsoPath}
-									launchedReplay={launchedReplay}
-									settingMeleeIsoPath={settingMeleeIsoPath}
-									launchReplay={launchReplay}
-									launchingReplay={launchingReplay}
-									replay={replay}>
-									{replay}
-								</ReplayComponent>
+									{...this.props}
+									replay={replay}
+								/>
 							</li>
 						))}
 					</ul>

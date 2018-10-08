@@ -39,7 +39,7 @@ export default (state = initialState, action) => {
 				...state,
 				launchedReplay: null,
 				launchingReplay: null,
-			}
+			};
 		default:
 			return state;
 	}

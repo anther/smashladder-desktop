@@ -3,7 +3,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import Button from './elements/Button';
-import Files from '../utils/Files';
 
 export default class DolphinSettings extends Component {
 	static propTypes = {
@@ -68,7 +67,6 @@ export default class DolphinSettings extends Component {
 
 		return (
 			<div className="file_paths">
-				<h5>Settings</h5>
 				<h6>Roms</h6>
 				<div className="input-field">
 					<Button

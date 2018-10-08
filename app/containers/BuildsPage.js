@@ -9,7 +9,6 @@ import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import * as AutoUpdateActions from '../actions/autoUpdates';
 import * as ReplayWatchActions from '../actions/replayWatch';
 import * as ReplayBrowseActions from '../actions/replayBrowse';
-import * as trayActions from '../actions/tray';
 import {
 	disableConnection,
 	enableConnection,
@@ -74,16 +73,11 @@ class BuildsPage extends Component<Props> {
 						<div className='col m8'>
 							<Builds {...props} />
 						</div>
-						<div className="col m4 connecties">
-							<WebsocketComponent
-								{...props}
-							/>
-							<ReplaySync
-								{...props}
-							/>
-							<DolphinSettings
-								{...props}
-							/>
+						<div className="col m4 ">
+                            <ReplayBrowser
+                                {...props}
+                            />
+
 						</div>
 
 					</React.Fragment>
@@ -91,17 +85,33 @@ class BuildsPage extends Component<Props> {
 				</Layout>
 				{!activeUpdate &&
 				<div className='container'>
-					<ReplayBrowser
-						{...props}
-					/>
+					<div className='row'>
+						<div className='col m4'>
+							<h5>Connections</h5>
+							<WebsocketComponent
+								{...props}
+							/>
+							<ReplaySync
+								{...props}
+							/>
+						</div>
+						<div className='col m5'>
+							<h5>Dolphin Settings</h5>
+							<DolphinSettings
+								{...props}
+							/>
+						</div>
+					</div>
 				</div>
 				}
 				{activeUpdate &&
-				<div className='container'>
-					<AutoUpdates
-						{...props}
-					/>
-				</div>
+					<div className='row'>
+						<div className='container'>
+							<AutoUpdates
+								{...props}
+							/>
+						</div>
+					</div>
 				}
 			</React.Fragment>
 		);
