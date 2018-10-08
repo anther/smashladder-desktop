@@ -49,9 +49,8 @@ export const startReplayBrowser = () => (dispatch, getState) => {
 		return;
 	}
 
-	console.log('creating new limit');
 	const limitedUpdateBrowsedReplayList = _.debounce(() => {
-		console.log('lmited browse replay list');
+		console.log('limited browse replay list update');
 		dispatch(updateBrowsedReplayList());
 	}, 20000,{
 		leading: false,

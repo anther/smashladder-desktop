@@ -134,9 +134,7 @@ export default class Replay extends CacheableDataObject {
 		{
 			return this.metadata.lastFrame.asTime();
 		}
-		
-			return 'Time Unavailable (Dolphin Possibly Closed Before Match Ended)';
-		
+		return null;
 	}
 
 	isReadable(){
@@ -194,10 +192,8 @@ export default class Replay extends CacheableDataObject {
             stock.deathIndex = deathIndex++;
         }
         this.getPlayers().forEach((player)=>{
-        	console.log('adding stocks to player', this.stats.stocks);
         	player.addStocks(this.stats.stocks);
 
-        	console.log('the stats', this.stats);
         	player.addConversions(this.stats.conversions);
         	player.addActions(this.stats.actionCounts);
         	player.addOverall(this.stats.overall);
@@ -282,7 +278,6 @@ export default class Replay extends CacheableDataObject {
 
 			if(_.isEmpty(this.metadata))
 			{
-				console.log('metadata was empty');
 				this.possibleErrors.noMetadata = true;
 				this.hasErrors = true;
 				return;

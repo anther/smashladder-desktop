@@ -27,7 +27,7 @@ export default class ReplayBrowser extends Component {
 		if(viewingReplayDetails)
 		{
 			return (
-				<div className='replay_browser'>
+				<div className='replay_browser detailed'>
 					<ReplayComponent
 						{...this.props}
 						detailed

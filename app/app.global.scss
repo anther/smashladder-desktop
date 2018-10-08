@@ -35,6 +35,13 @@ a {
   max-width: 360px;
 }
 
+.collection-item{
+  .footer{
+    margin: 4px -20px -13px -20px;
+    text-align: center;
+  }
+}
+
 .btn {
   &.not_set,
   &.set {
@@ -74,6 +81,10 @@ a {
 
 .error_button {
   @extend .red, .lighten-2;
+}
+
+.error_reason{
+  font-size: smaller;
 }
 
 .nowrap {
@@ -390,6 +401,24 @@ h6 {
     }
   }
 
+  &.detailed{
+    .main_content{
+      .game_data{
+        flex-direction: row;
+
+        .details{
+          order: 0;
+          flex-direction: column;
+          justify-content: baseline;
+          margin-right: 16px;
+        }
+      }
+      .stocks{
+        order: 1;
+      }
+    }
+  }
+
   .main_content {
     display: flex;
     flex-direction: column;
@@ -426,11 +455,11 @@ h6 {
       }
     }
   }
+
   .action_buttons {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin: 4px -20px -13px -20px;
 
     .btn{
       @extend .btn-flat;

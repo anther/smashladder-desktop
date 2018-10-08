@@ -129,80 +129,96 @@ export default class ReplayComponent extends Component {
                             </div>
                             }
                             <div className='match_time'>
-                                {replay.getMatchTime()}
+                                {replay.getMatchTime() &&
+                                    <span>{replay.getMatchTime()}</span>
+                                }
+                                {!replay.getMatchTime() &&
+                                    <div>
+                                        <div className='error'>Game Unreadable</div>
+                                        <div className='error_reason'>Dolphin Possibly Closed Before Match Ended</div>
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
-                    <div className='file_data'>
-						<span className='when'>
-							{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
-						</span>
 
-                        <div className='file_name_holder'>
-                            <a onClick={this.onOpenInExplorer} className='file_name'>
-                                {replay.getFileName()}
-                            </a>
+                    <div className='footer'>
+                        <div className='file_data'>
+                            <span className='when'>
+                                {replay.getFileDate() ? replay.getFileDate().calendar() : ''}
+                            </span>
+
+                            <div className='file_name_holder'>
+                                <a onClick={this.onOpenInExplorer} className='file_name'>
+                                    {replay.getFileName()}
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                    <div className='action_buttons'>
-                        <div className='main_buttons'>
-                            {deleteQuestion &&
-                            <React.Fragment>
-                                <h6 className='title'>Delete?</h6>
-                                <div className='main_buttons'>
-                                    <div className='input-field'>
-                                        <Button
-                                            disabled={this.state.deleting}
-                                            onClick={this.onDeleteConfirmClick}
-                                            className='error_button btn-small'>Yes</Button>
+                        <div className='action_buttons'>
+                            <div className='main_buttons'>
+                                {deleteQuestion &&
+                                <React.Fragment>
+                                    <h6 className='title'>Delete?</h6>
+                                    <div className='main_buttons'>
+                                        <div className='input-field'>
+                                            <Button
+                                                disabled={this.state.deleting}
+                                                onClick={this.onDeleteConfirmClick}
+                                                className='error_button btn-small'>Yes</Button>
+                                        </div>
+                                        <div className='input-field'>
+                                            <Button
+                                                disabled={this.state.deleting}
+                                                onClick={this.onCancelDeleteClick}
+                                                className='btn-small'>No</Button>
+                                        </div>
                                     </div>
-                                    <div className='input-field'>
-                                        <Button
-                                            disabled={this.state.deleting}
-                                            onClick={this.onCancelDeleteClick}
-                                            className='btn-small'>No</Button>
-                                    </div>
-                                </div>
-                            </React.Fragment>
-                            }
-
-                            {!deleteQuestion &&
-                            <React.Fragment>
-                                <div className='input-field'>
-                                    <Button
-                                        disabled={settingMeleeIsoPath || launchingReplay}
-                                        onClick={this.onReplayViewClick}
-                                        className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
-                                        <i className='fa fa-caret-right'/>
-                                    </Button>
-                                </div>
-                                {(replay.isReadable()) &&
-                                <div className='input-field'>
-                                    <Button
-                                        onClick={this.onDetailsClick}
-                                        className='btn-small btn-flat'>
-                                        <i className='fa fa-info-circle'/>
-                                    </Button>
-                                </div>
+                                </React.Fragment>
                                 }
 
-                                {false &&
-                                <div className='input-field'>
-                                    <Button onClick={this.onUploadReplayClick}>
-                                        Upload Replay
-                                    </Button>
-                                </div>
-                                }
-                                <div className='input-field'>
-                                    <Button
-                                        onClick={this.onDeleteButtonClick}
-                                        className='btn-small error_button'>
-                                        <i className='fa fa-trash'/>
-                                    </Button>
-                                </div>
+                                {!deleteQuestion &&
+                                <React.Fragment>
+                                    <div className='input-field'>
+                                        <Button
+                                            disabled={settingMeleeIsoPath || launchingReplay}
+                                            onClick={this.onReplayViewClick}
+                                            className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
+                                            {launchingReplay &&
+                                                <span>...</span>
+                                            }
+                                            {!launchingReplay &&
+                                                <i className='fa fa-caret-right'/>
+                                            }
+                                        </Button>
+                                    </div>
+                                    {(replay.isReadable()) &&
+                                    <div className='input-field'>
+                                        <Button
+                                            onClick={this.onDetailsClick}
+                                            className='btn-small btn-flat'>
+                                            <i className='fa fa-info-circle'/>
+                                        </Button>
+                                    </div>
+                                    }
 
-                            </React.Fragment>
-                            }
+                                    {false &&
+                                    <div className='input-field'>
+                                        <Button onClick={this.onUploadReplayClick}>
+                                            Upload Replay
+                                        </Button>
+                                    </div>
+                                    }
+                                    <div className='input-field'>
+                                        <Button
+                                            onClick={this.onDeleteButtonClick}
+                                            className='btn-small error_button'>
+                                            <i className='fa fa-trash'/>
+                                        </Button>
+                                    </div>
+
+                                </React.Fragment>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -215,7 +231,6 @@ class StocksComponent extends React.Component {
 
     render() {
         const stocks = this.props.stocks;
-        console.log('atempting to display stocks', stocks);
         if (!stocks || !stocks.stock_icon || !stocks.detail) {
             return null;
         }
@@ -264,10 +279,7 @@ class StockComponent extends React.Component {
         if (isSelfDestruct) {
             classes.add('self_destructed');
         }
-        console.log('the stock', showDamage, stock, stock.time_started, stock.damage_received);
         const displayDamageConditions = showDamage && (stock.time_started !== null);
-        console.log('should show damage', displayDamageConditions,
-            Number.parseInt(stock.damage_received, 10));
 
         return (
             <span data-number={stock.stock_number} className={classes.toString()}>
