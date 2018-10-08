@@ -402,14 +402,17 @@ h6 {
   }
 
   &.detailed{
-    .main_content{
+    .replay_content{
+      .back_button{
+        margin-bottom: 16px;
+      }
       .game_data{
         flex-direction: row;
 
         .details{
           order: 0;
           flex-direction: column;
-          justify-content: baseline;
+          justify-content: initial;
           margin-right: 16px;
         }
       }
@@ -419,7 +422,7 @@ h6 {
     }
   }
 
-  .main_content {
+  .replay_content {
     display: flex;
     flex-direction: column;
     width: 100%;

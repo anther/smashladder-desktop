@@ -14,5 +14,7 @@
     "postinstall": "yarn electron-rebuild"
   },
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.3.1"
+  }
 }

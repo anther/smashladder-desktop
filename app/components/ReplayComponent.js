@@ -100,7 +100,13 @@ export default class ReplayComponent extends Component {
         const stats = replay.getStats(); // Currently used to fetch detailed stats
         return (
             <React.Fragment>
-                <div className='main_content'>
+                <div className='replay_content'>
+                    {detailed &&
+                        <Button
+                            onClick={this.onDetailsClick}
+                            className='back_button btn-small'
+                        >Back</Button>
+                    }
                     <div className='game_data'>
                         <div className='stocks'>
                             {replay.getPlayers().map((player, index) => (
@@ -150,7 +156,7 @@ export default class ReplayComponent extends Component {
 
                             <div className='file_name_holder'>
                                 <a onClick={this.onOpenInExplorer} className='file_name'>
-                                    {replay.getFileName()}
+                                    {replay.getName()}
                                 </a>
                             </div>
                         </div>

@@ -80,7 +80,6 @@ export default class Files {
 			return fs.mkdirSync(directoryPath, mask);
 		}
 		catch(error){
-			console.log('directory already exists', directoryPath);
 		}
     }
 

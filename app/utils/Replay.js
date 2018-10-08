@@ -79,38 +79,16 @@ export default class Replay extends CacheableDataObject {
 		{
 			return this._fileDate;
 		}
-		const fileName = this.getFileName();
-		if(this.hasDefaultFileName()){
-
-			const dateString = fileName.slice(5, fileName.length - 4);
-			return this._fileDate =  moment(dateString, "YYYYMMDDTHHmmss", true);
-		}
-		if(this.hasDirectoriedFileName())
+		const stats = this.getStats();
+		if(!stats)
 		{
-			const directory = path.basename(path.dirname(this.id));
-			const dateString = fileName.slice(0, 6);
-			return this._fileDate = moment(`${directory}${dateString}`, "YYYY-MM-DDHHmmss", true);
+            const fileStats = fs.lstatSync(this.filePath);
+            const theMoment = moment(fileStats.birthtime);
+            console.log('the brithtime', theMoment);
+            return this._fileDate = theMoment;
 		}
-		
-			return this._fileDate = null; // Return really old date...
-		
-	}
 
-	hasDirectoriedFileName(){
-		const fileName = this.getFileName();
-		for(let i = 0; i < 5; i++)
-		{
-			if(!Numbers.stringIsNumeric(fileName[i]))
-			{
-				return false;
-			}
-		}
-		if(fileName[6] === '_')
-		{
-			return true;
-		}
-		return false;
-
+		return this._fileDate = this.stats.startAt;
 	}
 
 	getName(){
@@ -124,7 +102,7 @@ export default class Replay extends CacheableDataObject {
 			const characters = this.getCharacters();
 			const stage = this.settings.stage;
 
-			return `${characters.map(character=>character.name).join(` vs `)} on ${stage.name} - ${this.getMatchTime()}`;
+			return `${characters.map(character=>character.name).join(` vs `)} on ${stage.name}`;
 		}
 	}
 
@@ -155,7 +133,6 @@ export default class Replay extends CacheableDataObject {
 	getStats(){
 		if(!this.isReadable())
 		{
-			console.log('not readable?!');
 			return null;
 		}
 		if(this.stats === null){
@@ -299,7 +276,6 @@ export default class Replay extends CacheableDataObject {
 		this._parsedMetaData = true;
 
         this.settings.players = this.settings.players.map((player)=> {
-			console.log('replacing player at ', this.settings.players);
 			return SlippiPlayer.create(player)
 		});
 		this.settings.stage = MeleeStage.retrieve(this.settings.stageId);
