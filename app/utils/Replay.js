@@ -74,11 +74,39 @@ export default class Replay extends CacheableDataObject {
 		return this.getFileName().startsWith('Game_');
 	}
 
+    hasDirectoriedFileName(){
+        const fileName = this.getFileName();
+        for(let i = 0; i < 5; i++)
+        {
+            if(!Numbers.stringIsNumeric(fileName[i]))
+            {
+                return false;
+            }
+        }
+        if(fileName[6] === '_')
+        {
+            return true;
+        }
+        return false;
+    }
+
 	getFileDate(){
 		if(this._fileDate !== undefined)
 		{
 			return this._fileDate;
 		}
+        const fileName = this.getFileName();
+        if(this.hasDefaultFileName()){
+
+            const dateString = fileName.slice(5, fileName.length - 4);
+            return this._fileDate =  moment(dateString, "YYYYMMDDTHHmmss", true);
+        }
+        if(this.hasDirectoriedFileName())
+        {
+            const directory = path.basename(path.dirname(this.id));
+            const dateString = fileName.slice(0, 6);
+            return this._fileDate = moment(`${directory}${dateString}`, "YYYY-MM-DDHHmmss", true);
+        }
 		const stats = this.getStats();
 		if(!stats)
 		{
@@ -147,7 +175,6 @@ export default class Replay extends CacheableDataObject {
 	updateStats(){
 		const stockData = this.stats.stocks;
 		this.stats.stocks = [];
-		console.log('replay at getstats', this);
         for(let stock of stockData)
         {
             this.stats.stocks.push(SlippiStock.create(stock));
@@ -272,7 +299,6 @@ export default class Replay extends CacheableDataObject {
 			console.log('parse skipped');
 			return;
 		}
-		console.log('parse done', this);
 		this._parsedMetaData = true;
 
         this.settings.players = this.settings.players.map((player)=> {
@@ -302,7 +328,6 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	getCharacters(){
-		console.log('the players? ', this.getPlayers());
 		return this.getPlayers().map((player)=>(
 			player.character
 		));

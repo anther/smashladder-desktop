@@ -100,6 +100,9 @@ export default class DolphinSettings extends Component {
 							checked={this.props.searchRomSubdirectories}
 						/>
 						<span>Search Subdirectories</span>
+						{this.props.searchRomSubdirectories &&
+							<div className='error hint_text'>This being active may cause dolphin to freeze!</div>
+						}
 					</label>
 				</div>
 				<h6>Dolphin Team Analytics</h6>
@@ -112,7 +115,7 @@ export default class DolphinSettings extends Component {
 					<span>Send Dolphin Analytics</span>
 				</label>
 				<h6>Replays</h6>
-				<div className="input-field joined_inputs">
+				<div className="input-field joined_inputs set_melee_iso_path">
 					<Button
 						className={`btn-small ${meleeIsoPath ? 'set' : 'not_set'}`}
 						disabled={settingMeleeIsoPath}
@@ -124,7 +127,14 @@ export default class DolphinSettings extends Component {
 						className='btn-small not_set remove_path'
 						onClick={this.onUnsetRomPathClick}
 					/>
-
+					{meleeIsoPath &&
+						<div className='iso_path_display'>
+							<span className='iso_path'>
+								<i className='fa fa-compact-disc' />
+								<span className='text'>{meleeIsoPath}</span>
+							</span>
+						</div>
+					}
 				</div>
 			</div>
 		);

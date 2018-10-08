@@ -31,8 +31,16 @@ a {
   }
 }
 
-.connecties{
-  max-width: 360px;
+.bottom_bar{
+  .connecties{
+    .connections{
+      @extend .col, .m4;
+    }
+    .dolphin_settings{
+      @extend .col, .m5;
+    }
+
+  }
 }
 
 .collection-item{
@@ -133,7 +141,7 @@ h6 {
     user-select: none;
     display: block;
     text-align: center;
-    font-size: 12px;
+    font-size: x-small;
     margin-top: 4px;
   }
   &:hover {
@@ -351,6 +359,19 @@ h6 {
   .pagination{
     display: flex;
     justify-content: space-between;
+    user-select: none;
+
+    li{
+      &.active{
+        @extend .green, .lighten-2;
+      }
+
+      &:hover:not(.disabled){
+        @extend .green, .lighten-4;
+      }
+    }
+
+
   }
 
   .detailed_stats{
@@ -535,6 +556,33 @@ h6 {
     text-align: left;
     font-size: 14px;
     margin-top: 16px;
+  }
+
+  .hint_text{
+    font-size: x-small;
+  }
+
+  .set_melee_iso_path{
+    flex-wrap: wrap;
+
+    .iso_path_display{
+      flex: 1 0 100%;
+      .iso_path{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        i{
+          margin-right: 8px;
+        }
+
+        .text{
+          word-break: break-word;
+          font-size: smaller;
+        }
+
+      }
+    }
   }
 
   .rom_paths {

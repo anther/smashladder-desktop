@@ -56,12 +56,54 @@ class BuildsPage extends Component<Props> {
 		return null;
 	}
 
+	renderConnectionSettings(props){
+        return (
+            <div className='container connecties'>
+                <div className='row'>
+                    <div className='connections'>
+                        <h5>Connections</h5>
+                        <WebsocketComponent
+                            {...props}
+                        />
+                        <ReplaySync
+                            {...props}
+                        />
+                    </div>
+                    <div className='dolphin_settings'>
+                        <h5>Dolphin Settings</h5>
+                        <DolphinSettings
+                            {...props}
+                        />
+                    </div>
+                </div>
+            </div>
+        );
+	}
+
 	render(){
 		const props = {
 			...this.props,
 			...this.state,
 		};
-		const { activeUpdate } = props;
+		const { activeUpdate, allReplays } = props;
+
+		let sideBar = null;
+		let bottomContent = null;
+		const connectionInformation = this.renderConnectionSettings(props);
+		if(allReplays.size > 0)
+		{
+			sideBar = (
+                <ReplayBrowser
+                    {...props}
+                />
+			);
+			bottomContent = connectionInformation;
+		}
+		else
+		{
+			sideBar = connectionInformation;
+		}
+
 		return (
 			<React.Fragment>
 				<Layout>
@@ -73,37 +115,18 @@ class BuildsPage extends Component<Props> {
 						<div className='col m8'>
 							<Builds {...props} />
 						</div>
-						<div className="col m4 ">
-                            <ReplayBrowser
-                                {...props}
-                            />
-
+						<div className="col m4 sidebar">
+							{sideBar}
 						</div>
 
 					</React.Fragment>
 					}
 				</Layout>
-				{!activeUpdate &&
-				<div className='container'>
-					<div className='row'>
-						<div className='col m4'>
-							<h5>Connections</h5>
-							<WebsocketComponent
-								{...props}
-							/>
-							<ReplaySync
-								{...props}
-							/>
-						</div>
-						<div className='col m5'>
-							<h5>Dolphin Settings</h5>
-							<DolphinSettings
-								{...props}
-							/>
-						</div>
+                {!activeUpdate &&
+					<div className='bottom_bar'>
+						{bottomContent}
 					</div>
-				</div>
-				}
+                }
 				{activeUpdate &&
 					<div className='row'>
 						<div className='container'>
