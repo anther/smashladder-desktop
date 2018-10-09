@@ -330,11 +330,6 @@ export default class BuildComponent extends Component {
                  onClick={this.onBuildNameClick}
                  className="build_name has_path">
                   <span className='name'>{build.name}</span>
-                  {build.getSlippiPath() &&
-                    <img
-                        title='Has Replays'
-                        alt='Has Slippi' src={Files.createApplicationPath('./external/dolphin/slippi/36x36.png')} />
-                  }
                </a>
             }
             {!build.path &&
@@ -343,6 +338,12 @@ export default class BuildComponent extends Component {
 
             {!!build.path &&
               <div className='remove_build_path'>
+                  {build.getSlippiPath() &&
+                  <img
+                      className='build_image'
+                      title='Has Replays'
+                      alt='Has Slippi' src={Files.createApplicationPath('./external/dolphin/slippi/36x36.png')} />
+                  }
                 <Button onClick={this.onUnsetBuildPathClick}
                         className='btn-small not_set remove_path' />
               </div>
@@ -374,7 +375,7 @@ export default class BuildComponent extends Component {
                 </div>
                 {buildOpen &&
                   hostCode && <h6 className="host_code">{hostCode}</h6>}
-                {!buildOpen && (
+                {!buildOpen && build.getPossibleGames().length > 1 && (
                   <div className="select_game_container">
                     <Select
                       className="select_game"

@@ -22,6 +22,10 @@ a {
   cursor: pointer;
 }
 
+.progress .determinate{
+  transition: width .1s linear;
+}
+
 .joined_inputs{
   display: flex;
   flex-direction: row;
@@ -236,6 +240,13 @@ h6 {
   border: none;
   overflow: visible;
 
+  .build_image{
+    display: inline;
+    max-height: 24px;
+    margin-left: 4px;
+    margin-right: 4px;
+  }
+
   .build {
     padding-left: 0;
     padding-right: 0;
@@ -312,8 +323,11 @@ h6 {
       display: flex;
 
       .remove_build_path{
-        flex: 1;
+        flex: 1 0 auto;
         text-align: right;
+        justify-content: flex-end;
+        display: flex;
+        align-items: center;
       }
 
       .build_name {
@@ -328,12 +342,6 @@ h6 {
         &.has_path:hover{
           @extend .blue-text, .lighten-2;
           cursor: pointer;
-        }
-        img{
-          display: inline;
-          max-height: 24px;
-          margin-left: 4px;
-
         }
       }
 
@@ -355,6 +363,14 @@ h6 {
 }
 
 .replay_browser {
+  position: relative;
+
+  .replay_list_updating_progress{
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: -8px;
+  }
 
   .pagination{
     display: flex;

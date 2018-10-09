@@ -188,7 +188,7 @@ export default class ReplayComponent extends Component {
                                         <Button
                                             disabled={settingMeleeIsoPath || launchingReplay}
                                             onClick={this.onReplayViewClick}
-                                            className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set'}`}>
+                                            className={`btn-small ${meleeIsoPath ? 'set no_check' : 'not_set no_check'}`}>
                                             {launchingReplay &&
                                                 <span>...</span>
                                             }

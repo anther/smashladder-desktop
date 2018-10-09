@@ -16,6 +16,7 @@ export default class Replay extends CacheableDataObject {
 
 	beforeConstruct(){
 		this.ignoreNewnessRestriction = false;
+		this._fileDate = null;
 		this.resetData();
 	}
 
@@ -90,8 +91,12 @@ export default class Replay extends CacheableDataObject {
         return false;
     }
 
+    hasFileDate(){
+		return this._fileDate !== null;
+	}
+
 	getFileDate(){
-		if(this._fileDate !== undefined)
+		if(this._fileDate !== null)
 		{
 			return this._fileDate;
 		}
@@ -107,16 +112,17 @@ export default class Replay extends CacheableDataObject {
             const dateString = fileName.slice(0, 6);
             return this._fileDate = moment(`${directory}${dateString}`, "YYYY-MM-DDHHmmss", true);
         }
-		const stats = this.getStats();
-		if(!stats)
+        if(this.isReadable())
 		{
-            const fileStats = fs.lstatSync(this.filePath);
-            const theMoment = moment(fileStats.birthtime);
-            console.log('the brithtime', theMoment);
-            return this._fileDate = theMoment;
+			const stats = this.getStats();
+			if(stats && stats.startAt)
+			{
+                return this._fileDate = this.stats.startAt;
+			}
 		}
-
-		return this._fileDate = this.stats.startAt;
+		const fileStats = fs.lstatSync(this.filePath);
+		const theMoment = moment(fileStats.birthtime);
+		return this._fileDate = theMoment;
 	}
 
 	getName(){
@@ -158,6 +164,10 @@ export default class Replay extends CacheableDataObject {
 		};
 	}
 
+	hasStatsLoaded(){
+		return !this.isReadable() || this.stats !== null;
+	}
+
 	getStats(){
 		if(!this.isReadable())
 		{
@@ -166,6 +176,10 @@ export default class Replay extends CacheableDataObject {
 		if(this.stats === null){
 			const game = this.retrieveSlippiGame();
 			this.stats = game.getStats();
+			if(!this.stats)
+			{
+				console.log('stats failed after load?!');
+			}
 			this.rawData.stats = _.cloneDeep(this.stats);
 			this.updateStats();
 		}
@@ -255,6 +269,7 @@ export default class Replay extends CacheableDataObject {
 
 	parseMetadata(){
 		if(!_.isEmpty(this.metadata)){
+			this.hasErrors = false;
 			return true;
 		}
 		try

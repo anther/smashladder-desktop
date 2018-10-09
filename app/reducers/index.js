@@ -8,6 +8,7 @@ import dolphinSettings from './dolphinSettings';
 import autoUpdates from './autoUpdates';
 import replayWatch from './replayWatch';
 import replayBrowse from './replayBrowse';
+import dolphinStatus from './dolphinStatus';
 
 const rootReducer = combineReducers({
 	login,
@@ -17,6 +18,7 @@ const rootReducer = combineReducers({
 	autoUpdates,
 	replayWatch,
 	replayBrowse,
+    dolphinStatus,
 	router
 });
 

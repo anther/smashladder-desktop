@@ -14,6 +14,7 @@ import {
 	updateSearchRomSubdirectories
 } from './dolphinSettings';
 import { startReplayBrowser } from "./replayBrowse";
+import {parseDolphinPlayerList} from "./dolphinStatus";
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -56,7 +57,17 @@ export const SYNC_BUILDS_FAIL = 'SYNC_BUILDS_FAIL';
 
 export const AUTOHOTKEY_EVENT = 'AUTOHOTKEY_ACTION';
 
-const buildLauncher = new BuildLaunchAhk();
+let buildLauncher = null;
+export const initializeBuildLauncher = () => (dispatch) => {
+  buildLauncher = new BuildLaunchAhk();
+    buildLauncher.on('ahkEvent', (event) =>{
+        if(event.action === 'player_list_info')
+        {
+            dispatch(parseDolphinPlayerList(event.value));
+        }
+  });
+};
+
 
 export const retrieveBuilds = () => (dispatch, getState) => {
   dispatch({
@@ -277,17 +288,14 @@ export const startGame = () => dispatch => {
     });
 };
 
-// export const authotkeyAction = event => (dispatch) =>{
-// 	dispatch({
-// 		type: AUTOHOTKEY_EVENT,
-// 		payload: {
-// 			event: event
-// 		}
-// 	});
-// };
-// buildLauncher.on('ahkEvent', event => (dispatch) => {
-//   authotkeyAction(event);
-// });
+export const authotkeyAction = event => (dispatch) =>{
+	dispatch({
+		type: AUTOHOTKEY_EVENT,
+		payload: {
+			event: event
+		}
+	});
+};
 
 export const closeDolphin = () => (dispatch, getState) => {
   const authentication = getAuthenticationFromState(getState);

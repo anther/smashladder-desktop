@@ -8,7 +8,6 @@ import DolphinActions from './DolphinActions';
 import BuildLauncher from './BuildLauncher';
 import Build from './BuildData';
 import Files from './Files';
-import DolphinConfigurationUpdater from "./DolphinConfigurationUpdater";
 import DolphinProcessWithHotkeyPets from "./DolphinProcessWithHotkeyPets";
 
 export default class BuildLaunchAhk extends EventEmitter {

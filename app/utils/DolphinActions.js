@@ -1,5 +1,5 @@
 /* eslint-disable eqeqeq */
-import DolphinPlayer from './DolphinPlayer';
+import {parseDolphinPlayerList} from "../actions/dolphinStatus";
 
 export default class DolphinActions {
 	static call(name, build, message){
@@ -37,17 +37,17 @@ DolphinActions.callableActions = {
 	},
 
 	player_list_info: (build, value) => {
-		if(false)
-		{
-			value = `Antherpzy[1] : 727(0b00f1f) Win | 1------- |
-Ping: 53ms
-Status: ready
-[2] : 727(0b00f1f) Win | -2------- |
-Ping: 23ms
-Status: ready
-`;
-		}
-		return DolphinPlayer.parseDolphinPlayerList(value);
+// 		if(true)
+// 		{
+// 			value = `Antherpzy[1] : 727(0b00f1f) Win | 1------- |
+// Ping: 53ms
+// Status: ready
+// [2] : 727(0b00f1f) Win | -2------- |
+// Ping: 23ms
+// Status: ready
+// `;
+// 		}
+		return parseDolphinPlayerList(value);
 	},
 
 	dolphin: () => {

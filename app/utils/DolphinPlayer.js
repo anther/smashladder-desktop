@@ -1,4 +1,7 @@
 /* eslint-disable no-restricted-syntax,no-else-return,prefer-destructuring,no-unused-vars,no-unreachable */
+
+import _ from 'lodash';
+
 export default class DolphinPlayer {
   /** SLOTS MAY CHANGE, so do not store the instance */
   constructor(name, slot) {
@@ -13,10 +16,6 @@ export default class DolphinPlayer {
 
     this.setUsername(name);
     this.slot = slot;
-  }
-
-  setPing(ping) {
-    this.ping.addPing(ping);
   }
 
   getAliasName() {
@@ -42,139 +41,6 @@ export default class DolphinPlayer {
       this.hasNewUsername = false;
     }
     this.name = username;
-    // console.trace('Dolphin player', this.getAliasName(), this.slot);
-    // this.element.findCache('.username').cacheText(this.getAliasName());
-  }
-
-  usernameIs(username) {
-    if (this.name === null) {
-      return false;
-    }
-    return this.name.trim().toLowerCase() === username.trim().toLowerCase();
-  }
-
-  static parseDolphinPlayerList(value = '') {
-    return;
-    DolphinPlayer.lastParsedList = value;
-    if (!DolphinPlayer.hasSetPlayers) {
-      DolphinPlayer.hasSetPlayers = true;
-      DolphinPlayer.parseDolphinPlayerList('');
-    }
-    const valueSplit = value.split(/\r?\n/);
-
-    // MatchGame.resetPlayerList();
-
-    const changedPlayers = {};
-    for (const i in valueSplit) {
-      if (!valueSplit.hasOwnProperty(i)) {
-        continue;
-      }
-      const current = valueSplit[i];
-      if (!current.includes('[')) {
-        continue;
-      }
-      const nextLine = parseInt(i, 10) + 1;
-      const pingLine = valueSplit[nextLine];
-      let ping = null;
-      if (pingLine) {
-        const pingTitle = pingLine.substring(0, pingLine.lastIndexOf(':'));
-        const pingSide = pingLine.substring(pingLine.lastIndexOf(':') + 1);
-        ping = Number.parseInt(pingSide, 10);
-      }
-
-      const usernameData = DolphinPlayer.parseUsernameInfo(current);
-      for (const portIndexes in usernameData.ports) {
-        if (!usernameData.ports.hasOwnProperty(portIndexes)) {
-          continue;
-        }
-        const slot = usernameData.ports[portIndexes];
-        changedPlayers[slot] = DolphinPlayer.setPlayer(
-          slot,
-          usernameData.username
-        );
-        changedPlayers[slot].ping.addPing(ping);
-      }
-    }
-    DolphinPlayer.updateChangedPlayers(changedPlayers);
-
-    return changedPlayers;
-  }
-
-  static parseUsernameInfo(current) {
-    const usernameSide = current.substring(0, current.lastIndexOf(':'));
-    const systemInfoSide = current.substring(current.lastIndexOf(':') + 1);
-
-    const ports = systemInfoSide
-      .substring(
-        systemInfoSide.indexOf('|') + 1,
-        systemInfoSide.lastIndexOf('|') - 1
-      )
-      .trim();
-    const systemInformation = systemInfoSide
-      .substring(0, systemInfoSide.indexOf('|'))
-      .trim();
-
-    const portIndexes = [];
-    for (
-      let characterIndex = 0;
-      characterIndex < ports.length;
-      characterIndex++
-    ) {
-      if (ports.charAt(characterIndex) === '-') {
-        continue;
-      }
-      portIndexes.push(characterIndex + 1);
-    }
-    let slot = null;
-    if (portIndexes.length) {
-      slot = portIndexes[0];
-    }
-    const username = usernameSide
-      .substring(0, usernameSide.lastIndexOf('['))
-      .trim();
-    return {
-      username,
-      ports: portIndexes
-    };
-  }
-
-  static updateChangedPlayers(changedPlayers = {}) {
-    const changedUsernames = {};
-    let hasNewUsernames = false;
-    for (const [slot] of DolphinPlayer.possiblePlayers) {
-      if (!changedPlayers[slot]) {
-        const player = DolphinPlayer.setPlayer(slot, null);
-        if (player.hasNewUsername) {
-          changedPlayers[slot] = player;
-        }
-      }
-
-      if (changedPlayers[slot]) {
-        const changedPlayer = changedPlayers[slot];
-        if (changedPlayer.hasNewUsername) {
-          hasNewUsernames = true;
-          changedUsernames[slot] = {
-            username: changedPlayer.getUsername(),
-            previousUsername: changedPlayer.previousUsername,
-            slot: slot,
-            ping: changedPlayer.ping.getList()
-          };
-        }
-      }
-    }
-
-    if (hasNewUsernames) {
-      const sendData = {};
-      sendData.players = changedUsernames;
-      DolphinPlayer.smashladderApi
-        .apiv1Post(
-          DolphinPlayer.constants.apiv1Endpoints.DOLPHIN_PLAYER_JOINED,
-          sendData
-        )
-        .catch(response => {
-          console.error(response);
-        });
-    }
   }
 
   static retrievePlayer(slot) {
@@ -201,9 +67,6 @@ export default class DolphinPlayer {
   static reset() {
     DolphinPlayer.hasSetPlayers = false;
     DolphinPlayer.playerElements = {};
-    if (DolphinPlayer.dolphinPlayerContainer) {
-      DolphinPlayer.dolphinPlayerContainer.empty();
-    }
   }
 }
 

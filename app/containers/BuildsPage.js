@@ -8,14 +8,9 @@ import * as ReplayActions from '../actions/replays';
 import * as DolphinSettingsActions from '../actions/dolphinSettings';
 import * as AutoUpdateActions from '../actions/autoUpdates';
 import * as ReplayWatchActions from '../actions/replayWatch';
+import * as DolphinStatusActions from '../actions/dolphinStatus';
 import * as ReplayBrowseActions from '../actions/replayBrowse';
-import {
-	disableConnection,
-	enableConnection,
-	enableDevelopmentUrls,
-	enableProductionUrls,
-	logout
-} from '../actions/login';
+import * as LoginActions from '../actions/login';
 import WebsocketComponent from '../components/WebsocketComponent';
 import ReplaySync from '../components/ReplaySync';
 import DolphinSettings from '../components/DolphinSettings';
@@ -34,6 +29,7 @@ class BuildsPage extends Component<Props> {
 		};
 
 		this.props.initializeAutoUpdater();
+		this.props.initializeBuildLauncher();
 		this.props.beginWatchingForReplayChanges();
 	}
 
@@ -160,11 +156,8 @@ function mapDispatchToProps(dispatch){
 			...AutoUpdateActions,
 			...ReplayWatchActions,
 			...ReplayBrowseActions,
-			logout,
-			enableConnection,
-			enableDevelopmentUrls,
-			enableProductionUrls,
-			disableConnection
+			...DolphinStatusActions,
+			...LoginActions,
 		},
 		dispatch
 	);

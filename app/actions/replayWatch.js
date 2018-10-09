@@ -166,7 +166,6 @@ export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getStat
 			dispatch({
 				type: VERIFY_FILE_FAIL
 			});
-			console.log(`could not get legit data from replay ${filePath}`);
 			if(errors)
 			{
 				throw errors[0];
@@ -183,7 +182,6 @@ export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getStat
 			dispatch({
 				type: VERIFY_FILE_FAIL
 			});
-			console.error(error);
 		});
 };
 

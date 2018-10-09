@@ -14,7 +14,11 @@ export const REPLAY_BROWSE_END = 'REPLAY_BROWSE_END';
 
 export const REPLAY_BROWSE_UPDATE_START = 'REPLAY_BROWSE_UPDATE_START';
 export const REPLAY_BROWSE_UPDATE_SUCCESS = 'REPLAY_BROWSE_UPDATE_SUCCESS';
-export const REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS = 'REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS';
+
+export const REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_BEGIN = 'REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_BEGIN';
+export const REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_SUCCESS = 'REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_SUCCESS';
+export const REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_FAIL = 'REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_FAIL';
+export const REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_UPDATE = 'REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_UPDATE';
 
 export const REPLAY_BROWSER_CHANGE_PAGE_NUMBER = 'REPLAY_BROWSER_CHANGE_PAGE_NUMBER';
 
@@ -101,36 +105,100 @@ const updateBrowsedReplayList = () => (dispatch, getState) => {
 	dispatch(displayReplaysBasedOnCurrentPage());
 };
 
+function yieldingLoop(count, chunksize, callback, cancelToken = {}) {
+    let i = 0;
+    let totalSkipped = 0;
+    return new Promise((resolve, reject)=>{
+		(function chunk() {
+			const end = Math.min(i + chunksize, count);
+			let skipTimeout = false;
+			for ( ; i < end; ++i) {
+				skipTimeout = callback.call(null, i);
+			}
+			if(cancelToken.cancelled)
+			{
+				reject();
+				return;
+			}
+			if (i < count) {
+				if(skipTimeout === true)
+				{
+					totalSkipped++;
+					chunk.call(null);
+				}
+				else
+				{
+					setTimeout(chunk, 0);
+				}
+			} else {
+				resolve(totalSkipped);
+			}
+		})();
+	})
+}
+
+let lastCancelToken = {
+	cancelled: false
+};
 const displayReplaysBasedOnCurrentPage = () => (dispatch, getState) => {
 	const state = getState();
-	const {allReplays, replayPageNumber, replaysPerPage, activeBrowseReplays } = state.replayBrowse;
+	const {allReplays, replayPageNumber, replaysPerPage, activeBrowseReplays, updatingReplayList, replayListHasChanged } = state.replayBrowse;
+
 	const totalReplays = allReplays.size;
 	const firstReplayIndex = (replayPageNumber - 1) * replaysPerPage;
 	const lastReplayIndex = firstReplayIndex + replaysPerPage;
 
-	let replays = Array.from(allReplays).sort((a, b) => {
-		return a.getFileDate() > b.getFileDate() ? -1 : 1;
-	});
-	if(firstReplayIndex > totalReplays)
-	{
-		console.log('first index is beyond total');
-		replays = [];
-	}
-	else
-	{
-		replays = replays.slice(firstReplayIndex, lastReplayIndex);
-	}
+	const replayList = Array.from(allReplays);
 
-	if(_.isEqual(replays, activeBrowseReplays))
-	{
-		return;
-	}
-	dispatch({
-		type: REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS,
-		payload: {
-			activeBrowseReplays: replays,
+    dispatch({
+        type: REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_BEGIN,
+    });
+    lastCancelToken.cancelled = true;
+    lastCancelToken = {
+    	cancelled: false
+	};
+    yieldingLoop(replayList.length, 1, (index)=>{
+		const replay = replayList[index];
+		if(replay.hasFileDate())
+		{
+			return true;
 		}
+        dispatch({
+            type: REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_UPDATE,
+			payload: {
+            	processed: index + 1
+			}
+        });
+		replay.getFileDate();
+	}, lastCancelToken).then(()=>{
+		let replays = replayList;
+		replays.sort((a, b) => {
+			return a.getFileDate().isAfter(b.getFileDate()) ? -1 : 1;
+		});
+        if(firstReplayIndex > totalReplays)
+        {
+            console.log('first index is beyond total');
+            replays = [];
+        }
+        else
+        {
+            replays = replays.slice(firstReplayIndex, lastReplayIndex);
+        }
+
+        dispatch({
+            type: REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_SUCCESS,
+            payload: {
+                activeBrowseReplays: replays,
+            }
+        });
+	})
+	.catch((error)=>{
+        dispatch({
+            type: REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_FAIL,
+        });
+		console.error(error);
 	});
+
 };
 
 export const viewReplayDetails = (replay) => (dispatch, getState) => {
@@ -176,7 +244,7 @@ export const stopReplayBrowser = () => {
 	};
 };
 
-export const changeReplayPageNumber = (pageNumber) => (dispatch) => {
+export const changeReplayPageNumber = (pageNumber) => (dispatch, getState) => {
 	dispatch({
 		type: REPLAY_BROWSER_CHANGE_PAGE_NUMBER,
 		payload: pageNumber

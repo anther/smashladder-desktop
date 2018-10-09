@@ -4,8 +4,8 @@ import {
     DELETE_REPLAY_FAIL,
     DELETE_REPLAY_SUCCESS,
     REPLAY_BROWSE_FAIL,
-    REPLAY_BROWSE_START,
-    REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS,
+    REPLAY_BROWSE_START, REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_BEGIN, REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_FAIL,
+    REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_SUCCESS, REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_UPDATE,
     REPLAY_BROWSE_UPDATE_SUCCESS,
     REPLAY_BROWSER_CHANGE_PAGE_NUMBER,
     VIEW_REPLAY_DETAILS_BEGIN, VIEW_REPLAY_DETAILS_END
@@ -19,6 +19,9 @@ const initialState = {
 	replayBrowseWatchProcess: null,
 	replayWatchBuilds: null,
 	viewingReplayDetails: null,
+    updatingReplayList: false,
+    updatingReplayListPercent: 0,
+    replayListHasChanged: false,
 };
 CacheableDataObject.clearCache();
 
@@ -38,7 +41,8 @@ export default (state = initialState, action) => {
 		case DELETE_REPLAY_BEGIN:
 			return {
 				...state,
-				deletingReplay: action.payload
+				deletingReplay: action.payload,
+                replayListHasChanged: true
 			};
 		case DELETE_REPLAY_SUCCESS:
 			return {
@@ -66,11 +70,33 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				allReplays: action.payload.allReplays,
+                replayListHasChanged: true,
 			};
-		case REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS:
+		case REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_UPDATE:
+			return {
+				...state,
+				updatingReplayListPercent: Math.ceil((action.payload.processed / state.allReplays.size) * 100),
+				updatingReplayList: true,
+			};
+		case REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_BEGIN:
+			return {
+				...state,
+				updatingReplayListPercent: 0,
+				updatingReplayList: true,
+			};
+		case REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_FAIL:
+			return {
+				...state,
+				updatingReplayList: false,
+				updatingReplayListPercent: 0,
+			};
+		case REPLAY_BROWSE_UPDATE_DISPLAYED_REPLAYS_SUCCESS:
 			return {
 				...state,
 				activeBrowseReplays: action.payload.activeBrowseReplays,
+				updatingReplayList: false,
+				updatingReplayListPercent: 0,
+                replayListHasChanged: false,
 			};
 		case REPLAY_BROWSER_CHANGE_PAGE_NUMBER:
 			return {
