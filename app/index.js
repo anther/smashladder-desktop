@@ -28,43 +28,51 @@ if (module.hot) {
   });
 }
 
-const InputMenu = remote.Menu.buildFromTemplate([{
-	label: 'Undo',
-	role: 'undo',
-}, {
-	label: 'Redo',
-	role: 'redo',
-}, {
-	type: 'separator',
-}, {
-	label: 'Cut',
-	role: 'cut',
-}, {
-	label: 'Copy',
-	role: 'copy',
-}, {
-	label: 'Paste',
-	role: 'paste',
-}, {
-	type: 'separator',
-}, {
-	label: 'Select all',
-	role: 'selectall',
-},
+const InputMenu = remote.Menu.buildFromTemplate([
+  {
+    label: 'Undo',
+    role: 'undo'
+  },
+  {
+    label: 'Redo',
+    role: 'redo'
+  },
+  {
+    type: 'separator'
+  },
+  {
+    label: 'Cut',
+    role: 'cut'
+  },
+  {
+    label: 'Copy',
+    role: 'copy'
+  },
+  {
+    label: 'Paste',
+    role: 'paste'
+  },
+  {
+    type: 'separator'
+  },
+  {
+    label: 'Select all',
+    role: 'selectall'
+  }
 ]);
 
 console.log('adding context menu');
-document.body.addEventListener('contextmenu', (e) => {
-	e.preventDefault();
-	e.stopPropagation();
+document.body.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  e.stopPropagation();
 
-	let node = e.target;
+  let node = e.target;
 
-	while (node) {
-		if (node.nodeName.match(/^(input|textarea)$/i) || node.isContentEditable) {
-			InputMenu.popup(remote.getCurrentWindow());
-			break;
-		}
-		node = node.parentNode;
-	}
+  while (node) {
+    if (node.nodeName.match(/^(input|textarea)$/i) || node.isContentEditable) {
+      InputMenu.popup(remote.getCurrentWindow());
+      break;
+    }
+    node = node.parentNode;
+  }
 });

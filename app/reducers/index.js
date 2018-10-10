@@ -11,15 +11,15 @@ import replayBrowse from './replayBrowse';
 import dolphinStatus from './dolphinStatus';
 
 const rootReducer = combineReducers({
-	login,
-	builds,
-	replays,
-	dolphinSettings,
-	autoUpdates,
-	replayWatch,
-	replayBrowse,
-    dolphinStatus,
-	router
+  login,
+  builds,
+  replays,
+  dolphinSettings,
+  autoUpdates,
+  replayWatch,
+  replayBrowse,
+  dolphinStatus,
+  router
 });
 
 export default rootReducer;

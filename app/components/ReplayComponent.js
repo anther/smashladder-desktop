@@ -141,7 +141,7 @@ export default class ReplayComponent extends Component {
                                 {!replay.getMatchTime() &&
                                     <div>
                                         <div className='error'>Game Unreadable</div>
-                                        <div className='error_reason'>Dolphin Possibly Closed Before Match Ended</div>
+                                        <div className='error_reason'>Dolphin Closed Before Match Ended?</div>
                                     </div>
                                 }
                             </div>
