@@ -9,12 +9,13 @@ import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 import DolphinConfigurationUpdater from '../utils/DolphinConfigurationUpdater';
 
 import {
-	addRomPath, beginSelectingNewRomPath,
+	addRomPath,
+	beginSelectingNewRomPath,
 	updateAllowDolphinAnalytics,
 	updateSearchRomSubdirectories
 } from './dolphinSettings';
-import { startReplayBrowser } from "./replayBrowse";
-import {parseDolphinPlayerList} from "./dolphinStatus";
+import { startReplayBrowser } from './replayBrowse';
+import { parseDolphinPlayerList } from './dolphinStatus';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -47,8 +48,10 @@ export const START_GAME_BEGIN = 'START_GAME_BEGIN';
 export const START_GAME_SUCCESS = 'START_GAME_SUCCESS';
 export const START_GAME_FAIL = 'START_GAME_FAIL';
 
-export const MERGE_SETTINGS_INTO_BUILD_BEGIN = 'MERGE_SETTINGS_INTO_BUILD_BEGIN';
-export const MERGE_SETTINGS_INTO_BUILD_SUCCESS = 'MERGE_SETTINGS_INTO_BUILD_SUCCESS';
+export const MERGE_SETTINGS_INTO_BUILD_BEGIN =
+	'MERGE_SETTINGS_INTO_BUILD_BEGIN';
+export const MERGE_SETTINGS_INTO_BUILD_SUCCESS =
+	'MERGE_SETTINGS_INTO_BUILD_SUCCESS';
 export const MERGE_SETTINGS_INTO_BUILD_FAIL = 'MERGE_SETTINGS_INTO_BUILD_FAIL';
 
 export const SYNC_BUILDS_BEGIN = 'SYNC_BUILDS_BEGIN';
@@ -58,105 +61,101 @@ export const SYNC_BUILDS_FAIL = 'SYNC_BUILDS_FAIL';
 export const AUTOHOTKEY_EVENT = 'AUTOHOTKEY_ACTION';
 
 let buildLauncher = null;
-export const initializeBuildLauncher = () => (dispatch) => {
-  buildLauncher = new BuildLaunchAhk();
-    buildLauncher.on('ahkEvent', (event) =>{
-        if(event.action === 'player_list_info')
-        {
-            dispatch(parseDolphinPlayerList(event.value));
-        }
-  });
+export const initializeBuildLauncher = () => dispatch => {
+	buildLauncher = new BuildLaunchAhk();
+	buildLauncher.on('ahkEvent', event => {
+		if (event.action === 'player_list_info') {
+			dispatch(parseDolphinPlayerList(event.value));
+		}
+	});
 };
 
-
 export const retrieveBuilds = () => (dispatch, getState) => {
-  dispatch({
-    type: FETCH_BUILDS_BEGIN
-  });
-  const savedBuildData = electronSettings.get('builds', {});
-  getAuthenticationFromState(getState)
-    .apiGet(endpoints.DOLPHIN_BUILDS)
-    .then(response => {
-      let builds = convertLadderBuildListToSomethingThatMakesSense(
-        response.builds
-      );
-      builds = combineWithSavedBuildData(builds, savedBuildData);
+	dispatch({
+		type: FETCH_BUILDS_BEGIN
+	});
+	const savedBuildData = electronSettings.get('builds', {});
+	getAuthenticationFromState(getState)
+		.apiGet(endpoints.DOLPHIN_BUILDS)
+		.then(response => {
+			let builds = convertLadderBuildListToSomethingThatMakesSense(
+				response.builds
+			);
+			builds = combineWithSavedBuildData(builds, savedBuildData);
 
-      electronSettings.set('builds', builds);
+			electronSettings.set('builds', builds);
 
-      dispatch({
-        type: FETCH_BUILDS_SUCCESS,
-        payload: {
-          builds
-        }
-      });
-      dispatch(startReplayBrowser());
-      return response;
-    })
-    .catch(() => {
-      const builds = combineWithSavedBuildData(savedBuildData, savedBuildData);
-      dispatch({
-        type: FETCH_BUILDS_FAIL,
-        payload: {
-          builds
-        }
-      });
-      dispatch(startReplayBrowser());
-    });
+			dispatch({
+				type: FETCH_BUILDS_SUCCESS,
+				payload: {
+					builds
+				}
+			});
+			dispatch(startReplayBrowser());
+			return response;
+		})
+		.catch(() => {
+			const builds = combineWithSavedBuildData(savedBuildData, savedBuildData);
+			dispatch({
+				type: FETCH_BUILDS_FAIL,
+				payload: {
+					builds
+				}
+			});
+			dispatch(startReplayBrowser());
+		});
 };
 
 const convertLadderBuildListToSomethingThatMakesSense = ladderList => {
-  const buildList = {};
-  _.forEach(ladderList, buildData => {
-    for (let build of buildData.builds) {
-      build = buildList[build.dolphin_build_id] || Build.create(build);
-      buildList[build.dolphin_build_id] = build;
-      build.addLadder(buildData.ladder);
-    }
-  });
-  return buildList;
+	const buildList = {};
+	_.forEach(ladderList, buildData => {
+		for (let build of buildData.builds) {
+			build = buildList[build.dolphin_build_id] || Build.create(build);
+			buildList[build.dolphin_build_id] = build;
+			build.addLadder(buildData.ladder);
+		}
+	});
+	return buildList;
 };
 
 const combineWithSavedBuildData = (rawBuildData, savedBuildData) => {
-  const buildList = {};
-  _.forEach(rawBuildData, build => {
-    if (savedBuildData[build.dolphin_build_id]) {
-      build = Object.assign(savedBuildData[build.dolphin_build_id], build);
-    }
-    build = buildList[build.dolphin_build_id] || Build.create(build);
-    buildList[build.dolphin_build_id] = build;
-    if(!fs.existsSync(build.executablePath()))
-    {
-        build.pathError = true;
-    }
-  });
-  return buildList;
+	const buildList = {};
+	_.forEach(rawBuildData, build => {
+		if (savedBuildData[build.dolphin_build_id]) {
+			build = Object.assign(savedBuildData[build.dolphin_build_id], build);
+		}
+		build = buildList[build.dolphin_build_id] || Build.create(build);
+		buildList[build.dolphin_build_id] = build;
+		if (!fs.existsSync(build.executablePath())) {
+			build.pathError = true;
+		}
+	});
+	return buildList;
 };
 
 const saveBuild = (build: Build) => (dispatch, getState) => {
-  const state = getState();
-  const builds = electronSettings.get('builds') || {};
-  if (!builds[build.dolphin_build_id]) {
-    builds[build.dolphin_build_id] = {};
-  }
-  builds[build.dolphin_build_id] = build.serialize();
-  electronSettings.set('builds', builds);
+	const state = getState();
+	const builds = electronSettings.get('builds') || {};
+	if (!builds[build.dolphin_build_id]) {
+		builds[build.dolphin_build_id] = {};
+	}
+	builds[build.dolphin_build_id] = build.serialize();
+	electronSettings.set('builds', builds);
 
-  const currentBuilds = { ...state.builds.builds };
-  currentBuilds[build.dolphin_build_id] = build;
-  dispatch({
-    type: UPDATED_BUILD,
-    payload: {
-      builds: currentBuilds
-    }
-  });
+	const currentBuilds = { ...state.builds.builds };
+	currentBuilds[build.dolphin_build_id] = build;
+	dispatch({
+		type: UPDATED_BUILD,
+		payload: {
+			builds: currentBuilds
+		}
+	});
 
-  dispatch(copyBuildSettings(build));
-
+	dispatch(copyBuildSettings(build));
 };
 
 const copyBuildSettings = (build: Build) => (dispatch, getState) => {
-    const state = getState();
+	const state = getState();
 	const currentBuilds = { ...state.builds.builds };
 	if (build.executablePath()) {
 		const addRom = path => {
@@ -187,108 +186,102 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 				console.error(error);
 			});
 	}
-}
+};
 
-export const setBuildPath = (
-  build: Build,
-  path,
-) => (dispatch, getState) => {
-  build.path = path;
-  dispatch(saveBuild(build, getState));
-  if(build.executablePath())
-  {
-    dispatch(mergeInitialSettingsIntoBuild(build));
-  }
-  dispatch(syncBuildsWithServer());
+export const setBuildPath = (build: Build, path) => (dispatch, getState) => {
+	build.path = path;
+	dispatch(saveBuild(build, getState));
+	if (build.executablePath()) {
+		dispatch(mergeInitialSettingsIntoBuild(build));
+	}
+	dispatch(syncBuildsWithServer());
 };
 
 const syncBuildsWithServer = () => (dispatch, getState) => {
-      const authentication = getAuthenticationFromState(getState);
-      const { builds } = getState().builds;
+	const authentication = getAuthenticationFromState(getState);
+	const { builds } = getState().builds;
 
-      const buildIds = {};
-      _.each(builds, (build)=>{
-          if(!build.executablePath())
-          {
-              return;
-          }
-          buildIds[build.dolphin_build_id] = build.dolphin_build_id;
-      });
+	const buildIds = {};
+	_.each(builds, build => {
+		if (!build.executablePath()) {
+			return;
+		}
+		buildIds[build.dolphin_build_id] = build.dolphin_build_id;
+	});
 
-      dispatch({
-          type: SYNC_BUILDS_BEGIN
-      });
-      authentication.apiPost(endpoints.SET_ACTIVE_BUILDS, {build_ids: buildIds})
-          .then(()=>{
-              dispatch({
-                  type: SYNC_BUILDS_SUCCESS
-              });
-          })
-          .catch((error)=>{
-              console.error(error);
-              dispatch({
-                  type: SYNC_BUILDS_FAIL
-              });
-          });
-
+	dispatch({
+		type: SYNC_BUILDS_BEGIN
+	});
+	authentication
+		.apiPost(endpoints.SET_ACTIVE_BUILDS, { build_ids: buildIds })
+		.then(() => {
+			dispatch({
+				type: SYNC_BUILDS_SUCCESS
+			});
+		})
+		.catch(error => {
+			console.error(error);
+			dispatch({
+				type: SYNC_BUILDS_FAIL
+			});
+		});
 };
 
-export const mergeInitialSettingsIntoBuild = (build) => (dispatch, getState) => {
+export const mergeInitialSettingsIntoBuild = build => (dispatch, getState) => {
 	const state = getState();
 	dispatch(copyBuildSettings(build));
 	dispatch({
-        type: MERGE_SETTINGS_INTO_BUILD_BEGIN
-    });
-	if(!build)
-    {
-      const errorMessage = 'Programmer Error: No Build Provided...';
-      dispatch({
-	      type: MERGE_SETTINGS_INTO_BUILD_FAIL,
-          payload: errorMessage
-      });
-      throw new Error(errorMessage);
-    }
+		type: MERGE_SETTINGS_INTO_BUILD_BEGIN
+	});
+	if (!build) {
+		const errorMessage = 'Programmer Error: No Build Provided...';
+		dispatch({
+			type: MERGE_SETTINGS_INTO_BUILD_FAIL,
+			payload: errorMessage
+		});
+		throw new Error(errorMessage);
+	}
 	DolphinConfigurationUpdater.updateInitialSettings(build, {
 		...state.dolphinSettings
 	})
 		.then(() => {
-            dispatch({
-                type: MERGE_SETTINGS_INTO_BUILD_SUCCESS,
-                payload: build
-            });
+			dispatch({
+				type: MERGE_SETTINGS_INTO_BUILD_SUCCESS,
+				payload: build
+			});
 			return true;
 		})
 		.catch(error => {
-            dispatch({
-                type: MERGE_SETTINGS_INTO_BUILD_FAIL,
-                payload: {
-                    build: build,
-                    error: error.toString ? error.toString() : error
-                }
-            });
+			dispatch({
+				type: MERGE_SETTINGS_INTO_BUILD_FAIL,
+				payload: {
+					build: build,
+					error: error.toString ? error.toString() : error
+				}
+			});
 			console.error(error);
 		});
 };
 
 export const startGame = () => dispatch => {
-  dispatch({
-    type: START_GAME_BEGIN
-  });
-  buildLauncher
-    .startGame()
-    .then(() => {
-      dispatch({
-        type: START_GAME_SUCCESS
-      });
-    })
-    .catch(() => {
-      dispatch({
-        type: START_GAME_FAIL
-      });
-    });
+	dispatch({
+		type: START_GAME_BEGIN
+	});
+	buildLauncher
+		.startGame()
+		.then(() => {
+			dispatch({
+				type: START_GAME_SUCCESS
+			});
+		})
+		.catch(() => {
+			dispatch({
+				type: START_GAME_FAIL
+			});
+		});
 };
 
-export const authotkeyAction = event => (dispatch) =>{
+export const authotkeyAction = event => dispatch => {
 	dispatch({
 		type: AUTOHOTKEY_EVENT,
 		payload: {
@@ -298,186 +291,187 @@ export const authotkeyAction = event => (dispatch) =>{
 };
 
 export const closeDolphin = () => (dispatch, getState) => {
-  const authentication = getAuthenticationFromState(getState);
-    dispatch({
-        type: CLOSE_BUILD_BEGIN
-    });
-  buildLauncher
-    .close()
-    .then(() => {
-      dispatch({
-        type: CLOSE_BUILD_SUCCESS
-      });
-      dispatch({
-        type: CLOSE_BUILD_SEND_BEGIN
-      });
-      authentication.apiPost(endpoints.CLOSED_DOLPHIN)
-          .then(()=>{
-              dispatch({
-                type: CLOSE_BUILD_SEND_SUCCESS
-              });
-          }).catch(()=>{
-              dispatch({
-                type: CLOSE_BUILD_SEND_FAIL
-              });
-          });
-      dispatch(startReplayBrowser());
-    })
-    .catch(error => {
-      console.error(error);
-        dispatch({
-            type: CLOSE_BUILD_FAIL
-        });
-    });
+	const authentication = getAuthenticationFromState(getState);
+	dispatch({
+		type: CLOSE_BUILD_BEGIN
+	});
+	buildLauncher
+		.close()
+		.then(() => {
+			dispatch({
+				type: CLOSE_BUILD_SUCCESS
+			});
+			dispatch({
+				type: CLOSE_BUILD_SEND_BEGIN
+			});
+			authentication
+				.apiPost(endpoints.CLOSED_DOLPHIN)
+				.then(() => {
+					dispatch({
+						type: CLOSE_BUILD_SEND_SUCCESS
+					});
+				})
+				.catch(() => {
+					dispatch({
+						type: CLOSE_BUILD_SEND_FAIL
+					});
+				});
+			dispatch(startReplayBrowser());
+		})
+		.catch(error => {
+			console.error(error);
+			dispatch({
+				type: CLOSE_BUILD_FAIL
+			});
+		});
 };
 
 export const launchBuild = build => dispatch => {
-  dispatch({
-    type: LAUNCH_BUILD_BEGIN,
-    payload: {
-      build
-    }
-  });
-  dispatch(mergeInitialSettingsIntoBuild(build));
-  buildLauncher
-    .launch(build)
-    .then(({ dolphinProcess }) => {
-      dispatch({
-        type: LAUNCH_BUILD_SUCCESS,
-        payload: {
-          build
-        }
-      });
-      return dolphinProcess.stopsRunning.then(() => {
-        dispatch({
-          type: BUILD_CLOSED
-        });
-      });
-    })
-    .catch(error => {
-      dispatch(buildFailError(LAUNCH_BUILD_FAIL, build, error));
-    });
+	dispatch({
+		type: LAUNCH_BUILD_BEGIN,
+		payload: {
+			build
+		}
+	});
+	dispatch(mergeInitialSettingsIntoBuild(build));
+	buildLauncher
+		.launch(build)
+		.then(({ dolphinProcess }) => {
+			dispatch({
+				type: LAUNCH_BUILD_SUCCESS,
+				payload: {
+					build
+				}
+			});
+			return dolphinProcess.stopsRunning.then(() => {
+				dispatch({
+					type: BUILD_CLOSED
+				});
+			});
+		})
+		.catch(error => {
+			dispatch(buildFailError(LAUNCH_BUILD_FAIL, build, error));
+		});
 };
 
 export const joinBuild = (build, hostCode) => (dispatch, getState) => {
-  const state = getState();
-  dispatch({
-    type: JOIN_BUILD_BEGIN,
-    payload: {
-      build,
-      hostCode
-    }
-  });
-  dispatch(mergeInitialSettingsIntoBuild(build));
-    try {
-        build.setSlippiToRecord();
-    }
-    catch(error) {
-        dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
-        return;
-    }
-  DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
-    build.executablePath(),
-    {
-      NetPlay: {
-        NickName: state.login.player.username,
-        HostCode: hostCode,
-        TraversalChoice: 'traversal'
-      }
-    }
-  )
-    .then(() => buildLauncher.join(build, hostCode))
-    .then(() => {
-      dispatch({
-        type: JOIN_BUILD_SUCCESS,
-        payload: {
-          build
-        }
-      });
-    })
-    .catch(error => {
-      dispatch(buildFailError(JOIN_BUILD_FAIL, build, error));
-      dispatch(closeDolphin());
-    });
+	const state = getState();
+	dispatch({
+		type: JOIN_BUILD_BEGIN,
+		payload: {
+			build,
+			hostCode
+		}
+	});
+	dispatch(mergeInitialSettingsIntoBuild(build));
+	try {
+		build.setSlippiToRecord();
+	} catch (error) {
+		dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
+		return;
+	}
+	DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
+		build.executablePath(),
+		{
+			NetPlay: {
+				NickName: state.login.player.username,
+				HostCode: hostCode,
+				TraversalChoice: 'traversal'
+			}
+		}
+	)
+		.then(() => buildLauncher.join(build, hostCode))
+		.then(() => {
+			dispatch({
+				type: JOIN_BUILD_SUCCESS,
+				payload: {
+					build
+				}
+			});
+		})
+		.catch(error => {
+			dispatch(buildFailError(JOIN_BUILD_FAIL, build, error));
+			dispatch(closeDolphin());
+		});
 };
 
 export const hostBuild = (build, game) => async (dispatch, getState) => {
-  const authentication = getAuthenticationFromState(getState);
-  const state = getState();
-  dispatch({
-    type: HOST_BUILD_BEGIN,
-    payload: {
-      build,
-      game
-    }
-  });
-  try {
-      dispatch(mergeInitialSettingsIntoBuild(build));
-      build.setSlippiToRecord();
-  }
-  catch(error) {
-	  dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
-	  return;
-  }
-  DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
-    build.executablePath(),
-    {
-      NetPlay: {
-        NickName: state.login.player.username,
-        TraversalChoice: 'traversal'
-      }
-    }
-  )
-    .then(() => buildLauncher.host(build, game))
-    .then(({ dolphinProcess, result }) => {
-      authentication.apiPost(endpoints.OPENED_DOLPHIN);
-      console.log(dolphinProcess, result);
-      authentication.apiPost(endpoints.DOLPHIN_HOST, {
-        host_code: result.value
-      });
-      dispatch({
-        type: HOST_BUILD_SUCCESS,
-        payload: {
-          build,
-          hostCode: result.value
-        }
-      });
-      return dolphinProcess.stopsRunning.then(() => {
-        dispatch({
-          type: BUILD_CLOSED
-        });
-      });
-    })
-    .catch(error => {
-        if(error && error.action === "setup_netplay_host_failed")
-        {
-          dispatch(beginSelectingNewRomPath(`Select Rom Folder That Contains ${game.name}`,
-              hostBuild.apply(this, [build, game])));
-        }
-      console.log('the error', error);
-      dispatch(closeDolphin());
-      dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
-    });
+	const authentication = getAuthenticationFromState(getState);
+	const state = getState();
+	dispatch({
+		type: HOST_BUILD_BEGIN,
+		payload: {
+			build,
+			game
+		}
+	});
+	try {
+		dispatch(mergeInitialSettingsIntoBuild(build));
+		build.setSlippiToRecord();
+	} catch (error) {
+		dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
+		return;
+	}
+	DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(
+		build.executablePath(),
+		{
+			NetPlay: {
+				NickName: state.login.player.username,
+				TraversalChoice: 'traversal'
+			}
+		}
+	)
+		.then(() => buildLauncher.host(build, game))
+		.then(({ dolphinProcess, result }) => {
+			authentication.apiPost(endpoints.OPENED_DOLPHIN);
+			console.log(dolphinProcess, result);
+			authentication.apiPost(endpoints.DOLPHIN_HOST, {
+				host_code: result.value
+			});
+			dispatch({
+				type: HOST_BUILD_SUCCESS,
+				payload: {
+					build,
+					hostCode: result.value
+				}
+			});
+			return dolphinProcess.stopsRunning.then(() => {
+				dispatch({
+					type: BUILD_CLOSED
+				});
+			});
+		})
+		.catch(error => {
+			if (error && error.action === 'setup_netplay_host_failed') {
+				dispatch(
+					beginSelectingNewRomPath(
+						`Select your ${game.name} ROM!`,
+						hostBuild.apply(this, [build, game])
+					)
+				);
+			}
+			console.log('the error', error);
+			dispatch(closeDolphin());
+			dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
+		});
 };
 
 const buildFailError = (type, build, error) => {
-  console.error(error);
-  if(error && error.value)
-  {
-    error = error.value;
-  }
-  if(error.toString)
-  {
-      error = error.toString();
-  }
-  console.log('why not show', error);
-  return {
-    type: HOST_BUILD_FAIL,
-    payload: {
-      buildError: {
-        for: build.id,
-        error: String(error),
-      }
-    }
-  };
+	console.error(error);
+	if (error && error.value) {
+		error = error.value;
+	}
+	if (error.toString) {
+		error = error.toString();
+	}
+	console.log('why not show', error);
+	return {
+		type: HOST_BUILD_FAIL,
+		payload: {
+			buildError: {
+				for: build.id,
+				error: String(error)
+			}
+		}
+	};
 };

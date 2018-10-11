@@ -10,7 +10,7 @@
     "node": true
   },
   "rules": {
-    "useTabs": true,
+    "indent": ["error", "tab"],
     "linebreak-style": ["error", "unix"],
     "react/destructuring-assignment": ["off"],
     "no-param-reassign": ["off"],
