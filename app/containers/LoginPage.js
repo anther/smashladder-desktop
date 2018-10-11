@@ -1,14 +1,14 @@
 // @flow
 import React, { Component } from 'react';
-import { connect } from "react-redux";
+import { connect } from 'react-redux';
 import Login from '../components/Login';
 
-import { setLoginKey } from "../actions/login";
-import Header from "../components/common/Header";
-import Layout from "../components/common/Layout";
+import { setLoginKey } from '../actions/login';
+import Header from '../components/common/Header';
+import Layout from '../components/common/Layout';
 
 class LoginPage extends Component<Props> {
-	render(){
+	render() {
 		return (
 			<Layout>
 				<Header

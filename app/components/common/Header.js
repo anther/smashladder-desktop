@@ -3,7 +3,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { remote } from 'electron';
-import ladderLogoIcon from "../../images/ladder_logo_icon.png";
+import ladderLogoIcon from '../../images/ladder_logo_icon.png';
 
 
 export default class Header extends Component {
@@ -12,7 +12,7 @@ export default class Header extends Component {
 		productionUrls: PropTypes.bool,
 		enableDevelopmentUrls: PropTypes.func,
 		enableProductionUrls: PropTypes.func,
-		logout: PropTypes.func,
+		logout: PropTypes.func
 	};
 
 	static defaultProps = {
@@ -20,10 +20,10 @@ export default class Header extends Component {
 		productionUrls: null,
 		enableDevelopmentUrls: null,
 		enableProductionUrls: null,
-		logout: null,
+		logout: null
 	};
 
-	render(){
+	render() {
 		const { player, logout, productionUrls, enableDevelopmentUrls, enableProductionUrls } = this.props;
 		return (
 			<div id="main-heading">
@@ -62,10 +62,11 @@ export default class Header extends Component {
 						<span className='logo-ladder'>Ladder</span>
 					</span>
 					<span className='launcher_name'>
-						<span className='logo-dolphin'>Dolphin Launcher <span className='beta'>Beta {remote.app.getVersion()}</span> </span>
+						<span className='logo-dolphin'>Dolphin Launcher <span
+							className='beta'>Beta {remote.app.getVersion()}</span> </span>
 					</span>
 				</h3>
 			</div>
-		)
+		);
 	}
 }

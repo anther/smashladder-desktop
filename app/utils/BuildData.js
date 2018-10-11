@@ -7,7 +7,7 @@ import DolphinConfigurationUpdater from './DolphinConfigurationUpdater';
 export default class Build extends CacheableDataObject {
 	static getSlippiBuilds(builds) {
 		let foundBuilds = new Set();
-		_.each(builds, build => {
+		_.each(builds, (build) => {
 			if (build.getSlippiPath()) {
 				foundBuilds.add(build);
 			}
@@ -69,14 +69,13 @@ export default class Build extends CacheableDataObject {
 		try {
 			if (DolphinConfigurationUpdater.hasSlippiConfiguration(this.getMeleeSettingsIniLocation())) {
 				Files.ensureDirectoryExistsSync(expectedSlippiPath);
-				return this._slippiPath = expectedSlippiPath;
+				return (this._slippiPath = expectedSlippiPath);
 			}
-		}
-		catch (error) {
+		} catch (error) {
 			console.error(error);
 			return null;
 		}
-		return this._slippiPath = null;
+		return (this._slippiPath = null);
 	}
 
 	getMeleeSettingsIniLocation() {

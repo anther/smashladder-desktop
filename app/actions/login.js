@@ -1,8 +1,8 @@
-import electronSettings from "electron-settings";
-import { endpoints, SmashLadderAuthentication } from "../utils/SmashLadderAuthentication";
-import getAuthenticationFromState from "../utils/getAuthenticationFromState";
+import electronSettings from 'electron-settings';
+import { endpoints, SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
+import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 
-export const SET_LOGIN_KEY = 'SET_LOGIN_KEY'
+export const SET_LOGIN_KEY = 'SET_LOGIN_KEY';
 export const INVALID_LOGIN_KEY = 'INVALID_LOGIN_KEY';
 
 export const LOGIN_BEGIN = 'LOGIN_BEGIN';
@@ -28,10 +28,9 @@ export const setLoginKey = (loginCode) => {
 			productionUrls: currentState.login.productionUrls
 		});
 		const state = {
-			loginCode: loginCode,
+			loginCode: loginCode
 		};
-		if(!authentication.getAccessCode())
-		{
+		if (!authentication.getAccessCode()) {
 			dispatch({
 				type: INVALID_LOGIN_KEY,
 				payload: {
@@ -65,32 +64,26 @@ export const setLoginKey = (loginCode) => {
 						player: authentication.player,
 						isLoggingIn: false,
 						sessionId: authentication.session_id
-					},
+					}
 				});
 			})
 			.catch(response => {
 				let error = null;
-				if(response.statusCode === 401)
-				{
+				if (response.statusCode === 401) {
 					error = 'Invalid Code, Maybe it expired?';
 				}
-				else
-				{
-					try
-					{
+				else {
+					try {
 						error = JSON.parse(response.error);
-						if(error.error)
-						{
+						if (error.error) {
 							error = error.error;
 						}
 					}
-					catch(parseError)
-					{
+					catch (parseError) {
 						error = `Something is probably wrong with SmashLadder's server's right now, please try again later!`;
 					}
 				}
-				if(typeof error === 'string')
-				{
+				if (typeof error === 'string') {
 					error = [error];
 				}
 				dispatch({
@@ -100,11 +93,11 @@ export const setLoginKey = (loginCode) => {
 						player: null,
 						loginErrors: error,
 						isLoggingIn: false,
-						showLoginButton: true,
+						showLoginButton: true
 					}
 				});
 			});
-	}
+	};
 };
 
 export const enableProductionUrls = () => {
@@ -138,10 +131,10 @@ export const logout = () => (dispatch, getState) => {
 	authentication.apiPost(endpoints.LOGOUT, { logout: true }).then(() => {
 		dispatch({
 			type: LOGOUT_SUCCESS
-		})
+		});
 	}).catch(() => {
 		dispatch({
 			type: LOGOUT_FAIL
-		})
+		});
 	});
 };

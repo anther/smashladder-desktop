@@ -1,31 +1,28 @@
 /* eslint-disable eqeqeq */
-import {parseDolphinPlayerList} from "../actions/dolphinStatus";
+import { parseDolphinPlayerList } from '../actions/dolphinStatus';
 
 export default class DolphinActions {
-	static call(name, build, message){
-		if(DolphinActions.isCallable(name))
-		{
+	static call(name, build, message) {
+		if (DolphinActions.isCallable(name)) {
 			return DolphinActions.callableActions[name](build, message);
 		}
 		throw new Error(`Invalid Call to ${name}`);
 	}
 
-	static isCallable(name){
-		return typeof DolphinActions.callableActions[name] === "function";
+	static isCallable(name) {
+		return typeof DolphinActions.callableActions[name] === 'function';
 	}
 
 }
 DolphinActions.lastHostCode = null;
 DolphinActions.callableActions = {
 	host_code: (build, value) => {
-		if(build && build.ignoreNextHostMessage)
-		{
+		if (build && build.ignoreNextHostMessage) {
 			console.log('Ignoring host because attempting to join!');
 			build.ignoreNextHost(false);
 			return;
 		}
-		if(value == DolphinActions.lastHostCode)
-		{
+		if (value == DolphinActions.lastHostCode) {
 			return null;
 		}
 		DolphinActions.lastHostCode = value;
@@ -54,5 +51,5 @@ DolphinActions.callableActions = {
 		console.log('Yay');
 	},
 	setup_netplay_host_failed: () => (null),
-	setup_netplay_host_failed_empty_list: () => (null),
+	setup_netplay_host_failed_empty_list: () => (null)
 };

@@ -1,8 +1,6 @@
-export default class DolphinResponse
-{
-	static ahkResponse(message){
-		if(!message)
-		{
+export default class DolphinResponse {
+	static ahkResponse(message) {
+		if (!message) {
 			return {};
 		}
 		var action = message.action;
@@ -17,33 +15,29 @@ export default class DolphinResponse
 		};
 	}
 
-	static splitMessage(message){
-		if(!message)
-		{
+	static splitMessage(message) {
+		if (!message) {
 			return {};
 		}
-		if(typeof message === 'string')
-		{
+		if (typeof message === 'string') {
 
 		}
-		else if(typeof message !== 'string' && message.toString)
-		{
+		else if (typeof message !== 'string' && message.toString) {
 			message = message.toString();
 		}
-		else
-		{
-			return {action: null, error: 'Could not use string!'};
+		else {
+			return { action: null, error: 'Could not use string!' };
 		}
-		var time = message.substring(message.indexOf(":")+1, message.lastIndexOf(":"));
-		var afterTime = message.substring(message.lastIndexOf(":")+1, message.length);
-		var splitMessage = afterTime.split(" ");
+		var time = message.substring(message.indexOf(':') + 1, message.lastIndexOf(':'));
+		var afterTime = message.substring(message.lastIndexOf(':') + 1, message.length);
+		var splitMessage = afterTime.split(' ');
 		var lastArgument = splitMessage.pop();
 
 
 		var action;
-		action = splitMessage.join(" ");
+		action = splitMessage.join(' ');
 		action = action.trim();
-		action = action.replace(" ","_");
+		action = action.replace(' ', '_');
 		action = action.toLowerCase();
 
 		return {
@@ -56,18 +50,16 @@ export default class DolphinResponse
 		// dolphinMessage.includes("Host Code ")
 	}
 
-	static parse(message){
+	static parse(message) {
 		var parsed = DolphinResponse.splitMessage(message);
-		if(parsed.action)
-		{
+		if (parsed.action) {
 			return parsed;
 		}
-		else
-		{
+		else {
 			return {
 				action: null,
 				value: message.toString()
-			}
+			};
 		}
 	}
 

@@ -6,9 +6,8 @@ import _ from 'lodash';
 import Files from './Files';
 
 export default class DolphinConfigurationUpdater {
-	constructor(buildPath){
-		if(!buildPath)
-		{
+	constructor(buildPath) {
+		if (!buildPath) {
 			throw new Error('Invalid Dolphin Path');
 		}
 		this.buildPath = buildPath;
@@ -16,100 +15,91 @@ export default class DolphinConfigurationUpdater {
 		this.loadedConfigurationPath = null;
 	}
 
-	getDolphinIniLocation(){
-		if(this.iniLocationToUse)
-		{
+	getDolphinIniLocation() {
+		if (this.iniLocationToUse) {
 			return this.iniLocationToUse;
 		}
 		let configLocation = [];
-		try
-		{
+		try {
 			configLocation = Files.findInDirectory(
 				path.dirname(this.buildPath),
 				'Dolphin.ini'
 			);
-		} catch(error)
-		{
+		} catch (error) {
 			throw error;
 		}
-		if(configLocation.length > 1)
-		{
+		if (configLocation.length > 1) {
 			throw new Error(
 				`Found more than one Dolphin.ini ${configLocation.join(' ')}`
 			);
 		}
-		if(configLocation.length === 0)
-		{
+		if (configLocation.length === 0) {
 			throw new Error('Could not find a Dolphin.ini to update');
 		}
 		this.iniLocationToUse = configLocation[0];
 		return this.iniLocationToUse;
 	}
 
-	loadAConfiguration(filePath){
+	loadAConfiguration(filePath) {
 		this.loadedConfigurationPath = filePath;
 		return ini.parse(fs.readFileSync(filePath, 'utf-8'));
 	}
 
-	loadMainSettingsConfiguration(){
+	loadMainSettingsConfiguration() {
 		this.loadedConfigurationPath = this.getDolphinIniLocation();
 		return ini.parse(fs.readFileSync(this.loadedConfigurationPath, 'utf-8'));
 	}
 
-	saveConfiguration(config){
+	saveConfiguration(config) {
 		return this.saveFile(ini.stringify(config, { whitespace: true }));
 	}
 
-	saveFile(fileContents){
+	saveFile(fileContents) {
 		return fs.writeFileSync(
 			this.loadedConfigurationPath,
 			fileContents
 		);
 	}
 
-	saveGeckoCodeConfiguration(config){
+	saveGeckoCodeConfiguration(config) {
 		let stringified = ini.stringify(config, { whitespace: true });
 		stringified = DolphinConfigurationUpdater.eraseAll(stringified, ' = true');
 		this.saveFile(stringified);
 	}
 
-	static hasSlippiConfiguration(configPath){
+	static hasSlippiConfiguration(configPath) {
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
-		if(!config['Gecko_Enabled'])
-		{
+		if (!config['Gecko_Enabled']) {
 			return false;
 		}
 
 		return !!(config['Gecko_Enabled']['$Slippi Recording'] || config['Gecko_Enabled']['$Slippi Playback']);
 	}
 
-	static setSlippiToPlayback(configPath){
+	static setSlippiToPlayback(configPath) {
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
-		if(config['Gecko_Enabled']['$Slippi Recording'])
-		{
+		if (config['Gecko_Enabled']['$Slippi Recording']) {
 			delete config['Gecko_Enabled']['$Slippi Recording'];
 			config['Gecko_Enabled']['$Slippi Playback'] = true;
 			updater.saveGeckoCodeConfiguration(config);
 		}
 	}
 
-	static setSlippiToRecord(configPath){
+	static setSlippiToRecord(configPath) {
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
-		if(config['Gecko_Enabled']['$Slippi Playback'])
-		{
+		if (config['Gecko_Enabled']['$Slippi Playback']) {
 			delete config['Gecko_Enabled']['$Slippi Playback'];
 			config['Gecko_Enabled']['$Slippi Recording'] = true;
 			updater.saveGeckoCodeConfiguration(config);
 		}
 	}
 
-	static eraseAll(string, search){
+	static eraseAll(string, search) {
 		return string.replace(new RegExp(search, 'g'), '');
 	};
-
 
 
 	static async copyInitialSettingsFromBuild(
@@ -117,7 +107,7 @@ export default class DolphinConfigurationUpdater {
 		addRomPath,
 		updateAllowDolphinAnalytics,
 		updateSearchRomSubdirectories
-	){
+	) {
 		const updater = new DolphinConfigurationUpdater(buildPath);
 		const config = updater.loadMainSettingsConfiguration();
 
@@ -125,39 +115,34 @@ export default class DolphinConfigurationUpdater {
 			console.log('attempting to add', isoPath);
 			addRomPath(isoPath);
 		});
-		if(config.General && config.General.RecursiveISOPaths === 'True')
-		{
+		if (config.General && config.General.RecursiveISOPaths === 'True') {
 			// Only Update this if it's true, the default is typically false
 			console.log('Search subdirectories was true');
 			updateSearchRomSubdirectories(true);
 		}
-		if(config.Analytics && config.Analytics.Enabled === 'True')
-		{
+		if (config.Analytics && config.Analytics.Enabled === 'True') {
 			console.log('Analytics was true');
 			updateAllowDolphinAnalytics(config.Analytics.Enabled === 'True');
 		}
 		console.log('finished');
 	}
 
-	static async mergeSettingsIntoDolphinIni(buildPath, settings){
+	static async mergeSettingsIntoDolphinIni(buildPath, settings) {
 		const updater = new DolphinConfigurationUpdater(buildPath);
 		const config = updater.loadMainSettingsConfiguration();
 		_.merge(config, settings);
 		return updater.saveConfiguration(config);
 	}
 
-	static forEachIsoEntries(config, callback){
-		if(!config.General)
-		{
+	static forEachIsoEntries(config, callback) {
+		if (!config.General) {
 			return;
 		}
 		let hasIsoEntry = false;
 		let entryNumber = 0;
-		do
-		{
+		do {
 			const currentIsoPathName = `ISOPath${entryNumber}`;
-			if(config.General[currentIsoPathName])
-			{
+			if (config.General[currentIsoPathName]) {
 				hasIsoEntry = true;
 				callback(
 					config.General[currentIsoPathName],
@@ -165,27 +150,24 @@ export default class DolphinConfigurationUpdater {
 					entryNumber
 				);
 			}
-			else
-			{
+			else {
 				hasIsoEntry = false;
 			}
 			entryNumber++;
-		}while(hasIsoEntry);
+		} while (hasIsoEntry);
 	}
 
 	static async updateInitialSettings(
 		build,
 		{ romPaths, searchRomSubdirectories, allowDolphinAnalytics }
-	){
+	) {
 		const updater = new DolphinConfigurationUpdater(build.executablePath());
 		const config = updater.loadMainSettingsConfiguration();
-		if(!config.General)
-		{
+		if (!config.General) {
 			config.General = {};
 		}
 		// console.log('the rom paths', romPaths);
-		if(!_.isEmpty(romPaths))
-		{
+		if (!_.isEmpty(romPaths)) {
 			DolphinConfigurationUpdater.forEachIsoEntries(
 				config,
 				(isoPath, currentIsoPathName) => {
@@ -209,8 +191,7 @@ export default class DolphinConfigurationUpdater {
 		}
 
 		// Set Analytics Settings
-		if(!config.Analytics)
-		{
+		if (!config.Analytics) {
 			config.Analytics = {};
 		}
 		console.log('Updating analytics settings');
@@ -218,8 +199,7 @@ export default class DolphinConfigurationUpdater {
 		config.Analytics.PermissionAsked = 'True';
 
 		// Set Search Subdirectories Checkbox
-		if(searchRomSubdirectories !== null)
-		{
+		if (searchRomSubdirectories !== null) {
 			console.log('Setting search recursively', searchRomSubdirectories);
 			config.General.RecursiveISOPaths = searchRomSubdirectories
 				? 'True'
@@ -227,16 +207,14 @@ export default class DolphinConfigurationUpdater {
 		}
 
 
-
 		updater.saveConfiguration(config);
 		return true;
 	}
 
-	static async setToFullScreen(build){
+	static async setToFullScreen(build) {
 		const updater = new DolphinConfigurationUpdater(build.executablePath());
 		const config = updater.loadMainSettingsConfiguration();
-		if(!config.Display)
-		{
+		if (!config.Display) {
 			config.Display = {};
 		}
 		config.Display.Fullscreen = 'True';

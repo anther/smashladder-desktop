@@ -130,7 +130,7 @@ export default class ReplayComponent extends Component {
 													player.overall.totalDamage
 														? player.overall.totalDamage.toFixed(1)
 														: 0
-												}%`
+													}%`
 											)}
 											{this.renderElement(
 												'Wavelands',
@@ -152,7 +152,7 @@ export default class ReplayComponent extends Component {
 						<div className="details">
 							{stage && (
 								<div className="stage">
-									<img alt={stage.name} src={stage.imageUrl()} />
+									<img alt={stage.name} src={stage.imageUrl()}/>
 								</div>
 							)}
 							<div className="match_time">
@@ -219,11 +219,11 @@ export default class ReplayComponent extends Component {
 												onClick={this.onReplayViewClick}
 												className={`btn-small ${
 													meleeIsoPath ? 'set no_check' : 'not_set no_check'
-												}`}
+													}`}
 											>
 												{launchingReplay && <span>...</span>}
 												{!launchingReplay && (
-													<i className="fa fa-caret-right" />
+													<i className="fa fa-caret-right"/>
 												)}
 											</Button>
 										</div>
@@ -233,7 +233,7 @@ export default class ReplayComponent extends Component {
 													onClick={this.onDetailsClick}
 													className="btn-small btn-flat"
 												>
-													<i className="fa fa-info-circle" />
+													<i className="fa fa-info-circle"/>
 												</Button>
 											</div>
 										)}
@@ -250,7 +250,7 @@ export default class ReplayComponent extends Component {
 												onClick={this.onDeleteButtonClick}
 												className="btn-small error_button"
 											>
-												<i className="fa fa-trash" />
+												<i className="fa fa-trash"/>
 											</Button>
 										</div>
 									</React.Fragment>
@@ -328,7 +328,7 @@ class StockComponent extends React.Component {
 
 		return (
 			<span data-number={stock.stock_number} className={classes.toString()}>
-				<img src={iconUrl} />
+				<img src={iconUrl}/>
 				{displayDamageConditions && (
 					<span className="damage active">
 						{Number.parseInt(stock.damage_received, 10)}

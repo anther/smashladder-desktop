@@ -1,11 +1,11 @@
-export default class MapHelper{
+export default class MapHelper {
 
-    static inPlaceSort(map, sort){
-        const sorted = Array.from(map).sort(sort);
-        map.clear();
-        for(const [key, value] of sorted){
-            map.set(key, value);
-        }
-        return map;
-    }
+	static inPlaceSort(map, sort) {
+		const sorted = Array.from(map).sort(sort);
+		map.clear();
+		for (const [key, value] of sorted) {
+			map.set(key, value);
+		}
+		return map;
+	}
 }

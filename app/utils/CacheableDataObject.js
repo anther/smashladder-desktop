@@ -1,50 +1,45 @@
 /* eslint-disable class-methods-use-this,no-restricted-syntax,prefer-destructuring */
 export default class CacheableDataObject {
-	constructor(data){
+	constructor(data) {
 		this.beforeConstruct();
 		this.update(data);
 		this.afterConstruct();
 	}
 
-	beforeConstruct(){
+	beforeConstruct() {
 	}
 
-	afterConstruct(){
+	afterConstruct() {
 	}
 
-	beforeUpdate(){
+	beforeUpdate() {
 	}
 
-	afterUpdate(){
+	afterUpdate() {
 	}
 
-	static create(data){
+	static create(data) {
 		return this.newInstance().update(data);
 	}
 
-	static clearCache(){
+	static clearCache() {
 		const className = this.name;
 		CacheableDataObject.cache[className] = {};
 	}
 
-	update(data){
-		if(this.beforeUpdate(data) === false)
-		{
+	update(data) {
+		if (this.beforeUpdate(data) === false) {
 			return this;
 		}
-		for(const i in data)
-		{
-			if(!data.hasOwnProperty(i))
-			{
+		for (const i in data) {
+			if (!data.hasOwnProperty(i)) {
 				continue;
 			}
-			if(this.dataLocationParsers[i])
-			{
+			if (this.dataLocationParsers[i]) {
 				//  BABEL fucks up binding "this" to the function
 				this.dataLocationParsers[i].call(this, this, data);
 			}
-			else
-			{
+			else {
 				this[i] = data[i];
 			}
 		}
@@ -52,53 +47,46 @@ export default class CacheableDataObject {
 		return this;
 	}
 
-	static retrieveById(id){
+	static retrieveById(id) {
 		//  TODO: Update this to be able to use dynamic id fields
 		return this.retrieve({ id: id });
 	}
 
-	serialize(){
+	serialize() {
 		const data = {};
-		for(const field of this.serializeFields)
-		{
+		for (const field of this.serializeFields) {
 			data[field] = this[field];
 		}
 		return data;
 	}
 
-	static retrieve(data, idToSave){
+	static retrieve(data, idToSave) {
 		const className = this.name;
 		let id = null;
 
-		if(idToSave)
-		{
+		if (idToSave) {
 			id = idToSave;
 		}
-		else
-		{
+		else {
 			id = data.id;
 		}
-		if(!CacheableDataObject.cache[className])
-		{
+		if (!CacheableDataObject.cache[className]) {
 			CacheableDataObject.cache[className] = {};
 		}
-		if(CacheableDataObject.cache[className][id])
-		{
-			if(CacheableDataObject.cache[className][id] === data)
-			{
+		if (CacheableDataObject.cache[className][id]) {
+			if (CacheableDataObject.cache[className][id] === data) {
 				return data;
 			}
 			return CacheableDataObject.cache[className][id].update(data);
 		}
 		const newInstance = this.create(data);
-		if(id)
-		{
+		if (id) {
 			CacheableDataObject.cache[className][id] = newInstance;
 		}
 		return newInstance;
 	}
 
-	static newInstance(data){
+	static newInstance(data) {
 		return new this(data);
 	}
 }

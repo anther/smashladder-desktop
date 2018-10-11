@@ -1,28 +1,28 @@
 import React, { Component } from 'react';
 import Pagination from 'react-js-pagination';
-import ReplayComponent from "./ReplayComponent";
-import ProgressIndeterminate from "./elements/ProgressIndeterminate";
-import ProgressDeterminate from "./elements/ProgressDeterminate";
-import Button from "./elements/Button";
+import ReplayComponent from './ReplayComponent';
+import ProgressIndeterminate from './elements/ProgressIndeterminate';
+import ProgressDeterminate from './elements/ProgressDeterminate';
+import Button from './elements/Button';
 
 
 export default class ReplayBrowser extends Component {
 
-	constructor(props){
+	constructor(props) {
 		super(props);
 		this.onPageChange = this.handlePageChange.bind(this);
-        this.onSetMeleeIsoPathClick = this.setMeleeIsoPathClick.bind(this);
+		this.onSetMeleeIsoPathClick = this.setMeleeIsoPathClick.bind(this);
 	}
 
-	handlePageChange(pageNumber){
+	handlePageChange(pageNumber) {
 		this.props.changeReplayPageNumber(pageNumber);
 	}
 
-    setMeleeIsoPathClick(){
-        this.props.requestMeleeIsoPath();
-    }
+	setMeleeIsoPathClick() {
+		this.props.requestMeleeIsoPath();
+	}
 
-	render(){
+	render() {
 		const {
 			activeBrowseReplays,
 			replayPageNumber,
@@ -30,14 +30,13 @@ export default class ReplayBrowser extends Component {
 			replaysPerPage,
 			launchReplayError,
 			viewingReplayDetails,
-            updatingReplayList,
-            updatingReplayListPercent,
-            settingMeleeIsoPath,
-			meleeIsoPath,
+			updatingReplayList,
+			updatingReplayListPercent,
+			settingMeleeIsoPath,
+			meleeIsoPath
 		} = this.props;
 
-		if(viewingReplayDetails)
-		{
+		if (viewingReplayDetails) {
 			return (
 				<div className='replay_browser detailed'>
 					<ReplayComponent
@@ -46,7 +45,7 @@ export default class ReplayBrowser extends Component {
 						replay={viewingReplayDetails}
 					/>
 				</div>
-			)
+			);
 		}
 
 		return (
@@ -54,17 +53,17 @@ export default class ReplayBrowser extends Component {
 				{activeBrowseReplays.length > 0 &&
 				<React.Fragment>
 					<h5>Latest Replays</h5>
-                    {!meleeIsoPath &&
-						<div>
-							<Button
-								className='btn-small not_set no_check'
-								disabled={settingMeleeIsoPath}
-								onClick={this.onSetMeleeIsoPathClick}
-							>
-                                Set Path to Melee Iso
-							</Button>
-						</div>
-                    }
+					{!meleeIsoPath &&
+					<div>
+						<Button
+							className='btn-small not_set no_check'
+							disabled={settingMeleeIsoPath}
+							onClick={this.onSetMeleeIsoPathClick}
+						>
+							Set Path to Melee Iso
+						</Button>
+					</div>
+					}
 					{launchReplayError &&
 					<div className='error'>
 						{launchReplayError}
@@ -82,11 +81,11 @@ export default class ReplayBrowser extends Component {
 					</div>
 					<div className='collection'>
 						{updatingReplayList &&
-							<div className='replay_list_updating_progress'>
-								<ProgressDeterminate
-									percent={updatingReplayListPercent}
-								/>
-							</div>
+						<div className='replay_list_updating_progress'>
+							<ProgressDeterminate
+								percent={updatingReplayListPercent}
+							/>
+						</div>
 						}
 						{activeBrowseReplays.map((replay) => (
 							<div key={replay.id} className='collection-item replay'>
@@ -100,7 +99,7 @@ export default class ReplayBrowser extends Component {
 
 				</React.Fragment>
 				}
-			{activeBrowseReplays.length === 0 && updatingReplayList &&
+				{activeBrowseReplays.length === 0 && updatingReplayList &&
 				<React.Fragment>
 					<h5>Loading Replays</h5>
 					<div className='replay_list_updating_progress'>
@@ -109,8 +108,8 @@ export default class ReplayBrowser extends Component {
 						/>
 					</div>
 				</React.Fragment>
-			}
+				}
 			</div>
-		)
+		);
 	}
 }

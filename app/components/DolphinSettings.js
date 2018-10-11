@@ -17,15 +17,15 @@ export default class DolphinSettings extends Component {
 		updateAllowDolphinAnalytics: PropTypes.func.isRequired,
 		settingMeleeIsoPath: PropTypes.bool.isRequired,
 		requestMeleeIsoPath: PropTypes.func.isRequired,
-		meleeIsoPath: PropTypes.string,
+		meleeIsoPath: PropTypes.string
 	};
 
 	static defaultProps = {
 		searchRomSubdirectories: null,
-		meleeIsoPath: null,
+		meleeIsoPath: null
 	};
 
-	constructor(props){
+	constructor(props) {
 		super(props);
 		this.onUpdateSearchSubdirectories = this.updateSearchSubdirectoriesChange.bind(this);
 		this.onUpdateAllowDolphinAnalytics = this.updateAllowDolphinAnalytics.bind(this);
@@ -34,35 +34,35 @@ export default class DolphinSettings extends Component {
 		this.onSelectRomPathClick = this.selectRomPathClick.bind(this);
 		this.onUnsetRomPathClick = this.unsetRomPathClick.bind(this);
 		this.state = {
-			settingMeleeIsoPath: false,
+			settingMeleeIsoPath: false
 		};
 	}
 
-	setMeleeIsoPathClick(){
+	setMeleeIsoPathClick() {
 		this.props.requestMeleeIsoPath();
 	}
 
-	unsetRomPathClick(){
+	unsetRomPathClick() {
 		this.props.unsetMeleeIsoPath();
 	}
 
-	selectRomPathClick(){
+	selectRomPathClick() {
 		this.props.beginSelectingNewRomPath();
 	}
 
-	updateSearchSubdirectoriesChange(event){
+	updateSearchSubdirectoriesChange(event) {
 		this.props.updateSearchRomSubdirectories(event.target.checked);
 	}
 
-	updateAllowDolphinAnalytics(event){
+	updateAllowDolphinAnalytics(event) {
 		this.props.updateAllowDolphinAnalytics(event.target.checked);
 	}
 
-	getRomPathsButtonText(){
+	getRomPathsButtonText() {
 		return 'Add Rom Path';
 	}
 
-	render(){
+	render() {
 		const { romPaths, settingMeleeIsoPath, meleeIsoPath, selectingRomPath, beginSelectingNewRomPath } = this.props;
 
 		return (
@@ -101,7 +101,7 @@ export default class DolphinSettings extends Component {
 						/>
 						<span>Search Subdirectories</span>
 						{this.props.searchRomSubdirectories &&
-							<div className='error hint_text'>This being active may cause dolphin to freeze!</div>
+						<div className='error hint_text'>This being active may cause dolphin to freeze!</div>
 						}
 					</label>
 				</div>
@@ -128,12 +128,12 @@ export default class DolphinSettings extends Component {
 						onClick={this.onUnsetRomPathClick}
 					/>
 					{meleeIsoPath &&
-						<div className='iso_path_display'>
+					<div className='iso_path_display'>
 							<span className='iso_path'>
-								<i className='fa fa-compact-disc' />
+								<i className='fa fa-compact-disc'/>
 								<span className='text'>{meleeIsoPath}</span>
 							</span>
-						</div>
+					</div>
 					}
 				</div>
 			</div>

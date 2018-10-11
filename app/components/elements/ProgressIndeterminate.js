@@ -1,6 +1,6 @@
-import React from "react";
+import React from 'react';
 
-export default (props)=> {
+export default (props) => {
 	const color = props.color || 'teal';
 	return (
 		<div className={`progress ${color} lighten-3`}>

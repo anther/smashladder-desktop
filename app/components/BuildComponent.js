@@ -169,60 +169,59 @@ export default class BuildComponent extends Component {
 							});
 						}, 100);
 						switch (extension.toLowerCase()) {
-						case '.zip':
-							console.log('Before open zip', zipWriteLocation);
-							multitry(500, 5, () => {
-								fs.createReadStream(zipWriteLocation).pipe(
-									unzipper
-										.Extract({ path: unzipLocation })
-										.on('close', () => {
-											console.log('cllosed?');
-											const dolphinLocation = Files.findInDirectory(
-												unzipLocation,
-												'Dolphin.exe'
-											);
-											console.log(dolphinLocation, 'what is dolphin lcoation');
-											if (dolphinLocation.length) {
-												this.props.setBuildPath(
-													build,
-													dolphinLocation[0],
-													true
+							case '.zip':
+								console.log('Before open zip', zipWriteLocation);
+								multitry(500, 5, () => {
+									fs.createReadStream(zipWriteLocation).pipe(
+										unzipper
+											.Extract({ path: unzipLocation })
+											.on('close', () => {
+												console.log('cllosed?');
+												const dolphinLocation = Files.findInDirectory(
+													unzipLocation,
+													'Dolphin.exe'
 												);
-												this.props.setDefaultPreferableNewUserBuildOptions(build);
-											}
-											else
-											{
+												console.log(dolphinLocation, 'what is dolphin lcoation');
+												if (dolphinLocation.length) {
+													this.props.setBuildPath(
+														build,
+														dolphinLocation[0],
+														true
+													);
+													this.props.setDefaultPreferableNewUserBuildOptions(build);
+												}
+												else {
+													this.setState({
+														error: 'Could not find Dolphin.exe after extracting the archive'
+													});
+												}
 												this.setState({
-													error: 'Could not find Dolphin.exe after extracting the archive',
+													downloading: null,
+													unzipStatus: null
 												});
-											}
-											this.setState({
-												downloading: null,
-												unzipStatus: null
-											});
-										})
-										.on('entry', updateUnzipDisplay)
-										.on('error', error => {
-											console.error(error);
-											this.setState({
-												downloading: null,
-												unzipStatus: null,
-												error: error.toString()
-											});
-										})
-								);
-							}).catch((error)=>{
-								console.log('unzip fail multiple times...');
-								console.error(error);
-							});
+											})
+											.on('entry', updateUnzipDisplay)
+											.on('error', error => {
+												console.error(error);
+												this.setState({
+													downloading: null,
+													unzipStatus: null,
+													error: error.toString()
+												});
+											})
+									);
+								}).catch((error) => {
+									console.log('unzip fail multiple times...');
+									console.error(error);
+								});
 
-							break;
-						default:
-							this.setState({
-								unzipStatus: null,
-								downloading: null,
-								error: 'Could not extract archive! (Invalid Extension)'
-							});
+								break;
+							default:
+								this.setState({
+									unzipStatus: null,
+									downloading: null,
+									error: 'Could not extract archive! (Invalid Extension)'
+								});
 						}
 					})
 					.pipe(fs.createWriteStream(zipWriteLocation));

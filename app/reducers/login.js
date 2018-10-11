@@ -26,12 +26,11 @@ const initialState = {
 	productionUrls: loginDatas.productionUrls,
 	connectionEnabled: true,
 	isLoggingIn: false,
-	showLoginButton: false,
+	showLoginButton: false
 };
 
 export default (state = initialState, action) => {
-	switch(action.type)
-	{
+	switch (action.type) {
 		case ENABLE_DEVELOPMENT_URLS:
 			electronSettings.set('login.productionUrls', false);
 			return {
@@ -59,7 +58,7 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				...defaultLoginState,
-				productionUrls: state.productionUrls,
+				productionUrls: state.productionUrls
 			};
 		case LOGIN_SUCCESS:
 		case SET_LOGIN_KEY:
@@ -68,7 +67,7 @@ export default (state = initialState, action) => {
 		case LOGIN_BEGIN:
 			return {
 				...state,
-				...action.payload,
+				...action.payload
 			};
 		default:
 			return state;

@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { shell } from 'electron';
 
-import { Redirect } from 'react-router'
+import { Redirect } from 'react-router';
 
 import { endpoints, SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
-import ProgressIndeterminate from "./elements/ProgressIndeterminate";
-import Button from "./elements/Button";
+import ProgressIndeterminate from './elements/ProgressIndeterminate';
+import Button from './elements/Button';
 
 export default class Login extends Component {
 	static propTypes = {
@@ -16,15 +16,15 @@ export default class Login extends Component {
 		player: PropTypes.object,
 		loginErrors: PropTypes.array.isRequired,
 		showLoginButton: PropTypes.bool.isRequired,
-		productionUrls: PropTypes.bool.isRequired,
+		productionUrls: PropTypes.bool.isRequired
 	};
 
 	static defaultProps = {
 		player: null,
-		loginCode: null,
+		loginCode: null
 	};
 
-	constructor(props){
+	constructor(props) {
 		super(props);
 		this.onLadderCodeChange = this.ladderCodeChange.bind(this);
 		this.onLoginButtonClick = this.loginButtonClick.bind(this);
@@ -32,14 +32,13 @@ export default class Login extends Component {
 	}
 
 
-	componentDidMount(){
-		if(this.props.loginCode)
-		{
+	componentDidMount() {
+		if (this.props.loginCode) {
 			this.props.setLoginKey(this.props.loginCode);
 		}
 	}
 
-	loginCodeButtonClick(){
+	loginCodeButtonClick() {
 		const { productionUrls } = this.props;
 		const authentication = SmashLadderAuthentication.create({
 			productionUrls: productionUrls
@@ -47,27 +46,27 @@ export default class Login extends Component {
 		shell.openExternal(authentication.fullEndpointUrl(endpoints.LOGIN));
 	}
 
-	ladderCodeChange(event){
+	ladderCodeChange(event) {
 		this.props.setLoginKey(event.target.value);
 	}
 
-	loginButtonClick(){
+	loginButtonClick() {
 		this.props.setLoginKey(this.props.loginCode);
 	}
 
 
-	render(){
+	render() {
 		const { isLoggingIn, player, loginErrors, showLoginButton } = this.props;
-		if(player)
-		{
-			return <Redirect to="/builds"/>
+		if (player) {
+			return <Redirect to="/builds"/>;
 		}
 
 		return (
 			<form className='login_form'>
 				{!player &&
 				<React.Fragment>
-					<Button onClick={this.getLoginCodeButtonClick} className='btn-large green accent-4 pulse'>Retrieve A Login
+					<Button onClick={this.getLoginCodeButtonClick} className='btn-large green accent-4 pulse'>Retrieve A
+						Login
 						Code!</Button>
 					<div className="input-field">
 						<input
@@ -89,7 +88,7 @@ export default class Login extends Component {
 				loginErrors.map((error) => {
 					return (
 						<div className='error' key={error}>{error}</div>
-					)
+					);
 				})
 				}
 

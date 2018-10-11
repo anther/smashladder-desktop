@@ -192,24 +192,24 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 				dispatch(startReplayBrowser());
 			})
 			.catch(error => {
-				dispatch(buildFailError(COPY_BUILD_SETTINGS_FAIL, build, error))
+				dispatch(buildFailError(COPY_BUILD_SETTINGS_FAIL, build, error));
 			});
 	}
 };
 
 export const setDefaultPreferableNewUserBuildOptions = (build) => (dispatch) => {
 	dispatch({
-		type: UPDATE_BUILD_TO_FULLSCREEN_BEGIN,
+		type: UPDATE_BUILD_TO_FULLSCREEN_BEGIN
 	});
 	DolphinConfigurationUpdater.setToFullScreen(build)
-		.then(()=>{
+		.then(() => {
 			dispatch({
-				type: UPDATE_BUILD_TO_FULLSCREEN_SUCCESS,
+				type: UPDATE_BUILD_TO_FULLSCREEN_SUCCESS
 			});
 		})
-		.catch((error)=>{
+		.catch((error) => {
 			dispatch({
-				type: UPDATE_BUILD_TO_FULLSCREEN_FAIL,
+				type: UPDATE_BUILD_TO_FULLSCREEN_FAIL
 			});
 			console.log(error);
 		});

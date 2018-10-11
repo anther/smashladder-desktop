@@ -3,7 +3,7 @@ import {
 	UPDATE_ALLOW_DOLPHIN_ANALYTICS, ADD_ROM_PATH, REMOVE_ROM_PATH, UPDATE_SEARCH_SUBDIRECTORIES,
 	SET_MELEE_ISO_PATH_BEGIN, SET_MELEE_ISO_PATH_SUCCESS, SET_MELEE_ISO_PATH_FAIL,
 	SELECT_ROM_PATH_BEGIN, SELECT_ROM_PATH_SUCCESS, SELECT_ROM_PATH_FAIL, UNSET_MELEE_ISO_PATH
-} from "../actions/dolphinSettings";
+} from '../actions/dolphinSettings';
 
 
 const initialState = {
@@ -12,27 +12,26 @@ const initialState = {
 	allowDolphinAnalytics: electronSettings.get('dolphinSettings.allowDolphinAnalytics', true),
 	meleeIsoPath: electronSettings.get('dolphinSettings.meleeIsoPath', null),
 	settingMeleeIsoPath: false,
-	selectingRomPath: false,
+	selectingRomPath: false
 };
 
 export default (state = initialState, action) => {
 
 	const newState = {
 		...state,
-		...action.payload,
+		...action.payload
 	};
-	switch(action.type)
-	{
+	switch (action.type) {
 		case SELECT_ROM_PATH_BEGIN:
 			return {
 				...newState,
-				selectingRomPath: true,
+				selectingRomPath: true
 			};
 		case SELECT_ROM_PATH_SUCCESS:
 		case SELECT_ROM_PATH_FAIL:
 			return {
 				...newState,
-				selectingRomPath: false,
+				selectingRomPath: false
 			};
 		case ADD_ROM_PATH:
 		case REMOVE_ROM_PATH:
@@ -54,7 +53,7 @@ export default (state = initialState, action) => {
 			electronSettings.set('dolphinSettings.meleeIsoPath', null);
 			return {
 				...newState,
-				meleeIsoPath: null,
+				meleeIsoPath: null
 			};
 		case SET_MELEE_ISO_PATH_BEGIN:
 			return {
