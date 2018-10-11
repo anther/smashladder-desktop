@@ -1,12 +1,12 @@
-import fs from "fs";
+import fs from 'fs';
 import watch from 'node-watch';
 import _ from 'lodash';
-import Build from "../utils/BuildData";
-import Constants from "../utils/Constants";
-import { endpoints } from "../utils/SmashLadderAuthentication";
-import Replay from "../utils/Replay";
-import multitry from "../utils/multitry";
-import getAuthenticationFromState from "../utils/getAuthenticationFromState";
+import Build from '../utils/BuildData';
+import Constants from '../utils/Constants';
+import { endpoints } from '../utils/SmashLadderAuthentication';
+import Replay from '../utils/Replay';
+import multitry from '../utils/multitry';
+import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 
 export const WATCH_DIRECTORIES_BEGIN = 'WATCH_DIRECTORIES_BEGIN';
 export const WATCH_DIRECTORIES_END = 'WATCH_DIRECTORIES_END';
@@ -22,7 +22,6 @@ export const SEND_REPLAY_FAIL = 'SEND_REPLAY_FAIL';
 
 export const ENABLE_REPLAY_UPLOADS = 'ENABLE_REPLAY_UPLOADS';
 export const DISABLE_REPLAY_UPLOADS = 'DISABLE_REPLAY_UPLOADS';
-
 
 export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	console.log('begin watching');
@@ -41,8 +40,7 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	}
 	if (!replayWatchEnabled) {
 		console.log('watch is not enabled');
-		if(replayWatchProcess)
-		{
+		if (replayWatchProcess) {
 			dispatch(stopWatchingForReplayChanges('Disabled'));
 		}
 		return;
@@ -52,8 +50,9 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 		return;
 	}
 
-	const paths = Build.getSlippiBuilds(builds)
-		.map((build)=>(build.getSlippiPath()));
+	const paths = Build.getSlippiBuilds(builds).map((build) =>
+		build.getSlippiPath()
+	);
 
 	if (_.isEqual(watchingPaths.sort(), paths.sort())) {
 		console.log('already wtaching same paths?');
@@ -66,60 +65,64 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	// 	this.setState({reinitializing: null});
 	// }, 2000);
 
-	try{
-
-		if(replayWatchProcess)
-		{
+	try {
+		if (replayWatchProcess) {
 			dispatch(stopWatchingForReplayChanges('Starting a new watch process'));
 		}
-		const limitedReplayUpdate = _.debounce((event, filePath) => {
-			console.log('lmited replay send ', event);
-			if (event === 'remove') {
-				return;
-			}
-			fs.lstat(filePath, (err, stats) => {
-				if (err) {
-					return console.error(err);
+		const limitedReplayUpdate = _.debounce(
+			(event, filePath) => {
+				console.log('lmited replay send ', event);
+				if (event === 'remove') {
+					return;
 				}
+				fs.lstat(filePath, (err, stats) => {
+					if (err) {
+						return console.error(err);
+					}
 
-				if (stats.isFile()) {
-					dispatch(checkReplay(filePath, replayWatchProcessCounter));
-				}
-			});
-		}, 2000, {
-			'leading': true,
-			'trailing': true
-		});
-		replayWatchProcess = watch(paths, { recursive: false }, (event, filePath) => {
-			console.log('want to upload but... we should wait');
-			limitedReplayUpdate(event, filePath);
-		});
+					if (stats.isFile()) {
+						dispatch(checkReplay(filePath, replayWatchProcessCounter));
+					}
+				});
+			},
+			2000,
+			{
+				leading: true,
+				trailing: true
+			}
+		);
+		replayWatchProcess = watch(
+			paths,
+			{ recursive: false },
+			(event, filePath) => {
+				console.log('want to upload but... we should wait');
+				limitedReplayUpdate(event, filePath);
+			}
+		);
 		dispatch({
 			type: WATCH_DIRECTORIES_BEGIN,
 			payload: {
 				replayWatchProcess,
-				replayWatchPaths: paths,
-			},
+				replayWatchPaths: paths
+			}
 		});
 		console.log('watching paths', paths);
-	}
-	catch(error)
-	{
+	} catch (error) {
 		console.log('error with replay watching');
 		console.error(error);
 		dispatch({
 			type: WATCH_DIRECTORIES_FAIL,
-			payload: paths,
+			payload: paths
 		});
 		dispatch(stopWatchingForReplayChanges());
 	}
 };
 
 export const stopWatchingForReplayChanges = (reason) => {
-	return({
+	return {
 		type: WATCH_DIRECTORIES_END,
-		payload: reason,
-	});
+		payload: reason
+	};
 };
 
 export const disableReplayWatching = () => (dispatch) => {
@@ -136,16 +139,17 @@ export const enableReplayWatching = () => (dispatch) => {
 	dispatch(beginWatchingForReplayChanges());
 };
 
-export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getState) => {
+export const checkReplay = (filePath, watchProcessCounter) => (
+	dispatch,
+	getState
+) => {
 	console.info(`watch process counter ${watchProcessCounter}`);
-	if(!filePath)
-	{
+	if (!filePath) {
 		console.error('got an invalid file path...');
 		return;
 	}
 	const state = getState();
-	if(state.replayWatch.sendingReplay)
-	{
+	if (state.replayWatch.sendingReplay) {
 		console.log('already working with a replay, no reason to get antsy....');
 		return;
 	}
@@ -153,8 +157,7 @@ export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getStat
 		type: VERIFY_FILE_START,
 		payload: filePath
 	});
-	if(filePath.endsWith(Constants.SLIPPI_REPLAY_FILE_NAME))
-	{
+	if (filePath.endsWith(Constants.SLIPPI_REPLAY_FILE_NAME)) {
 		console.log('file is the watcher replay file, so we ignore this mofo');
 		dispatch({
 			type: VERIFY_FILE_FAIL
@@ -162,33 +165,30 @@ export const checkReplay = (filePath, watchProcessCounter) => (dispatch, getStat
 		return;
 	}
 	loadGame(filePath)
-		.catch(errors => {
+		.catch((errors) => {
 			dispatch({
 				type: VERIFY_FILE_FAIL
 			});
-			if(errors)
-			{
+			if (errors) {
 				throw errors[0];
-			}
-			else
-			{
+			} else {
 				throw new Error('error using replay');
 			}
 		})
-		.then(replay => {
+		.then((replay) => {
 			dispatch(sendReplayOff(replay));
 		})
-		.catch(error => {
+		.catch((error) => {
 			dispatch({
 				type: VERIFY_FILE_FAIL
 			});
+			console.error(error);
 		});
 };
 
 export const sendReplayOff = (replay) => (dispatch, getState) => {
 	const authentication = getAuthenticationFromState(getState);
-	if(!authentication)
-	{
+	if (!authentication) {
 		throw new Error('Even if file is verified, we are not logged in');
 	}
 	const sendableGameData = replay.getSerializableData();
@@ -201,14 +201,14 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 
 	dispatch({
 		type: SEND_REPLAY_START,
-		payload: replay,
+		payload: replay
 	});
 	authentication
 		.apiPost(endpoints.SUBMIT_REPLAY_RESULT, sendData)
-		.then(response => {
+		.then((response) => {
 			dispatch({
 				type: SEND_REPLAY_SUCCESS,
-				payload: replay,
+				payload: replay
 			});
 			if (response.other_players) {
 				// replay.moveToBetterFileName(
@@ -216,35 +216,32 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 				// );
 			}
 		})
-		.catch(response => {
+		.catch((response) => {
 			console.error('response failed', response);
 
-			try{
+			try {
 				const parsed = JSON.parse(response.error);
 				dispatch({
 					type: SEND_REPLAY_FAIL,
 					payload: parsed
 				});
-			}
-			catch(jsonError)
-			{
+			} catch (jsonError) {
 				dispatch({
 					type: SEND_REPLAY_FAIL,
-					payload: 'Last Replay Send Attempt Failed',
+					payload: 'Last Replay Send Attempt Failed'
 				});
 			}
 		});
 };
 
 const loadGame = async (file) => {
-	console.log('load game attempt ' , file);
-	const replay = Replay.create({id: file});
+	console.log('load game attempt ', file);
+	const replay = Replay.create({ id: file });
 	return multitry(1000, 1, () => {
 		if (!replay.isReadable()) {
 			throw new Error(replay.getErrorReasons());
 		}
-		if(!replay.isNewish())
-		{
+		if (!replay.isNewish()) {
 			throw new Error('Replay is too old to attempt?');
 		}
 		return replay;

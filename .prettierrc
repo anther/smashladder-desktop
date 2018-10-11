@@ -7,5 +7,7 @@
       }
     }
   ],
-  "singleQuote": true
+  "singleQuote": true,
+  "useTabs": true,
+  "arrowParens": "always"
 }
