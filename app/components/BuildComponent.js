@@ -26,6 +26,7 @@ export default class BuildComponent extends Component {
 		joinBuild: PropTypes.func.isRequired,
 		launchBuild: PropTypes.func.isRequired,
 		hostBuild: PropTypes.func.isRequired,
+		setDefaultPreferableNewUserBuildOptions: PropTypes.func.isRequired,
 		startGame: PropTypes.func.isRequired,
 		buildOpen: PropTypes.bool.isRequired,
 		buildOpening: PropTypes.bool.isRequired,
@@ -132,10 +133,6 @@ export default class BuildComponent extends Component {
 		const unzipLocation = path.join(basePath, baseName, '/');
 		const zipWriteLocation = path.join(basePath, baseNameAndExtension);
 
-		console.log('basepath', basePath);
-		console.log('unzipLocation', unzipLocation);
-		console.log('zipWriteLocation', zipWriteLocation);
-
 		Files.ensureDirectoryExists(basePath, 0o0755)
 			.then(() => {
 				this.setState({
@@ -179,10 +176,12 @@ export default class BuildComponent extends Component {
 									unzipper
 										.Extract({ path: unzipLocation })
 										.on('close', () => {
+											console.log('cllosed?');
 											const dolphinLocation = Files.findInDirectory(
 												unzipLocation,
 												'Dolphin.exe'
 											);
+											console.log(dolphinLocation, 'what is dolphin lcoation');
 											if (dolphinLocation.length) {
 												this.props.setBuildPath(
 													build,
@@ -191,6 +190,12 @@ export default class BuildComponent extends Component {
 												);
 												this.props.setDefaultPreferableNewUserBuildOptions(build);
 											}
+											else
+											{
+												this.setState({
+													error: 'Could not find Dolphin.exe after extracting the archive',
+												});
+											}
 											this.setState({
 												downloading: null,
 												unzipStatus: null
@@ -198,6 +203,7 @@ export default class BuildComponent extends Component {
 										})
 										.on('entry', updateUnzipDisplay)
 										.on('error', error => {
+											console.error(error);
 											this.setState({
 												downloading: null,
 												unzipStatus: null,
