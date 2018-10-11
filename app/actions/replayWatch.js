@@ -238,8 +238,7 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 
 const loadGame = async (file) => {
 	console.log('load game attempt ' , file);
-	const replay = Replay.retrieve({id: file});
-	replay.resetData();
+	const replay = Replay.create({id: file});
 	return multitry(1000, 1, () => {
 		if (!replay.isReadable()) {
 			throw new Error(replay.getErrorReasons());

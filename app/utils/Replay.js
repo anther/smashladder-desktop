@@ -8,7 +8,6 @@ import CacheableDataObject from "./CacheableDataObject";
 import MeleeStage from "./replay/MeleeStage";
 import SmashFrame from "./replay/SlippiFrame";
 import Numbers from "./Numbers";
-import Files from "./Files";
 import SlippiStock from "./replay/SlippiStock";
 import SlippiPlayer from "./replay/SlippiPlayer";
 
@@ -28,7 +27,7 @@ export default class Replay extends CacheableDataObject {
 		this.game = null;
 		this.hasErrors = null;
 		this._md5 = null;
-        this._parsedMetaData = false;
+		this._parsedMetaData = false;
 		this.rawData = {
 			settings: {},
 			metadata: {},
@@ -75,49 +74,42 @@ export default class Replay extends CacheableDataObject {
 		return this.getFileName().startsWith('Game_');
 	}
 
-    hasDirectoriedFileName(){
-        const fileName = this.getFileName();
-        for(let i = 0; i < 5; i++)
-        {
-            if(!Numbers.stringIsNumeric(fileName[i]))
-            {
-                return false;
-            }
-        }
-        if(fileName[6] === '_')
-        {
-            return true;
-        }
-        return false;
-    }
+	hasDirectoriedFileName() {
+		const fileName = this.getFileName();
+		for (let i = 0; i < 5; i++) {
+			if (!Numbers.stringIsNumeric(fileName[i])) {
+				return false;
+			}
+		}
+		if (fileName[6] === '_') {
+			return true;
+		}
+		return false;
+	}
 
-    hasFileDate(){
+	hasFileDate() {
 		return this._fileDate !== null;
 	}
 
-	getFileDate(){
-		if(this._fileDate !== null)
-		{
+	getFileDate() {
+		if (this._fileDate !== null) {
 			return this._fileDate;
 		}
-        const fileName = this.getFileName();
-        if(this.hasDefaultFileName()){
+		const fileName = this.getFileName();
+		if (this.hasDefaultFileName()) {
 
-            const dateString = fileName.slice(5, fileName.length - 4);
-            return this._fileDate =  moment(dateString, "YYYYMMDDTHHmmss", true);
-        }
-        if(this.hasDirectoriedFileName())
-        {
-            const directory = path.basename(path.dirname(this.id));
-            const dateString = fileName.slice(0, 6);
-            return this._fileDate = moment(`${directory}${dateString}`, "YYYY-MM-DDHHmmss", true);
-        }
-        if(this.isReadable())
-		{
+			const dateString = fileName.slice(5, fileName.length - 4);
+			return this._fileDate = moment(dateString, 'YYYYMMDDTHHmmss', true);
+		}
+		if (this.hasDirectoriedFileName()) {
+			const directory = path.basename(path.dirname(this.id));
+			const dateString = fileName.slice(0, 6);
+			return this._fileDate = moment(`${directory}${dateString}`, 'YYYY-MM-DDHHmmss', true);
+		}
+		if (this.isReadable()) {
 			const stats = this.getStats();
-			if(stats && stats.startAt)
-			{
-                return this._fileDate = this.stats.startAt;
+			if (stats && stats.startAt) {
+				return this._fileDate = this.stats.startAt;
 			}
 		}
 		const fileStats = fs.lstatSync(this.filePath);
@@ -134,7 +126,7 @@ export default class Replay extends CacheableDataObject {
 		if(this.hasDefaultFileName())
 		{
 			const characters = this.getCharacters();
-			const stage = this.settings.stage;
+			const { stage } = this.settings;
 
 			return `${characters.map(character=>character.name).join(` vs `)} on ${stage.name}`;
 		}
@@ -186,35 +178,31 @@ export default class Replay extends CacheableDataObject {
 		return this.stats;
 	}
 
-	updateStats(){
+	updateStats() {
 		const stockData = this.stats.stocks;
 		this.stats.stocks = [];
-        for(let stock of stockData)
-        {
-            this.stats.stocks.push(SlippiStock.create(stock));
-        }
-        this.stats.stocks.sort((a,b)=>{
-            if(a.startFrame.frame === null)
-            {
-                return -1;
-            }
-            if(b.startFrame.frame === null)
-            {
-                return 1;
-            }
-            return a.startFrame.frame > b.startFrame.frame ? 1 : -1;
-        });
-        let deathIndex = 1;
-        for(let stock of this.stats.stocks)
-        {
-            stock.deathIndex = deathIndex++;
-        }
-        this.getPlayers().forEach((player)=>{
-        	player.addStocks(this.stats.stocks);
+		for (let stock of stockData) {
+			this.stats.stocks.push(SlippiStock.create(stock));
+		}
+		this.stats.stocks.sort((a, b) => {
+			if (a.startFrame.frame === null) {
+				return -1;
+			}
+			if (b.startFrame.frame === null) {
+				return 1;
+			}
+			return a.startFrame.frame > b.startFrame.frame ? 1 : -1;
+		});
+		let deathIndex = 1;
+		for (const stock of this.stats.stocks) {
+			stock.deathIndex = deathIndex++;
+		}
+		this.getPlayers().forEach((player) => {
+			player.addStocks(this.stats.stocks);
 
-        	player.addConversions(this.stats.conversions);
-        	player.addActions(this.stats.actionCounts);
-        	player.addOverall(this.stats.overall);
+			player.addConversions(this.stats.conversions);
+			player.addActions(this.stats.actionCounts);
+			player.addOverall(this.stats.overall);
 		});
 	}
 
@@ -316,8 +304,8 @@ export default class Replay extends CacheableDataObject {
 		}
 		this._parsedMetaData = true;
 
-        this.settings.players = this.settings.players.map((player)=> {
-			return SlippiPlayer.create(player)
+		this.settings.players = this.settings.players.map((player) => {
+			return SlippiPlayer.create(player);
 		});
 		this.settings.stage = MeleeStage.retrieve(this.settings.stageId);
 		this.metadata.startAt = moment(this.metadata.startAt, "YYYY-MM-DDTHH:mm:ssZ", true);
@@ -359,37 +347,6 @@ export default class Replay extends CacheableDataObject {
 
 	toString(){
 		return this.id;
-	}
-
-	createBetterFileName({ others = [] }) {
-		const date = new Date();
-		const root = path.dirname(originalFile);
-
-		const folder = `${root}/${date.getFullYear()}-${Numbers.forceTwoDigits(
-			date.getMonth()
-		)}-${Numbers.forceTwoDigits(date.getDate())}`;
-		const hour = Numbers.forceTwoDigits(date.getHours());
-		let usernameList = '';
-		if (others.length) {
-			usernameList = others
-				.map(other => other.username.replace(/[^a-z0-9]/gi, '_'))
-				.join('-');
-			usernameList = `_with-${usernameList}`;
-		} else {
-			usernameList = '';
-		}
-		const fileName = `${hour}${Numbers.forceTwoDigits(date.getMinutes())}${Numbers.forceTwoDigits(date.getSeconds())}${usernameList}.slp`;
-		const newName = `${folder}/${fileName}`;
-
-		Files.ensureDirectoryExists(folder, 0o755, error => {
-			if (!error) {
-				fs.rename(originalFile, newName, renameError => {
-					if (renameError) {
-						throw renameError;
-					}
-				});
-			}
-		});
 	}
 
 }

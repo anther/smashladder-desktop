@@ -32,7 +32,7 @@ export default class CacheableDataObject {
 		{
 			return this;
 		}
-		for(let i in data)
+		for(const i in data)
 		{
 			if(!data.hasOwnProperty(i))
 			{
@@ -90,15 +90,12 @@ export default class CacheableDataObject {
 			}
 			return CacheableDataObject.cache[className][id].update(data);
 		}
-		else
+		const newInstance = this.create(data);
+		if(id)
 		{
-			const newInstance = this.create(data);
-			if(id)
-			{
-				CacheableDataObject.cache[className][id] = newInstance;
-			}
-			return newInstance;
+			CacheableDataObject.cache[className][id] = newInstance;
 		}
+		return newInstance;
 	}
 
 	static newInstance(data){

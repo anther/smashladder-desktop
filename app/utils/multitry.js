@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 export default function multitry(time, tries, func) {
 	let counter = 0;
 	const errors = [];
