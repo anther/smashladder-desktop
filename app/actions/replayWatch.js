@@ -13,6 +13,7 @@ export const WATCH_DIRECTORIES_END = 'WATCH_DIRECTORIES_END';
 export const WATCH_DIRECTORIES_FAIL = 'WATCH_DIRECTORIES_FAIL';
 
 export const VERIFY_FILE_START = 'VERIFY_FILE_START';
+export const VERIFY_FILE_POSSIBLE = 'VERIFY_FILE_POSSIBLE';
 export const VERIFY_FILE_FAIL = 'VERIFY_FILE_FAIL';
 export const VERIFY_FILE_SUCCESS = 'VERIFY_FILE_SUCCESS';
 
@@ -27,11 +28,9 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	console.log('begin watching');
 	const state = getState();
 	const authentication = getAuthenticationFromState(getState);
-	const connectionEnabled = state.login.connectionEnabled;
-	const replayWatchEnabled = state.replayWatch.replayWatchEnabled;
-	const watchingPaths = state.replayWatch.replayWatchPaths;
-	let replayWatchProcess = state.replayWatch.replayWatchProcess;
-	const replayWatchProcessCounter = state.replayWatch.replayWatchProcessCounter;
+	let { replayWatchProcess } = state.replayWatch;
+	const { replayWatchEnabled, replayWatchPaths, replayWatchProcessCounter } = state.replayWatch;
+	const { connectionEnabled } = state.login;
 
 	const builds = { ...state.builds.builds };
 	if (!connectionEnabled) {
@@ -54,7 +53,7 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 		build.getSlippiPath()
 	);
 
-	if (_.isEqual(watchingPaths.sort(), paths.sort())) {
+	if (_.isEqual(replayWatchPaths.sort(), paths.sort())) {
 		console.log('already wtaching same paths?');
 		return;
 	}

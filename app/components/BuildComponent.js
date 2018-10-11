@@ -312,7 +312,7 @@ export default class BuildComponent extends Component {
 						{build.path && (
 							<span className="has_path">
   							<Button
-							    disabled={settingBuildPath}
+							    disabled={settingBuildPath || buildOpen || !!downloading}
 							    title={build.path}
 							    onClick={this.onSetBuildPathClick}
 							    className="btn-small set"
@@ -324,7 +324,7 @@ export default class BuildComponent extends Component {
 						{!build.path && (
 							<span className="no_path">
   							<Button
-							    disabled={settingBuildPath}
+							    disabled={settingBuildPath || buildOpen || !!downloading}
 							    onClick={this.onSetBuildPathClick}
 							    className="btn-small not_set"
 						    >
@@ -354,7 +354,8 @@ export default class BuildComponent extends Component {
 							title='Has Replays'
 							alt='Has Slippi' src={Files.createApplicationPath('./external/dolphin/slippi/36x36.png')}/>
 						}
-						<Button onClick={this.onUnsetBuildPathClick}
+						<Button disabled={buildOpen}
+						        onClick={this.onUnsetBuildPathClick}
 						        className='btn-small not_set remove_path'/>
 					</div>
 					}

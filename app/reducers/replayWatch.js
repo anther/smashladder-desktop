@@ -64,11 +64,13 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				sendingReplay: null,
+				verifyingReplayFile: null,
 			};
 		case SEND_REPLAY_FAIL:
 			return {
 				...state,
 				sendingReplay: null,
+				verifyingReplayFile: null,
 			};
 		case ENABLE_REPLAY_UPLOADS:
 			electronSettings.set('settings.replayWatchEnabled', true);
@@ -89,11 +91,14 @@ export default (state = initialState, action) => {
 				verifyingReplayFile: action.payload,
 			};
 		case VERIFY_FILE_SUCCESS:
+		case VERIFY_FILE_POSSIBLE:
+			return {
+				...state,
+			};
 		case VERIFY_FILE_FAIL:
 			return {
 				...state,
 				verifyingReplayFile: null,
-
 			};
 		default:
 			return state;

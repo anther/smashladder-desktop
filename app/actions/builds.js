@@ -20,7 +20,10 @@ import { parseDolphinPlayerList } from './dolphinStatus';
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
 export const FETCH_BUILDS_FAIL = 'FETCH_BUILDS_FAIL';
-export const COPIED_BUILD_SETTINGS = 'COPIED_BUILD_SETTINGS';
+
+export const COPY_BUILD_SETTINGS_BEGIN = 'COPY_BUILD_SETTINGS_BEGIN';
+export const COPY_BUILD_SETTINGS_SUCCESS = 'COPY_BUILD_SETTINGS_SUCCESS';
+export const COPY_BUILD_SETTINGS_FAIL = 'COPY_BUILD_SETTINGS_FAIL';
 
 export const UPDATED_BUILD = 'UPDATED_BUILD';
 
@@ -170,6 +173,9 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 		const updateSearchRomSetting = set => {
 			dispatch(updateSearchRomSubdirectories(set));
 		};
+		dispatch({
+			type: COPY_BUILD_SETTINGS_BEGIN
+		});
 		DolphinConfigurationUpdater.copyInitialSettingsFromBuild(
 			build.executablePath(),
 			addRom,
@@ -178,7 +184,7 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 		)
 			.then(() => {
 				dispatch({
-					type: COPIED_BUILD_SETTINGS,
+					type: COPY_BUILD_SETTINGS_SUCCESS,
 					payload: {
 						builds: currentBuilds
 					}
@@ -186,7 +192,7 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 				dispatch(startReplayBrowser());
 			})
 			.catch(error => {
-				console.error(error);
+				dispatch(buildFailError(COPY_BUILD_SETTINGS_FAIL, build, error))
 			});
 	}
 };
@@ -487,7 +493,7 @@ const buildFailError = (type, build, error) => {
 	}
 	console.log('why not show', error);
 	return {
-		type: HOST_BUILD_FAIL,
+		type: type,
 		payload: {
 			buildError: {
 				for: build.id,
