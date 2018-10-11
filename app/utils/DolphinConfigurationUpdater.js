@@ -225,6 +225,21 @@ export default class DolphinConfigurationUpdater {
 				? 'True'
 				: 'False';
 		}
+
+
+
+		updater.saveConfiguration(config);
+		return true;
+	}
+
+	static async setToFullScreen(build){
+		const updater = new DolphinConfigurationUpdater(build.executablePath());
+		const config = updater.loadMainSettingsConfiguration();
+		if(!config.Display)
+		{
+			config.Display = {};
+		}
+		config.Display.Fullscreen = 'True';
 		updater.saveConfiguration(config);
 		return true;
 	}

@@ -59,6 +59,9 @@ export const SYNC_BUILDS_SUCCESS = 'SYNC_BUILDS_SUCCESS';
 export const SYNC_BUILDS_FAIL = 'SYNC_BUILDS_FAIL';
 
 export const AUTOHOTKEY_EVENT = 'AUTOHOTKEY_ACTION';
+export const UPDATE_BUILD_TO_FULLSCREEN_BEGIN = 'UPDATE_BUILD_TO_FULLSCREEN_BEGIN';
+export const UPDATE_BUILD_TO_FULLSCREEN_SUCCESS = 'UPDATE_BUILD_TO_FULLSCREEN_SUCCESS';
+export const UPDATE_BUILD_TO_FULLSCREEN_FAIL = 'UPDATE_BUILD_TO_FULLSCREEN_FAIL';
 
 let buildLauncher = null;
 export const initializeBuildLauncher = () => dispatch => {
@@ -188,6 +191,24 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 	}
 };
 
+export const setDefaultPreferableNewUserBuildOptions = (build) => (dispatch) => {
+	dispatch({
+		type: UPDATE_BUILD_TO_FULLSCREEN_BEGIN,
+	});
+	DolphinConfigurationUpdater.setToFullScreen(build)
+		.then(()=>{
+			dispatch({
+				type: UPDATE_BUILD_TO_FULLSCREEN_SUCCESS,
+			});
+		})
+		.catch((error)=>{
+			dispatch({
+				type: UPDATE_BUILD_TO_FULLSCREEN_FAIL,
+			});
+			console.log(error);
+		});
+};
+
 export const setBuildPath = (build: Build, path) => (dispatch, getState) => {
 	build.path = path;
 	dispatch(saveBuild(build, getState));
@@ -227,7 +248,7 @@ const syncBuildsWithServer = () => (dispatch, getState) => {
 		});
 };
 
-export const mergeInitialSettingsIntoBuild = build => (dispatch, getState) => {
+const mergeInitialSettingsIntoBuild = build => (dispatch, getState) => {
 	const state = getState();
 	dispatch(copyBuildSettings(build));
 	dispatch({
