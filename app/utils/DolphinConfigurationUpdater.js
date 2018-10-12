@@ -117,8 +117,8 @@ export default class DolphinConfigurationUpdater {
 		});
 		if (config.General && config.General.RecursiveISOPaths === 'True') {
 			// Only Update this if it's true, the default is typically false
-			console.log('Search subdirectories was true');
-			updateSearchRomSubdirectories(true);
+			// console.log('Search subdirectories was true');
+			// updateSearchRomSubdirectories(true);
 		}
 		if (config.Analytics && config.Analytics.Enabled === 'True') {
 			console.log('Analytics was true');
@@ -200,12 +200,11 @@ export default class DolphinConfigurationUpdater {
 
 		// Set Search Subdirectories Checkbox
 		if (searchRomSubdirectories !== null) {
-			console.log('Setting search recursively', searchRomSubdirectories);
+			console.log('Setting search recursively (Always to false for now)', searchRomSubdirectories);
 			config.General.RecursiveISOPaths = searchRomSubdirectories
-				? 'True'
+				? 'False'
 				: 'False';
 		}
-
 
 		updater.saveConfiguration(config);
 		return true;

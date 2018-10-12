@@ -14,11 +14,17 @@ export default class ReplayComponent extends Component {
 		this.onCancelDeleteClick = this.cancelDeleteClick.bind(this);
 		this.onDeleteConfirmClick = this.deleteConfirmClick.bind(this);
 		this.onDetailsClick = this.detailsClick.bind(this);
+		this.onSetMeleeIsoPathClick = this.setMeleeIsoPathClick.bind(this);
 
+		this.playButtonReference = React.createRef();
 		this.state = {
 			deleteQuestion: false,
 			deleting: false
 		};
+	}
+
+	setMeleeIsoPathClick() {
+		this.props.requestMeleeIsoPath();
 	}
 
 	detailsClick() {
@@ -112,9 +118,11 @@ export default class ReplayComponent extends Component {
 							Back
 						</Button>
 					)}
-					{(isBeingWatched || isBeingUploaded) &&
+					<div className='watching_replay'>
+						{(isBeingWatched || isBeingUploaded) &&
 						<ProgressIndeterminate/>
-					}
+						}
+					</div>
 					<div className="game_data">
 						<div className="stocks">
 							{replay.getPlayers().map((player, index) => (
@@ -169,10 +177,10 @@ export default class ReplayComponent extends Component {
 									{!replay.getMatchTime() && (
 										<div>
 											{isBeingUploaded &&
-												<span>Uploading Results...</span>
+											<span>Uploading Results...</span>
 											}
 											{isBeingWatched &&
-												<span>Waiting for Replay to Finish</span>
+											<span>Waiting for Replay to Finish</span>
 											}
 											{!isBeingWatched &&
 											<React.Fragment>
@@ -197,6 +205,7 @@ export default class ReplayComponent extends Component {
 					</div>
 
 					<div className="footer">
+						{meleeIsoPath &&
 						<div className="file_data">
 							<div className="file_name_holder">
 								<a onClick={this.onOpenInExplorer} className="file_name">
@@ -204,6 +213,24 @@ export default class ReplayComponent extends Component {
 								</a>
 							</div>
 						</div>
+						}
+
+						{!meleeIsoPath &&
+						<div className='set_melee_iso_path'>
+							<Button
+								className='btn-small not_set no_check'
+								disabled={settingMeleeIsoPath}
+								onClick={this.onSetMeleeIsoPathClick}
+							>
+								{settingMeleeIsoPath && <ProgressIndeterminate />}
+								Set Melee ISO Path
+							</Button>
+							<span className='error error_reason'>
+								Path needs to be set before you can open replays
+							</span>
+						</div>
+						}
+
 						<div className="action_buttons">
 							<div className="main_buttons">
 								{deleteQuestion && (
@@ -236,11 +263,10 @@ export default class ReplayComponent extends Component {
 									<React.Fragment>
 										<div className="input-field">
 											<Button
-												disabled={settingMeleeIsoPath || launchingReplay}
+												disabled={settingMeleeIsoPath || launchingReplay || !meleeIsoPath}
 												onClick={this.onReplayViewClick}
 												className={`btn-small ${
-													meleeIsoPath ? 'set no_check' : 'not_set no_check'
-													}`}
+													meleeIsoPath ? 'set no_check' : 'not_set no_check'}`}
 											>
 												{launchingReplay && <span>...</span>}
 												{!launchingReplay && (
@@ -248,7 +274,7 @@ export default class ReplayComponent extends Component {
 												)}
 											</Button>
 										</div>
-										{replay.isReadable() && (
+										{!replay.hasErrors && (
 											<div className="input-field">
 												<Button
 													onClick={this.onDetailsClick}

@@ -25,6 +25,14 @@ a {
 .progress .determinate {
   transition: width .1s linear;
 }
+.switch {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+
+  label {
+  }
+}
 
 .joined_inputs {
   display: flex;
@@ -137,14 +145,7 @@ h6 {
   .connection_state {
     white-space: nowrap;
   }
-  .switch {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
 
-    label {
-    }
-  }
   .what_am_i {
     opacity: 0;
     pointer-events: none;
@@ -277,6 +278,7 @@ h6 {
       .join_code_input {
         display: inline-block;
         flex: 1 1 0;
+        margin-bottom: 0;
       }
     }
 
@@ -359,6 +361,11 @@ h6 {
 
 .replay_browser {
   position: relative;
+
+  .set_melee_iso_path{
+    display: flex;
+    flex-direction: column;
+  }
 
   .replay_list_updating_progress {
     position: absolute;
@@ -458,9 +465,9 @@ h6 {
     flex-direction: column;
     width: 100%;
 
-    .progress{
+    .watching_replay .progress{
       position: absolute;
-      top: -7px;
+      top: -8px;
       width: 100%;
       right: 0;
       left: 0;

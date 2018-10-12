@@ -15,13 +15,6 @@ export default class ReplaySync extends Component {
 		connectionEnabled: PropTypes.bool.isRequired
 	};
 
-	constructor(props) {
-		super(props);
-		this.onCheckForReplaysChange = this.checkForReplaysChange.bind(this);
-		this.onSetCheckForReplaysTrue = this.updateCheckForReplays.bind(this, true);
-		this.onSetCheckForReplaysFalse = this.updateCheckForReplays.bind(this, false);
-	}
-
 	updateCheckForReplays(set) {
 		if (set) {
 			this.props.enableReplayWatching();
@@ -68,19 +61,11 @@ export default class ReplaySync extends Component {
 		if (lastReplaySubmissionError) {
 			return { isError: true, message: lastReplaySubmissionError };
 		}
-		return { message: 'Waiting' };
-	}
-
-	checkForReplaysChange(event) {
-		if (event.target.checked) {
-			this.onSetCheckForReplaysTrue();
-		} else {
-			this.onSetCheckForReplaysFalse();
-		}
+		return { message: 'Waiting for a Replay' };
 	}
 
 	render() {
-		const { replayWatchEnabled, lastSubmittedReplay } = this.props;
+		const { lastSubmittedReplay } = this.props;
 		return (
 			<div className="replays">
 				<div className="progress_status">
@@ -91,18 +76,7 @@ export default class ReplaySync extends Component {
 						<ProgressIndeterminate color={this.getProgressColor()}/>
 					)}
 					<h6 className={`connection_state ${this.getSyncStatusStatement().isError ? 'error' : ''}`}>{this.getSyncStatusStatement().message}</h6>
-					<div className="switch">
-						<label>
-							<span>No</span>
-							<input
-								onChange={this.onCheckForReplaysChange}
-								checked={replayWatchEnabled}
-								type="checkbox"
-							/>
-							<span className="lever"/>
-							<span>Upload Slippi Results</span>
-						</label>
-					</div>
+
 					<span className="what_am_i">
 			            Compatible only with Project Slippi. Your replay directory will be
 			            watched for new files and will automatically send the results to

@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import Button from './elements/Button';
+import ProgressIndeterminate from './elements/ProgressIndeterminate';
 
 export default class DolphinSettings extends Component {
 	static propTypes = {
@@ -63,7 +64,13 @@ export default class DolphinSettings extends Component {
 	}
 
 	render() {
-		const { romPaths, settingMeleeIsoPath, meleeIsoPath, selectingRomPath, beginSelectingNewRomPath } = this.props;
+		const {
+			romPaths,
+			settingMeleeIsoPath,
+			meleeIsoPath,
+			selectingRomPath,
+			beginSelectingNewRomPath
+		} = this.props;
 
 		return (
 			<div className="file_paths">
@@ -74,16 +81,14 @@ export default class DolphinSettings extends Component {
 						disabled={selectingRomPath}
 						onClick={this.onSelectRomPathClick}
 					>
+						{selectingRomPath && <ProgressIndeterminate />}
 						{this.getRomPathsButtonText()}
 					</Button>
 					<div className="rom_paths">
-						{_.map(romPaths, romPath => (
+						{_.map(romPaths, (romPath) => (
 							<div key={romPath} className="rom_path">
 								<div className="options">
-									<Button
-										onClick={this.props.removeRomPath.bind(this, romPath)}
-										className="btn-small"
-									>
+									<Button onClick={this.props.removeRomPath.bind(this, romPath)} className="btn-small">
 										X
 									</Button>
 								</div>
@@ -91,19 +96,6 @@ export default class DolphinSettings extends Component {
 							</div>
 						))}
 					</div>
-				</div>
-				<div className="search_subdirectories">
-					<label>
-						<input
-							type="checkbox"
-							onChange={this.onUpdateSearchSubdirectories}
-							checked={this.props.searchRomSubdirectories}
-						/>
-						<span>Search Subdirectories</span>
-						{this.props.searchRomSubdirectories &&
-						<div className='error hint_text'>This being active may cause dolphin to freeze!</div>
-						}
-					</label>
 				</div>
 				<h6>Dolphin Team Analytics</h6>
 				<label>
@@ -121,20 +113,22 @@ export default class DolphinSettings extends Component {
 						disabled={settingMeleeIsoPath}
 						onClick={this.onSetMeleeIsoPathClick}
 					>
+						{settingMeleeIsoPath && <ProgressIndeterminate />}
 						Set Melee ISO Path
 					</Button>
 					<Button
-						className='btn-small not_set remove_path'
+						disabled={settingMeleeIsoPath}
+						className="btn-small not_set remove_path"
 						onClick={this.onUnsetRomPathClick}
 					/>
-					{meleeIsoPath &&
-					<div className='iso_path_display'>
-							<span className='iso_path'>
-								<i className='fa fa-compact-disc'/>
-								<span className='text'>{meleeIsoPath}</span>
+					{meleeIsoPath && (
+						<div className="iso_path_display">
+							<span className="iso_path">
+								<i className="fa fa-compact-disc" />
+								<span className="text">{meleeIsoPath}</span>
 							</span>
-					</div>
-					}
+						</div>
+					)}
 				</div>
 			</div>
 		);

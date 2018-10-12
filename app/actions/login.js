@@ -1,4 +1,3 @@
-import electronSettings from 'electron-settings';
 import { endpoints, SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
 import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 

@@ -63,7 +63,7 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				loginErrors: [action.payload],
-				isLoggingIn: false,
+				isLoggingIn: false
 			};
 		case LOGIN_BEGIN:
 			return {
@@ -84,7 +84,7 @@ export default (state = initialState, action) => {
 				...state,
 				player: player,
 				sessionId: sessionId,
-				isLoggingIn: false,
+				isLoggingIn: false
 			};
 		}
 		case LOGIN_FAIL:

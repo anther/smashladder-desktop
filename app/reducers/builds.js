@@ -17,7 +17,11 @@ import {
 	START_GAME_FAIL,
 	AUTOHOTKEY_EVENT,
 	MERGE_SETTINGS_INTO_BUILD_FAIL,
-	CLOSE_BUILD_BEGIN, COPY_BUILD_SETTINGS_SUCCESS, COPY_BUILD_SETTINGS_FAIL
+	CLOSE_BUILD_BEGIN,
+	COPY_BUILD_SETTINGS_SUCCESS,
+	COPY_BUILD_SETTINGS_FAIL,
+	SET_BUILD_PATH_BEGIN,
+	SET_BUILD_PATH_SUCCESS, SET_BUILD_PATH_FAIL
 } from '../actions/builds';
 
 const initialState = {
@@ -26,7 +30,8 @@ const initialState = {
 	buildOpen: false,
 	buildOpening: false,
 	buildError: null,
-	fetchingBuilds: false
+	fetchingBuilds: false,
+	buildSettingPath: null,
 };
 
 export default (state = initialState, action) => {
@@ -96,6 +101,17 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				...action.payload
+			};
+		case SET_BUILD_PATH_BEGIN:
+			return {
+				...state,
+				buildSettingPath: action.payload
+			};
+		case SET_BUILD_PATH_SUCCESS:
+		case SET_BUILD_PATH_FAIL:
+			return {
+				...state,
+				buildSettingPath: null
 			};
 		default:
 			return state;

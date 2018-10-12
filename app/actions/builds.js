@@ -17,6 +17,7 @@ import {
 import { startReplayBrowser } from './replayBrowse';
 import { parseDolphinPlayerList } from './dolphinStatus';
 import { beginWatchingForReplayChanges } from './replayWatch';
+import Files from '../utils/Files';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -66,6 +67,10 @@ export const AUTOHOTKEY_EVENT = 'AUTOHOTKEY_ACTION';
 export const UPDATE_BUILD_TO_FULLSCREEN_BEGIN = 'UPDATE_BUILD_TO_FULLSCREEN_BEGIN';
 export const UPDATE_BUILD_TO_FULLSCREEN_SUCCESS = 'UPDATE_BUILD_TO_FULLSCREEN_SUCCESS';
 export const UPDATE_BUILD_TO_FULLSCREEN_FAIL = 'UPDATE_BUILD_TO_FULLSCREEN_FAIL';
+
+export const SET_BUILD_PATH_BEGIN = 'SET_BUILD_PATH_BEGIN';
+export const SET_BUILD_PATH_SUCCESS = 'SET_BUILD_PATH_SUCCESS';
+export const SET_BUILD_PATH_FAIL = 'SET_BUILD_PATH_FAIL';
 
 let buildLauncher = null;
 export const initializeBuildLauncher = () => dispatch => {
@@ -213,6 +218,30 @@ export const setDefaultPreferableNewUserBuildOptions = (build) => (dispatch) => 
 				type: UPDATE_BUILD_TO_FULLSCREEN_FAIL
 			});
 			console.log(error);
+		});
+};
+
+export const promptToSetBuildPath = (build: Build) => (dispatch) => {
+	dispatch({
+		type: SET_BUILD_PATH_BEGIN,
+		payload: build.id
+	});
+	return Files.selectFile(build.executableDirectory(), 'Select your Dolphin Executable')
+		.then((selectedPath) => {
+			if (selectedPath) {
+				dispatch({
+					type: SET_BUILD_PATH_SUCCESS
+				});
+				this.props.setBuildPath(build, selectedPath);
+			}
+			dispatch({
+				type: SET_BUILD_PATH_FAIL
+			});
+		})
+		.catch((error) => {
+			dispatch({
+				type: SET_BUILD_PATH_FAIL
+			});
 		});
 };
 
@@ -386,6 +415,7 @@ export const launchBuild = build => dispatch => {
 			dispatch(buildFailError(LAUNCH_BUILD_FAIL, build, error));
 		});
 };
+
 
 export const joinBuild = (build, hostCode) => (dispatch, getState) => {
 	const state = getState();

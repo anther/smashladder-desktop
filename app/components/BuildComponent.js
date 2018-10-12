@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { clipboard, remote, shell } from 'electron';
+import { remote, shell } from 'electron';
 import path from 'path';
 import _ from 'lodash';
 import unzipper from 'unzipper';
@@ -13,6 +13,8 @@ import Button from './elements/Button';
 import Select from './elements/Select';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import ProgressDeterminate from './elements/ProgressDeterminate';
+import RemoveBuildPathsButton from './elements/RemoveBuildPathsButton';
+import SetBuildPathButton from './elements/SetBuildPathButton';
 
 const fs = require('fs');
 const request = require('request');
@@ -49,6 +51,7 @@ export default class BuildComponent extends Component {
 			selectedGame: selectedGame ? selectedGame.id : null,
 			joinCode: '',
 			enterJoinCode: false,
+			submittingJoinCode: false,
 
 			downloading: null,
 			downloadingProgress: null,
@@ -58,9 +61,6 @@ export default class BuildComponent extends Component {
 
 		this.glowTimeout = null;
 
-		this.onSetBuildPathClick = this.setBuildPathClick.bind(this);
-		this.onUnsetBuildPathClick = this.unsetBuildPathClick.bind(this);
-
 		this.onHostClick = this.hostClick.bind(this);
 		this.onCloseClick = this.closeClick.bind(this);
 		this.onJoinClick = this.joinClick.bind(this);
@@ -69,13 +69,12 @@ export default class BuildComponent extends Component {
 
 		this.onJoinCodeChange = this.joinCodeChange.bind(this);
 		this.onJoinKeyPress = this.joinKeyPress.bind(this);
-		this.onJoinCodeSubmit = this.joinCodeSubmit.bind(this);
-		this.onJoinCodeCancel = this.joinCodeCancel.bind(this);
 		this.onDownloadClick = this.downloadClick.bind(this);
 
 		this.onBuildNameClick = this.buildNameClick.bind(this);
 
 		this.onSelectedGameChange = this.selectedGameChange.bind(this);
+		this.slippiIconRef = React.createRef();
 	}
 
 	componentDidMount() {
@@ -94,28 +93,6 @@ export default class BuildComponent extends Component {
 		shell.showItemInFolder(this.props.build.executablePath());
 	}
 
-	setBuildPathClick() {
-		const { build } = this.props;
-		this.setState({
-			settingBuildPath: true
-		});
-
-		return Files.selectFile(build.executableDirectory(), 'Select your Dolphin Executable')
-			.then(selectedPath => {
-				if (selectedPath) {
-					this.props.setBuildPath(build, selectedPath);
-				}
-				this.setState({
-					settingBuildPath: false
-				});
-			})
-			.catch(error => console.error(error));
-	}
-
-	unsetBuildPathClick() {
-		this.props.setBuildPath(this.props.build, null);
-	}
-
 	downloadClick() {
 		this.setState({
 			downloading: 'Downloading...',
@@ -126,6 +103,7 @@ export default class BuildComponent extends Component {
 		const { build } = this.props;
 
 		const basePath = path.join(remote.app.getPath('userData'), 'dolphin_downloads');
+		console.log('downloading from', build.download_file);
 
 		const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
 		const extension = path.extname(build.download_file);
@@ -139,13 +117,13 @@ export default class BuildComponent extends Component {
 					downloading: build.download_file
 				});
 				return progress(request(build.download_file), {})
-					.on('progress', state => {
+					.on('progress', (state) => {
 						this.setState({
 							downloadingProgress: state.percent
 						});
 						console.log('progress', state);
 					})
-					.on('error', err => {
+					.on('error', (err) => {
 						console.error(err);
 						this.setState({
 							downloadError: err,
@@ -157,13 +135,23 @@ export default class BuildComponent extends Component {
 					})
 					.on('end', () => {
 						console.log('ended!');
+						const stats = fs.statSync(zipWriteLocation);
+						if (stats.size <= 30) {
+							this.setState({
+								error: 'File was not found... Probably',
+								downloading: null
+							});
+							return;
+						}
+
+
 						// Do something after request finishes
 						this.setState({
 							downloading: 'Unzipping Build',
 							downloadingProgress: null
 						});
 
-						const updateUnzipDisplay = _.throttle(entry => {
+						const updateUnzipDisplay = _.throttle((entry) => {
 							this.setState({
 								unzipStatus: entry.path ? entry.path : null
 							});
@@ -177,20 +165,12 @@ export default class BuildComponent extends Component {
 											.Extract({ path: unzipLocation })
 											.on('close', () => {
 												console.log('cllosed?');
-												const dolphinLocation = Files.findInDirectory(
-													unzipLocation,
-													'Dolphin.exe'
-												);
+												const dolphinLocation = Files.findInDirectory(unzipLocation, 'Dolphin.exe');
 												console.log(dolphinLocation, 'what is dolphin lcoation');
 												if (dolphinLocation.length) {
-													this.props.setBuildPath(
-														build,
-														dolphinLocation[0],
-														true
-													);
+													this.props.setBuildPath(build, dolphinLocation[0], true);
 													this.props.setDefaultPreferableNewUserBuildOptions(build);
-												}
-												else {
+												} else {
 													this.setState({
 														error: 'Could not find Dolphin.exe after extracting the archive'
 													});
@@ -201,7 +181,7 @@ export default class BuildComponent extends Component {
 												});
 											})
 											.on('entry', updateUnzipDisplay)
-											.on('error', error => {
+											.on('error', (error) => {
 												console.error(error);
 												this.setState({
 													downloading: null,
@@ -226,7 +206,7 @@ export default class BuildComponent extends Component {
 					})
 					.pipe(fs.createWriteStream(zipWriteLocation));
 			})
-			.catch(error => {
+			.catch((error) => {
 				this.setState({
 					error: error ? error.toString() : 'Error Downloading File...'
 				});
@@ -254,10 +234,16 @@ export default class BuildComponent extends Component {
 	}
 
 	joinClick() {
-		this.setState({
-			enterJoinCode: true,
-			joinCode: clipboard.readText()
-		});
+		if (this.state.joinCode) {
+			this.joinCodeSubmit();
+		}
+		else {
+			this.setState({
+				enterJoinCode: true,
+				joinCode: '',
+				submittingJoinCode: false
+			});
+		}
 	}
 
 	selectedGameChange(event) {
@@ -271,7 +257,7 @@ export default class BuildComponent extends Component {
 	}
 
 	_getSelectedGame() {
-		const game = this.props.build.getPossibleGames().find(searchGame => {
+		const game = this.props.build.getPossibleGames().find((searchGame) => {
 			return searchGame.id === this.state.selectedGame;
 		});
 		if (!game) {
@@ -284,6 +270,10 @@ export default class BuildComponent extends Component {
 	}
 
 	joinCodeSubmit() {
+		this.setState({
+			enterJoinCode: false,
+			submittingJoinCode: true
+		});
 		this.props.joinBuild(this.props.build, this.state.joinCode);
 	}
 
@@ -300,173 +290,129 @@ export default class BuildComponent extends Component {
 	}
 
 	render() {
-		const { build, buildOpen, buildOpening, hostCode, buildError } = this.props;
-		const { settingBuildPath, glowing, selectedGame, downloading, downloadingProgress, unzipStatus } = this.state;
+		const { build, buildOpen, buildOpening, hostCode, buildError, buildSettingPath } = this.props;
+		const {
+			submittingJoinCode,
+			glowing,
+			selectedGame,
+			downloading,
+			downloadingProgress,
+			unzipStatus,
+			enterJoinCode
+		} = this.state;
 
 		const error = this.state.error || buildError;
 		return (
 			<div className="build" key={build.id}>
 				<div className="build_heading">
 					<div className="path_button">
-						{build.path && (
-							<span className="has_path">
-  							<Button
-							    disabled={settingBuildPath || buildOpen || !!downloading}
-							    title={build.path}
-							    onClick={this.onSetBuildPathClick}
-							    className="btn-small set"
-						    >
-                  Path Set
-  							</Button>
-  						</span>
-						)}
-						{!build.path && (
-							<span className="no_path">
-  							<Button
-							    disabled={settingBuildPath || buildOpen || !!downloading}
-							    onClick={this.onSetBuildPathClick}
-							    className="btn-small not_set"
-						    >
-                  Path Not Set
-  							</Button>
-  						</span>
-						)}
+						<SetBuildPathButton
+							{...this.props}
+							key={build.path}
+							downloading={downloading}
+						/>
 					</div>
 
-					{!!build.path &&
-					<a
-						title='Show in Explorer'
-						onClick={this.onBuildNameClick}
-						className="build_name has_path">
-						<span className='name'>{build.name}</span>
-					</a>
-					}
-					{!build.path &&
-					<span className="build_name">{build.name}</span>
-					}
+					{!!build.path && (
+						<a title="Show in Explorer" onClick={this.onBuildNameClick} className="build_name has_path">
+							<span className="name">{build.name}</span>
+						</a>
+					)}
+					{!build.path && <span className="build_name">{build.name}</span>}
 
-					{!!build.path &&
-					<div className='remove_build_path'>
-						{build.getSlippiPath() &&
-						<img
-							className='build_image'
-							title='Has Replays'
-							alt='Has Slippi' src={Files.createApplicationPath('./external/dolphin/slippi/36x36.png')}/>
-						}
-						<Button disabled={buildOpen}
-						        onClick={this.onUnsetBuildPathClick}
-						        className='btn-small not_set remove_path'/>
-					</div>
-					}
+					{!!build.path && (
+						<RemoveBuildPathsButton
+							{...this.props}
+						/>
+					)}
 				</div>
 
-				{!this.state.enterJoinCode && (
-					<div className="build_actions">
-						{build.path && (
-							<React.Fragment>
-								<div className="dolphin_actions">
-									{!buildOpen && (
-										<React.Fragment>
-											<Button onClick={this.onLaunchClick}>Launch</Button>
-											<Button onClick={this.onHostClick}>Host</Button>
-											<Button onClick={this.onJoinClick}>Join</Button>
-										</React.Fragment>
-									)}
-									{buildOpen && (
-										<React.Fragment>
-											<Button onClick={this.onCloseClick}>Close</Button>
-											{hostCode && (
-												<Button onClick={this.onStartGameClick}>
-													Start Game
-												</Button>
-											)}
-										</React.Fragment>
-									)}
-								</div>
-								{buildOpen &&
-								hostCode && <h6 className="host_code">{hostCode}</h6>}
-								{!buildOpen && build.getPossibleGames().length > 1 && (
-									<div className="select_game_container">
-										<Select
-											className="select_game"
-											onChange={this.onSelectedGameChange}
-											value={selectedGame}
-										>
-											{build.getPossibleGames().map(game => (
-												<option value={game.id} key={game.id}>
-													{game.name}
-												</option>
-											))}
-										</Select>
-									</div>
-								)}
-							</React.Fragment>
-						)}
-						{!build.path &&
-						build.hasDownload() && (
-							<React.Fragment>
-								{!downloading && (
-									<div className='download_pls'>
-										<div className='installer'>
-											<Button
-												className={`download_build ${glowing ? 'pulse' : ''}`}
-												onClick={this.onDownloadClick}
-											>
-												Install <span className="download_arrow">⇩</span>
-											</Button>
-										</div>
-										<span className='download_description'>
-                            If you do not already have <span className='build_name'>{build.name}</span> click here to install it.
-  									</span>
-									</div>
-								)}
-								{downloading && (
+				<div className="build_actions">
+					{build.path && (
+						<React.Fragment>
+							<div className="dolphin_actions">
+								{!buildOpen && (
 									<React.Fragment>
-  									<span className="downloading_status">
-  										<div>
-  											<span className="text">
-  												{downloading}{' '}
-  											</span>
-										    {downloadingProgress && (
-											    <span className="percent">
-  													{Math.floor(downloadingProgress * 100)}
-												    %
-  												</span>
-										    )}
-  										</div>
-  										<div className="nowrap">{unzipStatus}</div>
-  									</span>
-										{downloadingProgress && (
-											<ProgressDeterminate
-												percent={downloadingProgress * 100}
-											/>
-										)}
-										{!downloadingProgress && (
-											<ProgressIndeterminate/>
+										<Button onClick={this.onLaunchClick}>Launch</Button>
+										<Button onClick={this.onHostClick}>Host</Button>
+										<Button onClick={this.onJoinClick}>Join</Button>
+
+										{enterJoinCode && (
+											<div className="enter_join_code dolphin_actions">
+												<input
+													className="join_code_input"
+													disabled={submittingJoinCode}
+													placeholder="Host Code Goes Here"
+													type="text"
+													value={this.state.joinCode}
+													onChange={this.onJoinCodeChange}
+													onKeyPress={this.onJoinKeyPress}
+												/>
+											</div>
 										)}
 									</React.Fragment>
 								)}
-							</React.Fragment>
-						)}
-					</div>
-				)}
-
-				{this.state.enterJoinCode && (
-					<div className="enter_join_code dolphin_actions">
-						<input
-							className="join_code_input"
-							placeholder="Host Code Goes Here"
-							type="text"
-							value={this.state.joinCode}
-							onChange={this.onJoinCodeChange}
-							onKeyPress={this.onJoinKeyPress}
-						/>
-						<Button onClick={this.onJoinCodeSubmit}>Go!</Button>
-						<Button className="cancel" onClick={this.onJoinCodeCancel}>
-							Cancel
-						</Button>
-					</div>
-				)}
+								{buildOpen && (
+									<React.Fragment>
+										<Button onClick={this.onCloseClick}>Close</Button>
+										{hostCode && <Button onClick={this.onStartGameClick}>Start Game</Button>}
+									</React.Fragment>
+								)}
+							</div>
+							{buildOpen && hostCode && <h6 className="host_code">{hostCode}</h6>}
+							{!buildOpen &&
+							build.getPossibleGames().length > 1 && (
+								<div className="select_game_container">
+									<Select className="select_game" onChange={this.onSelectedGameChange}
+									        value={selectedGame}>
+										{build.getPossibleGames().map((game) => (
+											<option value={game.id} key={game.id}>
+												{game.name}
+											</option>
+										))}
+									</Select>
+								</div>
+							)}
+						</React.Fragment>
+					)}
+					{!build.path &&
+					build.hasDownload() && (
+						<React.Fragment>
+							{!downloading && (
+								<div className="download_pls">
+									<div className="installer">
+										<Button
+											className={`download_build ${glowing ? 'pulse' : ''}`}
+											onClick={this.onDownloadClick}
+										>
+											Install <span className="download_arrow">⇩</span>
+										</Button>
+									</div>
+									<span className="download_description">
+										If you do not already have <span className="build_name">{build.name}</span> click here
+										to install it.
+									</span>
+								</div>
+							)}
+							{downloading && (
+								<React.Fragment>
+									<span className="downloading_status">
+										<div>
+											<span className="text">{downloading} </span>
+											{downloadingProgress && (
+												<span
+													className="percent">{Math.floor(downloadingProgress * 100)}%</span>
+											)}
+										</div>
+										<div className="nowrap">{unzipStatus}</div>
+									</span>
+									{downloadingProgress && <ProgressDeterminate percent={downloadingProgress * 100}/>}
+									{!downloadingProgress && <ProgressIndeterminate/>}
+								</React.Fragment>
+							)}
+						</React.Fragment>
+					)}
+				</div>
 
 				<div>
 					{buildOpening && <ProgressIndeterminate/>}

@@ -81,14 +81,8 @@ export default class Builds extends Component {
 								{buildList.map(build => (
 									<BuildComponent
 										key={build.dolphin_build_id}
+										{...this.props}
 										build={build}
-										setBuildPath={this.props.setBuildPath}
-										launchBuild={this.props.launchBuild}
-										hostBuild={this.props.hostBuild}
-										joinBuild={this.props.joinBuild}
-										startGame={this.props.startGame}
-										closeDolphin={this.props.closeDolphin}
-										setDefaultPreferableNewUserBuildOptions={this.props.setDefaultPreferableNewUserBuildOptions}
 										buildOpen={
 											this.isActiveBuild(build) && this.props.buildOpen
 										}

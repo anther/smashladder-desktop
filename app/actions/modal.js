@@ -1,1 +1,6 @@
 
+
+
+export const displayModal = (component) => {
+
+};
