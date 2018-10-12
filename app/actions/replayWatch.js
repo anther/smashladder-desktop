@@ -58,7 +58,6 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	paths.sort();
 
 	if (_.isEqual(replayWatchPaths, paths)) {
-		console.log('already wtaching same paths?', replayWatchPaths, paths);
 		return;
 	}
 

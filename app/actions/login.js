@@ -2,7 +2,6 @@ import electronSettings from 'electron-settings';
 import { endpoints, SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
 import getAuthenticationFromState from '../utils/getAuthenticationFromState';
 
-export const SET_LOGIN_KEY = 'SET_LOGIN_KEY';
 export const INVALID_LOGIN_KEY = 'INVALID_LOGIN_KEY';
 
 export const LOGIN_BEGIN = 'LOGIN_BEGIN';
@@ -22,52 +21,32 @@ export const ENABLE_DEVELOPMENT_URLS = 'ENABLE_DEVELOPMENT_URLS';
 export const setLoginKey = (loginCode) => {
 	return (dispatch, getState) => {
 		const currentState = getState();
-
+		const { productionUrls } = currentState.login;
+		dispatch({
+			type: LOGIN_BEGIN,
+			payload: loginCode
+		});
 		const authentication = SmashLadderAuthentication.create({
 			loginCode,
-			productionUrls: currentState.login.productionUrls
+			productionUrls
 		});
-		const state = {
-			loginCode: loginCode
-		};
 		if (!authentication.getAccessCode()) {
 			dispatch({
 				type: INVALID_LOGIN_KEY,
-				payload: {
-					...state,
-					loginErrors: ['Invalid Key']
-				}
+				payload: 'Invalid Key'
 			});
 			return;
 		}
-		dispatch({
-			type: LOGIN_BEGIN,
-			payload: {
-				...state,
-				player: null,
-				isLoggingIn: true,
-				loginErrors: []
-			}
-		});
 		authentication
 			.isAuthenticated()
 			.then(() => {
-				const saveDatas = {};
-				saveDatas.loginCode = loginCode;
-				saveDatas.sessionId = authentication.session_id;
-				saveDatas.player = authentication.player;
-				electronSettings.set('login', saveDatas);
 				dispatch({
 					type: LOGIN_SUCCESS,
-					payload: {
-						...state,
-						player: authentication.player,
-						isLoggingIn: false,
-						sessionId: authentication.session_id
-					}
+					payload: authentication
 				});
 			})
 			.catch(response => {
+				console.error(response);
 				let error = null;
 				if (response.statusCode === 401) {
 					error = 'Invalid Code, Maybe it expired?';
@@ -88,13 +67,7 @@ export const setLoginKey = (loginCode) => {
 				}
 				dispatch({
 					type: LOGIN_FAIL,
-					payload: {
-						...state,
-						player: null,
-						loginErrors: error,
-						isLoggingIn: false,
-						showLoginButton: true
-					}
+					payload: error
 				});
 			});
 	};

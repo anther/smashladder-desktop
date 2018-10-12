@@ -1,6 +1,5 @@
 import electronSettings from 'electron-settings';
 import {
-	SET_LOGIN_KEY,
 	LOGIN_FAIL,
 	LOGIN_SUCCESS,
 	LOGIN_BEGIN,
@@ -60,14 +59,41 @@ export default (state = initialState, action) => {
 				...defaultLoginState,
 				productionUrls: state.productionUrls
 			};
-		case LOGIN_SUCCESS:
-		case SET_LOGIN_KEY:
-		case LOGIN_FAIL:
 		case INVALID_LOGIN_KEY:
+			return {
+				...state,
+				loginErrors: [action.payload],
+				isLoggingIn: false,
+			};
 		case LOGIN_BEGIN:
 			return {
 				...state,
-				...action.payload
+				loginCode: action.payload,
+				player: null,
+				isLoggingIn: true,
+				loginErrors: []
+			};
+		case LOGIN_SUCCESS: {
+			const { player, sessionId } = action.payload;
+			electronSettings.set('login', {
+				loginCode: state.loginCode,
+				sessionId: sessionId,
+				player: player
+			});
+			return {
+				...state,
+				player: player,
+				sessionId: sessionId,
+				isLoggingIn: false,
+			};
+		}
+		case LOGIN_FAIL:
+			return {
+				...state,
+				player: null,
+				loginErrors: [action.payload],
+				isLoggingIn: false,
+				showLoginButton: true
 			};
 		default:
 			return state;

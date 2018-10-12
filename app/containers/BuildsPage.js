@@ -43,7 +43,7 @@ class BuildsPage extends Component<Props> {
 				productionUrls: props.productionUrls,
 				authentication: SmashLadderAuthentication.create({
 					loginCode: props.loginCode,
-					session_id: props.sessionId,
+					sessionId: props.sessionId,
 					productionUrls: props.productionUrls
 				})
 			};
