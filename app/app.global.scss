@@ -458,6 +458,14 @@ h6 {
     flex-direction: column;
     width: 100%;
 
+    .progress{
+      position: absolute;
+      top: -7px;
+      width: 100%;
+      right: 0;
+      left: 0;
+    }
+
     .game_data {
       display: flex;
       flex-direction: column;

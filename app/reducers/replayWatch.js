@@ -22,13 +22,14 @@ const initialState = {
 	lastSubmittedReplay: null,
 	replayWatchPaths: [],
 	lastReplaySubmissionError: null,
-	verifyingReplayFile: null,
+	verifyingReplayFiles: {},
 	watchForNewReplaysEndReason: null,
 	replayWatchProcess: null,
 	replayWatchProcessCounter: 0
 };
 
 export default (state = initialState, action) => {
+	let verifyingReplayFiles = null;
 	switch (action.type) {
 		case WATCH_DIRECTORIES_BEGIN:
 			return {
@@ -62,17 +63,21 @@ export default (state = initialState, action) => {
 				...state,
 				sendingReplay: action.payload
 			};
-		case SEND_REPLAY_SUCCESS:
+		case VERIFY_FILE_FAIL:
+			verifyingReplayFiles = { ...state.verifyingReplayFiles };
+			delete verifyingReplayFiles[action.payload.id];
 			return {
 				...state,
-				sendingReplay: null,
-				verifyingReplayFile: null
+				verifyingReplayFiles
 			};
 		case SEND_REPLAY_FAIL:
+		case SEND_REPLAY_SUCCESS:
+			verifyingReplayFiles = { ...state.verifyingReplayFiles };
+			delete verifyingReplayFiles[action.payload.replay.id];
 			return {
 				...state,
 				sendingReplay: null,
-				verifyingReplayFile: null
+				 verifyingReplayFiles
 			};
 		case ENABLE_REPLAY_UPLOADS:
 			electronSettings.set('settings.replayWatchEnabled', true);
@@ -88,19 +93,16 @@ export default (state = initialState, action) => {
 				replayWatchPaths: []
 			};
 		case VERIFY_FILE_START:
+			verifyingReplayFiles = { ...state.verifyingReplayFiles };
+			verifyingReplayFiles[action.payload.id]  = action.payload.id;
 			return {
 				...state,
-				verifyingReplayFile: action.payload
+				verifyingReplayFiles
 			};
 		case VERIFY_FILE_SUCCESS:
 		case VERIFY_FILE_POSSIBLE:
 			return {
 				...state
-			};
-		case VERIFY_FILE_FAIL:
-			return {
-				...state,
-				verifyingReplayFile: null
 			};
 		default:
 			return state;

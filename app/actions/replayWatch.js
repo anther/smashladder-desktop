@@ -7,6 +7,7 @@ import { endpoints } from '../utils/SmashLadderAuthentication';
 import Replay from '../utils/Replay';
 import multitry from '../utils/multitry';
 import getAuthenticationFromState from '../utils/getAuthenticationFromState';
+import { updateBrowsedReplayList } from './replayBrowse';
 
 export const WATCH_DIRECTORIES_BEGIN = 'WATCH_DIRECTORIES_BEGIN';
 export const WATCH_DIRECTORIES_END = 'WATCH_DIRECTORIES_END';
@@ -49,53 +50,78 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 		return;
 	}
 
-	const paths = Build.getSlippiBuilds(builds).map((build) =>
-		build.getSlippiPath()
+	let paths = new Set();
+	Build.getSlippiBuilds(builds).forEach((build) =>
+		paths.add(build.getSlippiPath())
 	);
+	paths = Array.from(paths);
+	paths.sort();
 
-	if (_.isEqual(replayWatchPaths.sort(), paths.sort())) {
-		console.log('already wtaching same paths?');
+	if (_.isEqual(replayWatchPaths, paths)) {
+		console.log('already wtaching same paths?', replayWatchPaths, paths);
 		return;
 	}
-	// This is purely for display purposes
-	// clearTimeout(this.reinitializingTimeout);
-	// this.setState({reinitializing: `Updating New Paths...`});
-	// this.reinitializingTimeout = setTimeout(()=>{
-	// 	this.setState({reinitializing: null});
-	// }, 2000);
 
 	try {
 		if (replayWatchProcess) {
 			dispatch(stopWatchingForReplayChanges('Starting a new watch process'));
 		}
-		const limitedReplayUpdate = _.debounce(
-			(event, filePath) => {
-				console.log('lmited replay send ', event);
-				if (event === 'remove') {
-					return;
-				}
-				fs.lstat(filePath, (err, stats) => {
-					if (err) {
-						return console.error(err);
-					}
-
-					if (stats.isFile()) {
-						dispatch(checkReplay(filePath, replayWatchProcessCounter));
-					}
-				});
-			},
-			2000,
-			{
-				leading: true,
-				trailing: true
-			}
-		);
 		replayWatchProcess = watch(
 			paths,
 			{ recursive: false },
 			(event, filePath) => {
-				console.log('want to upload but... we should wait');
-				limitedReplayUpdate(event, filePath);
+				if (event === 'remove') {
+					return;
+				}
+
+				const { verifyingReplayFiles } = getState().replayWatch;
+
+				if (verifyingReplayFiles[filePath]) {
+					const replay = Replay.retrieve({ id: filePath });
+					console.log('checking due to fresh file update');
+					checkReplay(replay, replayWatchProcessCounter, dispatch, getState).catch((error) => {
+						console.log('oh well');
+						console.error(error);
+					});
+				}
+				else {
+					fs.lstat(filePath, (err, stats) => {
+						if (err) {
+							return console.error(err);
+						}
+						if (stats.isFile()) {
+							_.each(verifyingReplayFiles, (replayFilePath) => {
+								const replay = Replay.retrieve({ id: replayFilePath });
+								checkReplay(replay, replayWatchProcessCounter, dispatch, getState)
+									.then((successReplay) =>{
+										if(!successReplay)
+										{
+											dispatch({
+												type: VERIFY_FILE_FAIL,
+												payload: replay
+											});
+										}
+									})
+									.catch((error) => {
+										dispatch({
+											type: VERIFY_FILE_FAIL,
+											payload: replay
+										});
+									});
+
+							});
+							const replay = Replay.retrieve({ id: filePath });
+							checkReplay(replay, replayWatchProcessCounter, dispatch, getState)
+								.then(() => {
+									dispatch(updateBrowsedReplayList());
+								})
+								.catch((error) => {
+									console.log('oh well');
+									console.error(error);
+								});
+						}
+					});
+				}
 			}
 		);
 		dispatch({
@@ -138,76 +164,72 @@ export const enableReplayWatching = () => (dispatch) => {
 	dispatch(beginWatchingForReplayChanges());
 };
 
-export const checkReplay = (filePath, watchProcessCounter) => (
-	dispatch,
-	getState
-) => {
+const checkReplay = async (replay, watchProcessCounter, dispatch, getState) => {
 	console.info(`watch process counter ${watchProcessCounter}`);
-	if (!filePath) {
-		console.error('got an invalid file path...');
-		return;
+	if (!replay) {
+		throw new Error('Got an invalid file path');
 	}
 	const state = getState();
 	if (state.replayWatch.sendingReplay) {
-		console.log('already working with a replay, no reason to get antsy....');
-		return;
+		throw new Error('already working with a replay, no reason to get antsy....');
 	}
+	if (replay.filePath.endsWith(Constants.SLIPPI_REPLAY_FILE_NAME)) {
+		throw new Error('file is the watcher replay file, so we ignore this mofo');
+	}
+	console.log('load game attempt ', replay);
+	replay.resetData();
 	dispatch({
 		type: VERIFY_FILE_START,
-		payload: filePath
+		payload: replay
 	});
-	if (filePath.endsWith(Constants.SLIPPI_REPLAY_FILE_NAME)) {
-		console.log('file is the watcher replay file, so we ignore this mofo');
-		dispatch({
-			type: VERIFY_FILE_FAIL
-		});
-		return;
-	}
-	loadGame(filePath)
+	return loadGame(replay)
 		.catch((errors) => {
 			dispatch({
-				type: VERIFY_FILE_FAIL
+				type: VERIFY_FILE_POSSIBLE
 			});
 			if (errors) {
-				throw errors[0];
+				console.error(errors[0]);
 			} else {
-				throw new Error('error using replay');
+				console.error(errors);
 			}
+			return null;
 		})
 		.then((replay) => {
-			dispatch(sendReplayOff(replay));
-		})
-		.catch((error) => {
-			dispatch({
-				type: VERIFY_FILE_FAIL
-			});
-			console.error(error);
+			if (!replay) {
+				return null;
+			}
+			return dispatch(sendReplayOff(replay))
+				.catch((error) => {
+					dispatch({
+						type: VERIFY_FILE_FAIL
+					});
+					console.error(error);
+				});
 		});
 };
 
 export const sendReplayOff = (replay) => (dispatch, getState) => {
 	const authentication = getAuthenticationFromState(getState);
 	if (!authentication) {
-		throw new Error('Even if file is verified, we are not logged in');
+		return Promise.reject(new Error('Even if file is verified, we are not logged in'));
 	}
 	const sendableGameData = replay.getSerializableData();
 	const sendData = {
 		game: JSON.stringify(sendableGameData),
 		source: 'slippiLauncher'
 	};
-
-	console.log('sending', sendableGameData);
-
 	dispatch({
 		type: SEND_REPLAY_START,
 		payload: replay
 	});
-	authentication
+	return authentication
 		.apiPost(endpoints.SUBMIT_REPLAY_RESULT, sendData)
 		.then((response) => {
 			dispatch({
 				type: SEND_REPLAY_SUCCESS,
-				payload: replay
+				payload: {
+					replay: replay
+				}
 			});
 			if (response.other_players) {
 				// replay.moveToBetterFileName(
@@ -222,27 +244,29 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 				const parsed = JSON.parse(response.error);
 				dispatch({
 					type: SEND_REPLAY_FAIL,
-					payload: parsed
+					payload: {
+						error: parsed,
+						replay: replay
+					}
 				});
 			} catch (jsonError) {
 				dispatch({
 					type: SEND_REPLAY_FAIL,
-					payload: 'Last Replay Send Attempt Failed'
+					payload: {
+						error: 'Last Replay Send Attempt Failed',
+						replay: replay
+					}
 				});
 			}
 		});
 };
 
-const loadGame = async (file) => {
-	console.log('load game attempt ', file);
-	const replay = Replay.create({ id: file });
-	return multitry(1000, 1, () => {
-		if (!replay.isReadable()) {
-			throw new Error(replay.getErrorReasons());
-		}
-		if (!replay.isNewish()) {
-			throw new Error('Replay is too old to attempt?');
-		}
-		return replay;
-	});
+const loadGame = async (replay) => {
+	if (!replay.isReadable()) {
+		throw new Error(replay.getErrorReasons());
+	}
+	if (!replay.isNewish()) {
+		throw new Error('Replay is too old to attempt?');
+	}
+	return replay;
 };

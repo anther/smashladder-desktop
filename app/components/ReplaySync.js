@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import path from 'path';
 import PropTypes from 'prop-types';
+import _ from 'lodash';
 import {
 	SmashLadderAuthentication
 } from '../utils/SmashLadderAuthentication';
@@ -45,7 +46,7 @@ export default class ReplaySync extends Component {
 		const {
 			sendingReplay, authentication,
 			lastReplaySubmissionError,
-			connectionEnabled, verifyingReplayFile, replayWatchEnabled
+			connectionEnabled, verifyingReplayFiles, replayWatchEnabled
 		} = this.props;
 
 		if (!authentication) {
@@ -60,8 +61,9 @@ export default class ReplaySync extends Component {
 		if (!replayWatchEnabled) {
 			return { isError: true, message: '...Not Enabled...' };
 		}
-		if (verifyingReplayFile) {
-			return { message: `Watching File ${path.basename(verifyingReplayFile)}` };
+
+		if (!_.isEmpty(verifyingReplayFiles)) {
+			return { message: `Watching a file...!` };
 		}
 		if (lastReplaySubmissionError) {
 			return { isError: true, message: lastReplaySubmissionError };
@@ -102,10 +104,10 @@ export default class ReplaySync extends Component {
 						</label>
 					</div>
 					<span className="what_am_i">
-            Compatible only with Project Slippi. Your replay directory will be
-            watched for new files and will automatically send the results to
-            SmashLadder.
-          </span>
+			            Compatible only with Project Slippi. Your replay directory will be
+			            watched for new files and will automatically send the results to
+			            SmashLadder.
+					</span>
 				</div>
 				{lastSubmittedReplay && (
 					<h6 className="sent_game">Match Submitted Successfully</h6>

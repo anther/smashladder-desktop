@@ -275,7 +275,6 @@ export default class Replay extends CacheableDataObject {
 		}
 		catch (error) {
 			this.hasErrors = true;
-			console.error(error);
 			return;
 		}
 

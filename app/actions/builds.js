@@ -16,6 +16,7 @@ import {
 } from './dolphinSettings';
 import { startReplayBrowser } from './replayBrowse';
 import { parseDolphinPlayerList } from './dolphinStatus';
+import { beginWatchingForReplayChanges } from './replayWatch';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -97,7 +98,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 					builds
 				}
 			});
-			dispatch(startReplayBrowser());
+			dispatch(updateReplayWatchProcesses());
 			return response;
 		})
 		.catch(() => {
@@ -108,7 +109,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 					builds
 				}
 			});
-			dispatch(startReplayBrowser());
+			dispatch(updateReplayWatchProcesses());
 		});
 };
 
@@ -189,7 +190,7 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 						builds: currentBuilds
 					}
 				});
-				dispatch(startReplayBrowser());
+				dispatch(updateReplayWatchProcesses());
 			})
 			.catch(error => {
 				dispatch(buildFailError(COPY_BUILD_SETTINGS_FAIL, build, error));
@@ -343,7 +344,7 @@ export const closeDolphin = () => (dispatch, getState) => {
 						type: CLOSE_BUILD_SEND_FAIL
 					});
 				});
-			dispatch(startReplayBrowser());
+			dispatch(updateReplayWatchProcesses());
 		})
 		.catch(error => {
 			console.error(error);
@@ -351,6 +352,11 @@ export const closeDolphin = () => (dispatch, getState) => {
 				type: CLOSE_BUILD_FAIL
 			});
 		});
+};
+
+const updateReplayWatchProcesses = () => (dispatch) => {
+	dispatch(beginWatchingForReplayChanges());
+	dispatch(startReplayBrowser());
 };
 
 export const launchBuild = build => dispatch => {

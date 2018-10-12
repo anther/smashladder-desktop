@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { shell } from 'electron';
 import Button from './elements/Button';
 import HtmlClassList from '../utils/HtmlClassList';
+import ProgressIndeterminate from './elements/ProgressIndeterminate';
 
 export default class ReplayComponent extends Component {
 	constructor(props) {
@@ -44,9 +45,9 @@ export default class ReplayComponent extends Component {
 	}
 
 	uploadReplay() {
-		const { replay } = this.props;
-		replay.ignoreNewnessRestriction = true;
-		this.props.checkReplay(this.props.replay.id, 'manual');
+		// const { replay } = this.props;
+		// replay.ignoreNewnessRestriction = true;
+		// this.props.checkReplay(this.props.replay.id, 'manual');
 	}
 
 	openInExplorer() {
@@ -91,11 +92,15 @@ export default class ReplayComponent extends Component {
 			meleeIsoPath,
 			detailed,
 			settingMeleeIsoPath,
-			launchingReplay
+			launchingReplay,
+			verifyingReplayFiles,
+			sendingReplay
 		} = this.props;
 		const { deleteQuestion } = this.state;
+		const isBeingWatched = !!verifyingReplayFiles[replay.id];
+		const isBeingUploaded = sendingReplay && sendingReplay.id === replay.id;
 		const stage = replay.getStage();
-		const stats = replay.getStats(); // Currently used to fetch detailed stats
+		replay.getStats(); // Currently used to fetch detailed stats
 		return (
 			<React.Fragment>
 				<div className="replay_content">
@@ -107,6 +112,9 @@ export default class ReplayComponent extends Component {
 							Back
 						</Button>
 					)}
+					{(isBeingWatched || isBeingUploaded) &&
+						<ProgressIndeterminate/>
+					}
 					<div className="game_data">
 						<div className="stocks">
 							{replay.getPlayers().map((player, index) => (
@@ -160,15 +168,28 @@ export default class ReplayComponent extends Component {
 									{replay.getMatchTime() && <span>{replay.getMatchTime()}</span>}
 									{!replay.getMatchTime() && (
 										<div>
-											<div className="error">Game Unreadable</div>
-											<div className="error_reason">
-												Dolphin Closed Before Match Ended?
-											</div>
+											{isBeingUploaded &&
+												<span>Uploading Results...</span>
+											}
+											{isBeingWatched &&
+												<span>Waiting for Replay to Finish</span>
+											}
+											{!isBeingWatched &&
+											<React.Fragment>
+												<div className="error">Game Unreadable</div>
+												<div className="error_reason">
+													Dolphin Closed Before Match Ended?
+												</div>
+											</React.Fragment>
+											}
 										</div>
 									)}
 								</div>
 
 								<span className="when">
+									{isBeingWatched &&
+									<span>Started{' '}</span>
+									}
 									{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
 								</span>
 							</div>
