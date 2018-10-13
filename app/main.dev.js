@@ -21,6 +21,8 @@ import Files from './utils/Files';
 let mainWindow = null;
 
 const LAUNCH_AT_STARTUP_KEY = 'launchAtStartup';
+const ALWAYS_MINIMIZE_TO_TRAY_KEY = 'alwaysMinimizeToTray';
+const AUTO_LAUNCH_MINIMIZED_KEY = 'autoLaunchMinimized';
 
 autoUpdater.autoDownload = false;
 ipcMain.on('autoUpdate-start', () => {
@@ -105,7 +107,10 @@ app.on('ready', async () => {
 	});
 
 	tray = new Tray(trayImage);
-	updateTray();
+	updateTray().catch((error) => {
+		console.log('tray error');
+		console.error(error);
+	});
 
 	tray.on('click', () => {
 		mainWindow.show();
@@ -117,10 +122,14 @@ app.on('ready', async () => {
 	});
 	tray.setToolTip('SmashLadder Dolphin Launcher');
 });
+const configurationSettings = {};
 app.on('ready', async () => {
 	if (process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true') {
 		await installExtensions();
 	}
+
+	configurationSettings.alwaysMinimizeToTray = electronSettings.get(ALWAYS_MINIMIZE_TO_TRAY_KEY, false);
+	configurationSettings.autolaunchMinimized = electronSettings.get(AUTO_LAUNCH_MINIMIZED_KEY, true);
 
 	mainWindow = new BrowserWindow({
 		show: false,
@@ -138,23 +147,23 @@ app.on('ready', async () => {
 
 	mainWindow.on('minimize', (event) => {
 		event.preventDefault();
-		mainWindow.hide();
+		if (configurationSettings.alwaysMinimizeToTray) {
+			mainWindow.hide();
+		} else {
+			mainWindow.minimize();
+		}
 	});
 
 	mainWindow.webContents.on('did-finish-load', () => {
 		if (!mainWindow) {
 			throw new Error('"mainWindow" is not defined');
 		}
-		const autoLaunched = (process.argv || []).indexOf('--hidden') !== -1;
-		if (process.env.START_MINIMIZED) {
-			mainWindow.minimize();
-		} else if (!autoLaunched) {
+		const autoLaunched = (process.argv || []).indexOf('--hidden') !== -1 || process.env.AUTOLAUNCH_TEST;
+		if (autoLaunched && configurationSettings.autolaunchMinimized) {
+			mainWindow.hide();
+		} else {
 			mainWindow.show();
 			mainWindow.focus();
-		}
-		if (autoLaunched) {
-			mainWindow.hide();
-			mainWindow.minimize();
 		}
 	});
 
@@ -199,6 +208,15 @@ const updateTray = async () => {
 			type: 'separator'
 		},
 		{
+			label: 'Always Minimize to Tray',
+			checked: !!configurationSettings.alwaysMinimizeToTray,
+			type: 'checkbox',
+			click: () => {
+				configurationSettings.alwaysMinimizeToTray = !configurationSettings.alwaysMinimizeToTray;
+				electronSettings.set(ALWAYS_MINIMIZE_TO_TRAY_KEY, configurationSettings.alwaysMinimizeToTray);
+			}
+		},
+		{
 			label: 'Launch At Startup',
 			checked: !!launchAtStartup,
 			type: 'checkbox',
@@ -229,6 +247,15 @@ const updateTray = async () => {
 							}
 						});
 				}
+			}
+		},
+		{
+			label: 'Launch Hidden at Startup',
+			checked: !!configurationSettings.autolaunchMinimized,
+			type: 'checkbox',
+			click: () => {
+				configurationSettings.autolaunchMinimized = !configurationSettings.autolaunchMinimized;
+				electronSettings.set(AUTO_LAUNCH_MINIMIZED_KEY, configurationSettings.autolaunchMinimized);
 			}
 		},
 		{
