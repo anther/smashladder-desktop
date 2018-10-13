@@ -29,14 +29,14 @@ export default class ReplayChecksToggle extends Component {
 			     data-tooltip="If Replay Checks are too CPU heavy then disable this"
 			     className="switch">
 				<label>
-					<span>No</span>
-					<input
-						onChange={this.onCheckForReplaysChange}
-						checked={replayWatchEnabled}
-						type="checkbox"
-					/>
-					<span className="lever"/>
-					<span>Upload Slippi Results</span>
+					<label>
+						<input
+							type="checkbox"
+							onChange={this.onCheckForReplaysChange}
+							checked={replayWatchEnabled}
+						/>
+						<span>Upload Replay Results</span>
+					</label>
 				</label>
 			</div>
 		);

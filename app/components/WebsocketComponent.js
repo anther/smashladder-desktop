@@ -328,9 +328,9 @@ export default class WebsocketComponent extends Component {
 						</label>
 					</div>
 					<span className="what_am_i">
-            A connection to SmashLadder is required in order to trigger
-            interactions with Dolphin from the Website.
-          </span>
+			            A connection to SmashLadder is required in order to trigger
+			            interactions with Dolphin from the Website.
+					</span>
 				</div>
 			</div>
 		);
