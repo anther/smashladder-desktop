@@ -27,7 +27,7 @@ export default class ReplayChecksToggle extends Component {
 			<div ref={this.replayToggleElement}
 			     data-position="top"
 			     data-tooltip="If Replay Checks are too CPU heavy then disable this"
-			     className="switch">
+			>
 				<label>
 					<label>
 						<input

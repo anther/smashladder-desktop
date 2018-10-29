@@ -47,7 +47,7 @@ export const launchReplay = (params) => (dispatch, getState) => {
 		return dispatch(requestMeleeIsoPath(binder));
 	}
 	if (!slippiReplayDirectory) {
-		return dispatch(replayLaunchFail('No Dolphin with Slippi Capabilities was found'));
+		return dispatch(replayLaunchFail('None of your Active Dolphin Builds have Replay Playback Capabilities...'));
 	}
 
 	const platform = process.platform;
@@ -73,7 +73,7 @@ export const launchReplay = (params) => (dispatch, getState) => {
 			dolphinLaunchParameters.push(`${meleeIsoPath}`);
 			break;
 		default:
-			return replayLaunchFail('The current platform is not supported');
+			return dispatch(replayLaunchFail(`The current operating system (${platform}) is not supported`));
 	}
 
 	buildLauncher.close()
@@ -128,5 +128,6 @@ export const launchReplay = (params) => (dispatch, getState) => {
 		})
 		.catch((error) => {
 			console.error(error);
+			dispatch(replayLaunchFail(error));
 		});
 };

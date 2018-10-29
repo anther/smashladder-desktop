@@ -74,7 +74,8 @@ class BuildsPage extends Component<Props> {
 			...this.props,
 			...this.state
 		};
-		const { activeUpdate, allReplays } = props;
+		console.log(this.props);
+		const { activeUpdate, allReplays, viewingReplayDetails } = props;
 
 		let sideBar = null;
 		let bottomContent = null;
@@ -92,10 +93,18 @@ class BuildsPage extends Component<Props> {
 					<Header {...props} />
 					{!activeUpdate && (
 						<React.Fragment>
+							{!viewingReplayDetails &&
 							<div className="col m8">
 								<Builds {...props} />
 							</div>
-							<div className="col m4 sidebar">{sideBar}</div>
+							}
+							{
+								viewingReplayDetails &&
+								<div className="col m12">{sideBar}</div>
+							}
+							{!viewingReplayDetails &&
+								<div className="col m4 sidebar">{sideBar}</div>
+							}
 						</React.Fragment>
 					)}
 				</Layout>

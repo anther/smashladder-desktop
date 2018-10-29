@@ -1,19 +1,23 @@
 import moment from 'moment';
 
-export default class SmashFrame {
+export default class SlippiFrame {
 	constructor(frame) {
 		if (frame === null) {
 			this.frame = null;
 		} else {
 			this.frame = Number.parseInt(frame, 10);
+			if(this.isFirstFrame())
+			{
+				this.frame = 0;
+			}
 		}
 	}
 
 	static createFromFameNumber(frame) {
-		return Number.isInteger(frame) ? new SmashFrame(frame) : new SmashFrame(null);
+		return Number.isInteger(frame) ? new SlippiFrame(frame) : new SlippiFrame(null);
 	}
 
-	isSameFrameAs(other) {
+	isSameFrameAs(other: SlippiFrame) {
 		if (other.frame === this.frame) {
 			return true;
 		}

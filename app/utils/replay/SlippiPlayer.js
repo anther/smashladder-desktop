@@ -1,103 +1,94 @@
-import CacheableDataObject from "../CacheableDataObject";
-import MapHelper from "../MapHelper";
-import MeleeCharacter from "./MeleeCharacter";
-import SlippiStock from "./SlippiStock";
+import CacheableDataObject from '../CacheableDataObject';
+import MapHelper from '../MapHelper';
+import MeleeCharacter from './MeleeCharacter';
+import SlippiStock from './SlippiStock';
 
-export default class SlippiPlayer extends CacheableDataObject{
+export default class SlippiPlayer extends CacheableDataObject {
 
-    beforeConstruct(){
-        this.stocks = new Map();
-        this.actions = {};
-        this.overall = {};
-        this.conversions = [];
-    }
+	beforeConstruct() {
+		this.stocks = new Map();
+		this.actions = {};
+		this.overall = {};
+		this.conversions = [];
+	}
 
-    addActions(actions){
-        for(const action of actions){
-            if(action.playerIndex === this.playerIndex)
-            {
-                this.actions = action;
-            }
-        }
-    }
+	addActions(actions) {
+		for (const action of actions) {
+			if (action.playerIndex === this.playerIndex) {
+				this.actions = action;
+			}
+		}
+	}
 
-    addConversions(conversions){
-        for(const conversion of conversions){
-            if(conversion.playerIndex === this.playerIndex)
-            {
-                this.conversions.push(conversion);
-            }
-        }
-    }
+	addConversions(conversions) {
+		for (const conversion of conversions) {
+			if (conversion.playerIndex === this.playerIndex) {
+				this.conversions.push(conversion);
+			}
+		}
+	}
 
-    addOverall(overalls){
-        for(const overall of overalls){
-            if(overall.playerIndex === this.playerIndex)
-            {
-                this.overall = overall;
-            }
-        }
-    }
+	addOverall(overalls) {
+		for (const overall of overalls) {
+			if (overall.playerIndex === this.playerIndex) {
+				this.overall = overall;
+			}
+		}
+	}
 
-    addStocks(matchStockList){
-        const stockList = new Map();
-        for(const stock of matchStockList){
-            if(stock.playerIndex === this.playerIndex)
-            {
-                stockList.set(stock.count, stock);
-                stock.player = this;
-            }
-        }
-        this.stocks = stockList;
-        for(let i = 1; i < this.startStocks; i++)
-        {
-            if(this.stocks.get(i))
-            {
-                continue;
-            }
-            const stock = SlippiStock.create({count: i});
-            stock.player = this;
-            this.stocks.set(i , stock);
-        }
-        MapHelper.inPlaceSort(stockList, ([_,stock1], [__,stock2])=>{
-            return stock1.count > stock2.count ? 1 : -1;
-        });
-        this.stocksRemaining = 0;
-        for(const [i, stock] of this.stocks){
-            if(stock.endFrame.seconds() === null)
-            {
-                this.stocksRemaining += 1;
-            }
-        }
-    }
+	addStocks(matchStockList) {
+		const stockList = new Map();
+		for (const stock of matchStockList) {
+			if (stock.playerIndex === this.playerIndex) {
+				stockList.set(stock.count, stock);
+				stock.player = this;
+			}
+		}
+		this.stocks = stockList;
+		for (let i = 1; i < this.startStocks; i++) {
+			if (this.stocks.get(i)) {
+				continue;
+			}
+			const stock = SlippiStock.create({ count: i });
+			stock.player = this;
+			this.stocks.set(i, stock);
+		}
+		MapHelper.inPlaceSort(stockList, ([_, stock1], [__, stock2]) => {
+			return stock1.count > stock2.count ? 1 : -1;
+		});
+		this.stocksRemaining = 0;
+		for (const [i, stock] of this.stocks) {
+			if (stock.endFrame.seconds() === null) {
+				this.stocksRemaining += 1;
+			}
+		}
+	}
 
-    stockIcon(){
-        if(!this.character)
-        {
-            return null;
-        }
-        return this.character.getStockIcon();
-    }
+	stockIcon() {
+		if (!this.character) {
+			return null;
+		}
+		return this.character.getStockIcon();
+	}
 
-    getLadderStocks(){
-        const stocks = {
-            detail: [],
-            stock_icon: this.stockIcon()
-        };
-        for(const [number, stock] of this.stocks)
-        {
-            stocks.detail.push(
-                stock.convertToLadderStock()
-            )
-        }
-        return stocks;
-    }
+	getLadderStocks() {
+		const stocks = {
+			detail: [],
+			stock_icon: this.stockIcon()
+		};
+		for (const [number, stock] of this.stocks) {
+			stocks.detail.push(
+				stock.convertToLadderStock()
+			);
+		}
+		return stocks;
+	}
 }
-SlippiPlayer.prototype.dataLocationParsers ={
-    characterId(player, data){
-        player.character = MeleeCharacter.retrieve(data.characterId, data.characterColor);
-    },
-    character(player, data){
-        // just ignore this?
-    }
+SlippiPlayer.prototype.dataLocationParsers = {
+	characterId(player, data) {
+		player.character = MeleeCharacter.retrieve(data.characterId, data.characterColor);
+	},
+	character(player, data) {
+		// just ignore this?
+	}
 };

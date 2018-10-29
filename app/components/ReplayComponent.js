@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { shell } from 'electron';
 import Button from './elements/Button';
-import HtmlClassList from '../utils/HtmlClassList';
+import StocksComponent from './StocksComponent';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
+import KillsTable from './KillsTable';
 
 export default class ReplayComponent extends Component {
 	constructor(props) {
@@ -125,8 +126,8 @@ export default class ReplayComponent extends Component {
 					</div>
 					<div className="game_data">
 						<div className="stocks">
-							{replay.getPlayers().map((player, index) => (
-								<div className="player" key={index}>
+							{replay.getPlayers().map((player) => (
+								<div className="player" key={player.playerIndex}>
 									<StocksComponent
 										stocks={player.getLadderStocks()}
 										showSelfDestructs
@@ -146,7 +147,7 @@ export default class ReplayComponent extends Component {
 													player.overall.totalDamage
 														? player.overall.totalDamage.toFixed(1)
 														: 0
-													}%`
+												}%`
 											)}
 											{this.renderElement(
 												'Wavelands',
@@ -157,10 +158,22 @@ export default class ReplayComponent extends Component {
 												player.actions.wavedashCount
 											)}
 											{this.renderElement(
-												'DashDances',
+												'Dash Dances',
 												player.actions.dashDanceCount
 											)}
+
+											<h4>
+												Kills
+											</h4>
+											<div className='kills'>
+												<KillsTable
+													game={replay}
+													playerDisplay={player.character.name}
+													playerIndex={player.playerIndex}
+												/>
+											</div>
 										</div>
+
 									)}
 								</div>
 							))}
@@ -222,7 +235,7 @@ export default class ReplayComponent extends Component {
 								disabled={settingMeleeIsoPath}
 								onClick={this.onSetMeleeIsoPathClick}
 							>
-								{settingMeleeIsoPath && <ProgressIndeterminate />}
+								{settingMeleeIsoPath && <ProgressIndeterminate/>}
 								Set Melee ISO Path
 							</Button>
 							<span className='error error_reason'>
@@ -311,79 +324,4 @@ export default class ReplayComponent extends Component {
 	}
 }
 
-class StocksComponent extends React.Component {
-	render() {
-		const stocks = this.props.stocks;
-		if (!stocks || !stocks.stock_icon || !stocks.detail) {
-			return null;
-		}
-		const showDamage =
-			this.props.showDamage === undefined ? true : this.props.showDamage;
-		const showUpTo = this.props.showUpToStock || 99;
-		const showDeaths =
-			this.props.showDeaths === undefined ? true : this.props.showDeaths;
-		let numberShown = 0;
-		const stockComponents = [];
-		for (const stock of stocks.detail) {
-			stockComponents.push(
-				<StockComponent
-					stockIconUrl={stocks.stock_icon}
-					stock={stock}
-					key={stock.stock_number}
-					showDamage={showDamage}
-					showDeaths={showDeaths}
-					isSelfDestruct={
-						this.props.showSelfDestructs && stock.is_self_destruct
-					}
-				/>
-			);
-			numberShown++;
-			if (numberShown >= showUpTo) {
-				break;
-			}
-		}
-		if (!stockComponents.length) {
-			return null;
-		}
-		return <div className="stocks has_stocks">{stockComponents}</div>;
-	}
-}
 
-class StockComponent extends React.Component {
-	render() {
-		const {
-			stock,
-			showDamage,
-			stockIconUrl,
-			isSelfDestruct,
-			showDeaths
-		} = this.props;
-		const iconUrl = this.props.stockIconUrl;
-		const classes = new HtmlClassList();
-
-		classes.add('stock_icon');
-		if (
-			showDeaths &&
-			(stock.time_lost !== null && stock.time_lost !== undefined)
-		) {
-			classes.add('dead');
-		}
-		if (isSelfDestruct) {
-			classes.add('self_destructed');
-		}
-		const displayDamageConditions = showDamage && stock.time_started !== null;
-
-		return (
-			<span data-number={stock.stock_number} className={classes.toString()}>
-				<img src={iconUrl}/>
-				{displayDamageConditions && (
-					<span className="damage active">
-						{Number.parseInt(stock.damage_received, 10)}
-					</span>
-				)}
-			</span>
-		);
-	}
-}
-
-export { StocksComponent };

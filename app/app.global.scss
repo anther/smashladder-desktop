@@ -445,13 +445,16 @@ h6 {
         margin-bottom: 16px;
       }
       .game_data {
-        flex-direction: row;
+        flex-direction: column;
+        text-align: center;
+        .stage{
+          margin: 0;
+        }
 
         .details {
           order: 0;
           flex-direction: column;
           justify-content: initial;
-          margin-right: 16px;
         }
       }
       .stocks {

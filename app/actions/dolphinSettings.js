@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Files from '../utils/Files';
 
 export const ADD_ROM_PATH = 'ADD_ROM_PATH';

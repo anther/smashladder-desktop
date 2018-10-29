@@ -6,7 +6,7 @@ import md5File from 'md5-file/promise';
 import fs from 'fs';
 import CacheableDataObject from './CacheableDataObject';
 import MeleeStage from './replay/MeleeStage';
-import SmashFrame from './replay/SlippiFrame';
+import SlippiFrame from './replay/SlippiFrame';
 import Numbers from './Numbers';
 import SlippiStock from './replay/SlippiStock';
 import SlippiPlayer from './replay/SlippiPlayer';
@@ -289,7 +289,7 @@ export default class Replay extends CacheableDataObject {
 		});
 		this.settings.stage = MeleeStage.retrieve(this.settings.stageId);
 		this.metadata.startAt = moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true);
-		this.metadata.lastFrame = SmashFrame.createFromFameNumber(this.metadata.lastFrame);
+		this.metadata.lastFrame = SlippiFrame.createFromFameNumber(this.metadata.lastFrame);
 		this.metadata.endAt = this.metadata.startAt.clone().add(this.metadata.lastFrame.seconds(), 'seconds');
 	}
 
@@ -321,6 +321,14 @@ export default class Replay extends CacheableDataObject {
 			return [];
 		}
 		return this.settings.players;
+	}
+
+	getPlayerIndex(number) {
+		const isFirstPlayer = number === 1;
+		const gameSettings = _.get(this, ['settings']) || {};
+		const players = gameSettings.players || [];
+		const player = (isFirstPlayer ? _.first(players) : _.last(players)) || {};
+		return player.playerIndex;
 	}
 
 	toString() {
