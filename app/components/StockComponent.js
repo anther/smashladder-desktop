@@ -2,6 +2,11 @@ import React from 'react';
 import HtmlClassList from '../utils/HtmlClassList';
 
 export default class StockComponent extends React.Component {
+
+	constructor(props) {
+		super(props);
+	}
+
 	render() {
 		const {
 			stock,

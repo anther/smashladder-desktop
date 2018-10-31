@@ -1,17 +1,19 @@
-import React from 'react';
+/* eslint-disable no-restricted-syntax */
+import React, { Component } from 'react';
 import StockComponent from './StockComponent';
 
-export default class StocksComponent extends React.Component {
+export default class StocksComponent extends Component {
+
 	render() {
-		const { stocks } = this.props;
+		const { stocks, showSelfDestructs, showDeaths, showDamage, showUpToStock } = this.props;
 		if (!stocks || !stocks.stock_icon || !stocks.detail) {
 			return null;
 		}
-		const showDamage =
-			this.props.showDamage === undefined ? true : this.props.showDamage;
-		const showUpTo = this.props.showUpToStock || 99;
-		const showDeaths =
-			this.props.showDeaths === undefined ? true : this.props.showDeaths;
+		const showDamageReally = showDamage === undefined ? true : showDamage;
+		const showUpTo = showUpToStock || 99;
+		const showDeathsReally = showDeaths === undefined ? true : showDeaths;
+
+
 		let numberShown = 0;
 		const stockComponents = [];
 		for (const stock of stocks.detail) {
@@ -20,11 +22,9 @@ export default class StocksComponent extends React.Component {
 					stockIconUrl={stocks.stock_icon}
 					stock={stock}
 					key={stock.stock_number}
-					showDamage={showDamage}
-					showDeaths={showDeaths}
-					isSelfDestruct={
-						this.props.showSelfDestructs && stock.is_self_destruct
-					}
+					showDamage={showDamageReally}
+					showDeaths={showDeathsReally}
+					isSelfDestruct={showSelfDestructs && stock.is_self_destruct}
 				/>
 			);
 			numberShown++;
@@ -35,6 +35,8 @@ export default class StocksComponent extends React.Component {
 		if (!stockComponents.length) {
 			return null;
 		}
-		return <div className="stocks has_stocks">{stockComponents}</div>;
+		return (
+			<div className="stocks has_stocks">{stockComponents}</div>
+		);
 	}
 }
