@@ -21,37 +21,7 @@ import ReplayBrowser from '../components/ReplayBrowser';
 import AutoUpdates from '../components/AutoUpdates';
 
 class BuildsPage extends Component<Props> {
-	constructor(props) {
-		super(props);
-		this.state = {
-			loginCode: null,
-			productionUrls: null
-		};
-
-		this.props.initializeAutoUpdater();
-		this.props.initializeBuildLauncher();
-		this.props.beginWatchingForReplayChanges();
-	}
-
-	static getDerivedStateFromProps(props, state) {
-		if (
-			props.loginCode !== state.loginCode ||
-			props.productionUrls !== state.productionUrls
-		) {
-			return {
-				loginCode: props.loginCode,
-				productionUrls: props.productionUrls,
-				authentication: SmashLadderAuthentication.create({
-					loginCode: props.loginCode,
-					sessionId: props.sessionId,
-					productionUrls: props.productionUrls
-				})
-			};
-		}
-		return null;
-	}
-
-	renderConnectionSettings(props) {
+	static renderConnectionSettings(props) {
 		return (
 			<div className="container connecties">
 				<div className="row">
@@ -69,17 +39,43 @@ class BuildsPage extends Component<Props> {
 		);
 	}
 
+	constructor(props) {
+		super(props);
+		this.state = {
+			loginCode: null,
+			productionUrls: null
+		};
+
+		this.props.initializeAutoUpdater();
+		this.props.initializeBuildLauncher();
+		this.props.beginWatchingForReplayChanges();
+	}
+
+	static getDerivedStateFromProps(props, state) {
+		if (props.loginCode !== state.loginCode || props.productionUrls !== state.productionUrls) {
+			return {
+				loginCode: props.loginCode,
+				productionUrls: props.productionUrls,
+				authentication: SmashLadderAuthentication.create({
+					loginCode: props.loginCode,
+					sessionId: props.sessionId,
+					productionUrls: props.productionUrls
+				})
+			};
+		}
+		return null;
+	}
+
 	render() {
 		const props = {
 			...this.props,
 			...this.state
 		};
-		console.log(this.props);
 		const { activeUpdate, allReplays, viewingReplayDetails } = props;
 
 		let sideBar = null;
 		let bottomContent = null;
-		const connectionInformation = this.renderConnectionSettings(props);
+		const connectionInformation = BuildsPage.renderConnectionSettings(props);
 		if (allReplays.size > 0) {
 			sideBar = <ReplayBrowser {...props} />;
 			bottomContent = connectionInformation;
@@ -93,18 +89,13 @@ class BuildsPage extends Component<Props> {
 					<Header {...props} />
 					{!activeUpdate && (
 						<React.Fragment>
-							{!viewingReplayDetails &&
-							<div className="col m8">
-								<Builds {...props} />
-							</div>
-							}
-							{
-								viewingReplayDetails &&
-								<div className="col m12">{sideBar}</div>
-							}
-							{!viewingReplayDetails &&
-								<div className="col m4 sidebar">{sideBar}</div>
-							}
+							{!viewingReplayDetails && (
+								<div className="col m8">
+									<Builds {...props} />
+								</div>
+							)}
+							{viewingReplayDetails && <div className="col m12">{sideBar}</div>}
+							{!viewingReplayDetails && <div className="col m4 sidebar">{sideBar}</div>}
 						</React.Fragment>
 					)}
 				</Layout>
@@ -121,7 +112,7 @@ class BuildsPage extends Component<Props> {
 	}
 }
 
-const mapStateToProps = state => ({
+const mapStateToProps = (state) => ({
 	...state.login,
 	...state.builds,
 	...state.dolphinSettings,

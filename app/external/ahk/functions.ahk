@@ -17,7 +17,7 @@ ChangeBufferDirection(direction){
 
 FetchDolphin(buildName){
     global currentDolphinWindow
-    dolphins := Array("Ishiiruka-Dolphin", "Dolphin 4.0-7840", "Dolphin 5.0-321", buildName)
+    dolphins := Array("Faster Melee", "Ishiiruka-Dolphin", "Dolphin 4.0-7840", "Dolphin 5.0-321", buildName)
 
     attempts := 100
 
