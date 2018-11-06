@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
 import HtmlClassList from '../utils/HtmlClassList';
 
-export default class StockComponent extends React.Component {
-
+export default class StockComponent extends Component {
 	constructor(props) {
 		super(props);
 	}
@@ -15,7 +14,7 @@ export default class StockComponent extends React.Component {
 			isSelfDestruct,
 			showDeaths
 		} = this.props;
-		const iconUrl = this.props.stockIconUrl;
+		const iconUrl = stockIconUrl;
 		const classes = new HtmlClassList();
 
 		classes.add('stock_icon');

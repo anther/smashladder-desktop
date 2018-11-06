@@ -122,15 +122,27 @@ export default class Replay extends CacheableDataObject {
 		if (this.hasDefaultFileName()) {
 			const characters = this.getCharacters();
 			const { stage } = this.settings;
+			if (!stage) {
+				console.log('no stage');
+				return this.getFileName();
+			}
 
 			return `${characters.map(character => character.name).join(` vs `)} on ${stage.name}`;
 		}
 	}
 
+	isALittleGlitchy() {
+		const isGlitchy = this.possibleErrors.noMetadata && !this.possibleErrors.noSettings;
+		return isGlitchy;
+	}
+
 	getMatchTime() {
 		this.parseMetadata();
 		if (this.isReadable()) {
-			return this.metadata.lastFrame.asTime();
+			if (this.metadata.lastFrame) {
+				return this.metadata.lastFrame.asTime();
+			}
+			return null;
 		}
 		return null;
 	}
@@ -160,9 +172,15 @@ export default class Replay extends CacheableDataObject {
 		}
 		if (this.stats === null) {
 			const game = this.retrieveSlippiGame();
-			this.stats = game.getStats();
+			try {
+				this.stats = game.getStats();
+			}
+			catch (error) {
+
+			}
 			if (!this.stats) {
 				console.log('stats failed after load?!');
+				return null;
 			}
 			this.rawData.stats = _.cloneDeep(this.stats);
 			this.updateStats();
@@ -244,7 +262,7 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	parseMetadata() {
-		if (!_.isEmpty(this.metadata)) {
+		if (!_.isEmpty(this.settings)) {
 			this.hasErrors = false;
 			return true;
 		}
@@ -260,6 +278,10 @@ export default class Replay extends CacheableDataObject {
 				this.settings = game.getSettings();
 				this.metadata = game.getMetadata();
 			}
+			else {
+				console.error('something went extra wrong!');
+			}
+
 
 			this.rawData.settings = _.cloneDeep(this.settings);
 			this.rawData.metadata = _.cloneDeep(this.metadata);
@@ -269,11 +291,18 @@ export default class Replay extends CacheableDataObject {
 
 			if (_.isEmpty(this.metadata)) {
 				this.possibleErrors.noMetadata = true;
+			}
+
+			if (_.isEmpty(this.settings) || this.settings.stageId === 0) {
+				this.possibleErrors.noSettings = true;
+				console.log('had invalid settings');
 				this.hasErrors = true;
 				return;
 			}
 		}
 		catch (error) {
+			console.log('fundamental parse error');
+			console.error(error);
 			this.hasErrors = true;
 			return;
 		}
@@ -288,9 +317,12 @@ export default class Replay extends CacheableDataObject {
 			return SlippiPlayer.create(player);
 		});
 		this.settings.stage = MeleeStage.retrieve(this.settings.stageId);
-		this.metadata.startAt = moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true);
-		this.metadata.lastFrame = SlippiFrame.createFromFameNumber(this.metadata.lastFrame);
-		this.metadata.endAt = this.metadata.startAt.clone().add(this.metadata.lastFrame.seconds(), 'seconds');
+		if (!_.isEmpty(this.metadata)) {
+			this.metadata.startAt = moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true);
+
+			this.metadata.lastFrame = SlippiFrame.createFromFameNumber(this.metadata.lastFrame);
+			this.metadata.endAt = this.metadata.startAt.clone().add(this.metadata.lastFrame.seconds(), 'seconds');
+		}
 	}
 
 	getFileName() {

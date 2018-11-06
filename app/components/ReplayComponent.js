@@ -4,6 +4,7 @@ import Button from './elements/Button';
 import StocksComponent from './StocksComponent';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import KillsTable from './KillsTable';
+import SlippiPlayer from '../utils/replay/SlippiPlayer';
 
 export default class ReplayComponent extends Component {
 	constructor(props) {
@@ -103,6 +104,7 @@ export default class ReplayComponent extends Component {
 			verifyingReplayFiles,
 			sendingReplay
 		} = this.props;
+
 		const { deleteQuestion } = this.state;
 		const isBeingWatched = !!verifyingReplayFiles[replay.id];
 		const isBeingUploaded = sendingReplay && sendingReplay.id === replay.id;
@@ -126,57 +128,65 @@ export default class ReplayComponent extends Component {
 					</div>
 					<div className="game_data">
 						<div className="stocks">
-							{replay.getPlayers().map((player) => (
-								<div className="player" key={player.playerIndex}>
-									<StocksComponent
-										stocks={player.getLadderStocks()}
-										showSelfDestructs
-									/>
-									{detailed && (
-										<div className="detailed_stats">
-											{this.renderElement('Kills', player.overall.killCount)}
-											{this.renderElement(
-												'Openings Per Kill',
-												player.overall.openingsPerKill.ratio
-													? player.overall.openingsPerKill.ratio.toFixed(1)
-													: 'N/A'
-											)}
-											{this.renderElement(
-												'Total Damage',
-												`${
-													player.overall.totalDamage
-														? player.overall.totalDamage.toFixed(1)
-														: 0
-												}%`
-											)}
-											{this.renderElement(
-												'Wavelands',
-												player.actions.wavelandCount
-											)}
-											{this.renderElement(
-												'Wavedashes',
-												player.actions.wavedashCount
-											)}
-											{this.renderElement(
-												'Dash Dances',
-												player.actions.dashDanceCount
-											)}
+							{replay.getPlayers().map((player) => {
+								if (!(player instanceof SlippiPlayer)) {
+									console.log(replay);
+									console.error('player was a failure for some reason');
+									return null;
+								}
 
-											<h4>
-												Kills
-											</h4>
-											<div className='kills'>
-												<KillsTable
-													game={replay}
-													playerDisplay={player.character.name}
-													playerIndex={player.playerIndex}
-												/>
+								return (
+									<div className="player" key={player.playerIndex}>
+										<StocksComponent
+											stocks={player.getLadderStocks()}
+											showSelfDestructs
+										/>
+										{detailed && (
+											<div className="detailed_stats">
+												{this.renderElement('Kills', player.overall.killCount)}
+												{this.renderElement(
+													'Openings Per Kill',
+													player.overall.openingsPerKill.ratio
+														? player.overall.openingsPerKill.ratio.toFixed(1)
+														: 'N/A'
+												)}
+												{this.renderElement(
+													'Total Damage',
+													`${
+														player.overall.totalDamage
+															? player.overall.totalDamage.toFixed(1)
+															: 0
+														}%`
+												)}
+												{this.renderElement(
+													'Wavelands',
+													player.actions.wavelandCount
+												)}
+												{this.renderElement(
+													'Wavedashes',
+													player.actions.wavedashCount
+												)}
+												{this.renderElement(
+													'Dash Dances',
+													player.actions.dashDanceCount
+												)}
+
+												<h4>
+													Kills
+												</h4>
+												<div className='kills'>
+													<KillsTable
+														game={replay}
+														playerDisplay={player.character.name}
+														playerIndex={player.playerIndex}
+													/>
+												</div>
 											</div>
-										</div>
 
-									)}
-								</div>
-							))}
+										)}
+									</div>
+								);
+							})}
 						</div>
 						<div className="details">
 							{stage && (
@@ -195,7 +205,15 @@ export default class ReplayComponent extends Component {
 											{isBeingWatched &&
 											<span>Waiting for Replay to Finish</span>
 											}
-											{!isBeingWatched &&
+											{replay.isALittleGlitchy() && !isBeingWatched &&
+											<React.Fragment>
+												<div className="error">Duration Unknown</div>
+												<div className="error_reason">
+													Possibly (r9) Bug
+												</div>
+											</React.Fragment>
+											}
+											{!replay.isALittleGlitchy() && !isBeingWatched &&
 											<React.Fragment>
 												<div className="error">Game Unreadable</div>
 												<div className="error_reason">
