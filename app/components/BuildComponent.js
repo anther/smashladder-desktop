@@ -33,7 +33,8 @@ export default class BuildComponent extends Component {
 		buildOpen: PropTypes.bool.isRequired,
 		buildOpening: PropTypes.bool.isRequired,
 		buildError: PropTypes.any,
-		hostCode: PropTypes.string.isRequired
+		hostCode: PropTypes.string.isRequired,
+		dolphinInstallPath: PropTypes.string.isRequired
 	};
 
 	static defaultProps = {
@@ -56,7 +57,8 @@ export default class BuildComponent extends Component {
 			downloading: null,
 			downloadingProgress: null,
 			downloadError: null,
-			glowing: true
+			glowing: true,
+			unsettingBuildPathView: false
 		};
 
 		this.glowTimeout = null;
@@ -73,6 +75,10 @@ export default class BuildComponent extends Component {
 		this.onDownloadClick = this.downloadClick.bind(this);
 
 		this.onBuildNameClick = this.buildNameClick.bind(this);
+		this.beginUnsettingBuildPath = this.beginUnsettingBuildPath.bind(this);
+		this.cancelUnsettingBuildPath = this.cancelUnsettingBuildPath.bind(this);
+		this.confirmUnsetBuildPath = this.confirmUnsetBuildPath.bind(this);
+
 
 		this.onSelectedGameChange = this.selectedGameChange.bind(this);
 		this.slippiIconRef = React.createRef();
@@ -94,6 +100,26 @@ export default class BuildComponent extends Component {
 		shell.showItemInFolder(this.props.build.executablePath());
 	}
 
+	cancelUnsettingBuildPath() {
+		this.setState({
+			unsettingBuildPathView: false
+		});
+	}
+
+	beginUnsettingBuildPath() {
+		this.setState({
+			unsettingBuildPathView: true
+		});
+	}
+
+	confirmUnsetBuildPath() {
+		const { setBuildPath, build } = this.props;
+		this.setState({
+			unsettingBuildPathView: false
+		});
+		setBuildPath(build, null);
+	}
+
 	downloadClick() {
 		this.setState({
 			downloading: 'Downloading...',
@@ -101,9 +127,9 @@ export default class BuildComponent extends Component {
 			error: null
 		});
 
-		const { build } = this.props;
+		const { build, dolphinInstallPath } = this.props;
 
-		const basePath = path.join(remote.app.getPath('userData'), 'dolphin_downloads');
+		const basePath = path.join(dolphinInstallPath, 'dolphin_downloads');
 		console.log('downloading from', build.download_file);
 
 		const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
@@ -287,33 +313,56 @@ export default class BuildComponent extends Component {
 			downloading,
 			downloadingProgress,
 			unzipStatus,
-			enterJoinCode
+			enterJoinCode,
+			unsettingBuildPathView
 		} = this.state;
 
 		const error = this.state.error || buildError;
 		return (
 			<div className="build" key={build.id}>
 				<div className="build_heading">
-					<div className="path_button">
-						<SetBuildPathButton
-							{...this.props}
-							key={build.path}
-							downloading={downloading}
-						/>
-					</div>
-
-					{!!build.path && (
+					{unsettingBuildPathView &&
+					<React.Fragment>
 						<a title="Show in Explorer" onClick={this.onBuildNameClick} className="build_name has_path">
 							<span className="name">{build.name}</span>
 						</a>
-					)}
-					{!build.path && <span className="build_name">{build.name}</span>}
+						<div className='remove_build_path confirming'>
+							<Button
+								className='error_button'
+								onClick={this.confirmUnsetBuildPath}>
+								Remove
+							</Button>
+							<Button onClick={this.cancelUnsettingBuildPath}>
+								Cancel
+							</Button>
+						</div>
+					</React.Fragment>
+					}
+					{!unsettingBuildPathView &&
+					<React.Fragment>
+						<div className="path_button">
+							<SetBuildPathButton
+								{...this.props}
+								key={build.path}
+								downloading={downloading}
+							/>
+						</div>
 
-					{!!build.path && (
-						<RemoveBuildPathsButton
-							{...this.props}
-						/>
-					)}
+						{!!build.path && (
+							<a title="Show in Explorer" onClick={this.onBuildNameClick} className="build_name has_path">
+								<span className="name">{build.name}</span>
+							</a>
+						)}
+						{!build.path && <span className="build_name">{build.name}</span>}
+
+						{!!build.path && (
+							<RemoveBuildPathsButton
+								{...this.props}
+								beginUnsettingBuildPath={this.beginUnsettingBuildPath}
+							/>
+						)}
+					</React.Fragment>
+					}
 				</div>
 
 				<div className="build_actions">

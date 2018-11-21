@@ -30,6 +30,7 @@ export default class WebsocketComponent extends Component {
 	constructor(props) {
 		super(props);
 		this.websocket = null;
+		this.websocketServer = null;
 		this.potentialFailure = null;
 		this.state = {
 			forcedDisconnect: false,

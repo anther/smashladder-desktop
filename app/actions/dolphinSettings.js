@@ -16,6 +16,12 @@ export const SET_MELEE_ISO_PATH_SUCCESS = 'SET_MELEE_ISO_PATH_SUCCESS';
 export const SET_MELEE_ISO_PATH_FAIL = 'SET_MELEE_ISO_PATH_FAIL';
 export const UNSET_MELEE_ISO_PATH = 'UNSET_MELEE_ISO_PATH';
 
+export const SET_DOLPHIN_INSTALL_PATH_BEGIN = 'SET_DOLPHIN_INSTALL_PATH_BEGIN';
+export const SET_DOLPHIN_INSTALL_PATH_SUCCESS = 'SET_DOLPHIN_INSTALL_PATH_SUCCESS';
+export const SET_DOLPHIN_INSTALL_PATH_FAIL = 'SET_DOLPHIN_INSTALL_PATH_FAIL';
+export const UNSET_DOLPHIN_INSTALL_PATH = 'UNSET_DOLPHIN_INSTALL_PATH';
+
+
 export const addRomPath = path => (dispatch, getState) => {
 	const state = getState();
 	const paths = state.dolphinSettings.romPaths;
@@ -70,6 +76,41 @@ export const removeRomPath = path => (dispatch, getState) => {
 			romPaths: { ...paths }
 		}
 	});
+};
+
+export const unsetDolphinInstallPath = () => {
+	return {
+		type: UNSET_DOLPHIN_INSTALL_PATH
+	};
+};
+
+export const setDolphinInstallPath = () => (dispatch, getState) => {
+	const state = getState();
+
+	if (state.dolphinSettings.settingDolphinInstallPath) {
+		return;
+	}
+	dispatch({
+		type: SET_DOLPHIN_INSTALL_PATH_BEGIN
+	});
+
+	Files.selectDirectory('', 'Select a new Default Dolphin Install Path')
+		.then(selectedPath => {
+			if (!selectedPath) {
+				throw new Error('No path was selected');
+			}
+			dispatch({
+				type: SET_DOLPHIN_INSTALL_PATH_SUCCESS,
+				payload: selectedPath
+			});
+		})
+		.catch(error => {
+			console.error(error);
+			dispatch({
+				type: SET_DOLPHIN_INSTALL_PATH_FAIL
+			});
+		});
+
 };
 
 export const unsetMeleeIsoPath = () => {

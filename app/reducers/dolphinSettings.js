@@ -1,8 +1,21 @@
 import electronSettings from 'electron-settings';
+import { remote } from 'electron';
 import {
-	UPDATE_ALLOW_DOLPHIN_ANALYTICS, ADD_ROM_PATH, REMOVE_ROM_PATH, UPDATE_SEARCH_SUBDIRECTORIES,
-	SET_MELEE_ISO_PATH_BEGIN, SET_MELEE_ISO_PATH_SUCCESS, SET_MELEE_ISO_PATH_FAIL,
-	SELECT_ROM_PATH_BEGIN, SELECT_ROM_PATH_SUCCESS, SELECT_ROM_PATH_FAIL, UNSET_MELEE_ISO_PATH
+	UPDATE_ALLOW_DOLPHIN_ANALYTICS,
+	ADD_ROM_PATH,
+	REMOVE_ROM_PATH,
+	UPDATE_SEARCH_SUBDIRECTORIES,
+	SET_MELEE_ISO_PATH_BEGIN,
+	SET_MELEE_ISO_PATH_SUCCESS,
+	SET_MELEE_ISO_PATH_FAIL,
+	SELECT_ROM_PATH_BEGIN,
+	SELECT_ROM_PATH_SUCCESS,
+	SELECT_ROM_PATH_FAIL,
+	UNSET_MELEE_ISO_PATH,
+	SET_DOLPHIN_INSTALL_PATH_BEGIN,
+	SET_DOLPHIN_INSTALL_PATH_SUCCESS,
+	SET_DOLPHIN_INSTALL_PATH_FAIL,
+	UNSET_DOLPHIN_INSTALL_PATH
 } from '../actions/dolphinSettings';
 
 
@@ -11,6 +24,7 @@ const initialState = {
 	searchRomSubdirectories: electronSettings.get('dolphinSettings.searchRomSubdirectories', null),
 	allowDolphinAnalytics: electronSettings.get('dolphinSettings.allowDolphinAnalytics', true),
 	meleeIsoPath: electronSettings.get('dolphinSettings.meleeIsoPath', null),
+	dolphinInstallPath: electronSettings.get('dolphinSettings.dolphinInstallPath', remote.app.getPath('userData')),
 	settingMeleeIsoPath: false,
 	selectingRomPath: false
 };
@@ -64,6 +78,30 @@ export default (state = initialState, action) => {
 			return {
 				...newState,
 				settingMeleeIsoPath: false
+			};
+		case SET_DOLPHIN_INSTALL_PATH_BEGIN:
+			return {
+				...newState,
+				settingDolphinInstallPath: true
+			};
+		case SET_DOLPHIN_INSTALL_PATH_SUCCESS:
+			electronSettings.set('dolphinSettings.dolphinInstallPath', action.payload);
+			return {
+				...newState,
+				dolphinInstallPath: action.payload,
+				settingDolphinInstallPath: false
+			};
+		case UNSET_DOLPHIN_INSTALL_PATH:
+			electronSettings.set('dolphinSettings.dolphinInstallPath', remote.app.getPath('userData'));
+			return {
+				...newState,
+				dolphinInstallPath: remote.app.getPath('userData'),
+				settingDolphinInstallPath: false
+			};
+		case SET_DOLPHIN_INSTALL_PATH_FAIL:
+			return {
+				...newState,
+				settingDolphinInstallPath: false
 			};
 		default:
 			return state;

@@ -6,6 +6,7 @@ export default class RemoveBuildPathsButton extends Component {
 	constructor(props) {
 		super(props);
 		this.slippiIconRef = React.createRef();
+
 		this.onUnsetBuildPathClick = this.unsetBuildPathClick.bind(this);
 	}
 
@@ -14,7 +15,7 @@ export default class RemoveBuildPathsButton extends Component {
 	}
 
 	unsetBuildPathClick() {
-		this.props.setBuildPath(this.props.build, null);
+		this.props.beginUnsettingBuildPath();
 	}
 
 	render() {

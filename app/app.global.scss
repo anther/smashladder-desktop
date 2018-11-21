@@ -335,11 +335,15 @@ h6 {
         justify-content: flex-end;
         display: flex;
         align-items: center;
+
+        &.confirming{
+          justify-content: space-between;
+          margin-left: 64px;
+        }
       }
 
       .build_name {
         color: inherit;
-        margin-left: 16px;
         font-size: 19px;
         display: inline-flex;
         flex-direction: row;
