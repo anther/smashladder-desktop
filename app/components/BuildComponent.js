@@ -67,8 +67,9 @@ export default class BuildComponent extends Component {
 		this.onLaunchClick = this.launchClick.bind(this);
 		this.onStartGameClick = this.startGameClick.bind(this);
 
-		this.onJoinCodeChange = this.joinCodeChange.bind(this);
-		this.onJoinKeyPress = this.joinKeyPress.bind(this);
+		this.joinCodeCancel = this.joinCodeCancel.bind(this);
+		this.joinCodeChange = this.joinCodeChange.bind(this);
+		this.joinCodeSubmit = this.joinCodeSubmit.bind(this);
 		this.onDownloadClick = this.downloadClick.bind(this);
 
 		this.onBuildNameClick = this.buildNameClick.bind(this);
@@ -213,13 +214,6 @@ export default class BuildComponent extends Component {
 			});
 	}
 
-	joinKeyPress(event) {
-		if (event.key === 'Enter') {
-			event.stopPropagation();
-			this.joinCodeSubmit();
-		}
-	}
-
 	joinCodeCancel() {
 		this.setState({
 			enterJoinCode: false,
@@ -234,16 +228,11 @@ export default class BuildComponent extends Component {
 	}
 
 	joinClick() {
-		if (this.state.joinCode) {
-			this.joinCodeSubmit();
-		}
-		else {
-			this.setState({
-				enterJoinCode: true,
-				joinCode: '',
-				submittingJoinCode: false
-			});
-		}
+		this.setState({
+			enterJoinCode: true,
+			joinCode: '',
+			submittingJoinCode: false
+		});
 	}
 
 	selectedGameChange(event) {
@@ -333,23 +322,40 @@ export default class BuildComponent extends Component {
 							<div className="dolphin_actions">
 								{!buildOpen && (
 									<React.Fragment>
-										<Button onClick={this.onLaunchClick}>Launch</Button>
-										<Button onClick={this.onHostClick}>Host</Button>
-										<Button onClick={this.onJoinClick}>Join</Button>
+										{!enterJoinCode &&
+										<React.Fragment>
+											<Button onClick={this.onLaunchClick}>Open</Button>
+											<Button onClick={this.onHostClick}>Host</Button>
+											<Button onClick={this.onJoinClick}>Join</Button>
+										</React.Fragment>
+										}
 
-										{enterJoinCode && (
-											<div className="enter_join_code dolphin_actions">
+										{enterJoinCode &&
+										<div className='flex-row'>
+											<div className="enter_join_code dolphin_actions col s6">
 												<input
 													className="join_code_input"
 													disabled={submittingJoinCode}
 													placeholder="Host Code Goes Here"
 													type="text"
 													value={this.state.joinCode}
-													onChange={this.onJoinCodeChange}
-													onKeyPress={this.onJoinKeyPress}
+													onChange={this.joinCodeChange}
 												/>
 											</div>
-										)}
+											<div className='buttons col s6'>
+												<Button className='go'
+												        onClick={this.joinCodeSubmit}
+												>
+													Go!
+												</Button>
+												<Button className='cancel error_button '
+												        onClick={this.joinCodeCancel}
+												>
+													Cancel
+												</Button>
+											</div>
+										</div>
+										}
 									</React.Fragment>
 								)}
 								{buildOpen && (
