@@ -25,6 +25,7 @@ export default class Replay extends CacheableDataObject {
 		this.settings = {};
 		this.metadata = {};
 		this.game = null;
+		this.gameEnd = null;
 		this.hasErrors = null;
 		this._md5 = null;
 		this._parsedMetaData = false;
@@ -132,6 +133,7 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	isALittleGlitchy() {
+		console.log('is glitchy', this);
 		const isGlitchy = this.possibleErrors.noMetadata && !this.possibleErrors.noSettings;
 		return isGlitchy;
 	}
@@ -139,8 +141,8 @@ export default class Replay extends CacheableDataObject {
 	getMatchTime() {
 		this.parseMetadata();
 		if (this.isReadable()) {
-			if (this.metadata.lastFrame) {
-				return this.metadata.lastFrame.asTime();
+			if (this.stats.lastFrame) {
+				return this.stats.lastFrame.asTime();
 			}
 			return null;
 		}
@@ -170,13 +172,39 @@ export default class Replay extends CacheableDataObject {
 		if (!this.isReadable()) {
 			return null;
 		}
-		if (this.stats === null) {
+		if (!this.gameEnd) {
+			const tempGameThing = this.retrieveSlippiGame();
+			console.log('what is temp game', tempGameThing);
+			return;
+			this.gameEnd = tempGameThing.getGameEnd();
+		}
+
+		if (false) {
+
+			console.log('replay id', this.id);
+			console.log('the end', theEnd);
+			console.error('why');
+			if (theEnd) {
+				switch (theEnd.gameEndMethod) {
+					case 2: // Dolphin Closed?
+
+						break;
+					default:
+
+						break;
+				}
+			}
+		}
+
+		if (this.gameEnd && this.stats === null) {
+			console.error('reclaculating statts');
+			console.log(this);
 			const game = this.retrieveSlippiGame();
 			try {
 				this.stats = game.getStats();
-			}
-			catch (error) {
-
+			} catch (error) {
+				console.log('Slippi stats retrieval error');
+				console.error(error);
 			}
 			if (!this.stats) {
 				console.log('stats failed after load?!');
@@ -191,7 +219,7 @@ export default class Replay extends CacheableDataObject {
 	updateStats() {
 		const stockData = this.stats.stocks;
 		this.stats.stocks = [];
-		for (let stock of stockData) {
+		for (const stock of stockData) {
 			this.stats.stocks.push(SlippiStock.create(stock));
 		}
 		this.stats.stocks.sort((a, b) => {
@@ -214,24 +242,22 @@ export default class Replay extends CacheableDataObject {
 			player.addActions(this.stats.actionCounts);
 			player.addOverall(this.stats.overall);
 		});
-	}
 
-	getSettings() {
-		this.parseMetadata();
-		return this.settings;
+		console.log('what do we have', this);
+
+		this.getMetadata();
+		this.startAt = this.metadata.startAt ? moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true) : this._fileDate.clone();
+		if (this.metadata.startAt) {
+			this.metadata.startAt = this.startAt;
+		}
+
+		this.stats.lastFrame = SlippiFrame.createFromFameNumber(this.stats.lastFrame);
+		this.stats.endAt = this.startAt.clone().add(this.stats.lastFrame.seconds(), 'seconds');
 	}
 
 	getMetadata() {
 		this.parseMetadata();
 		return this.metadata;
-	}
-
-	getMd5() {
-		if (this._md5 !== null) {
-			return this._md5;
-		}
-		// Prepend an M so that the key always starts with a letter
-		return this._md5 = `m${md5File.sync(this.id)}`;
 	}
 
 	loadCachedSettings() {
@@ -267,27 +293,18 @@ export default class Replay extends CacheableDataObject {
 			return true;
 		}
 		try {
-			const cachedSettings = this.loadCachedSettings();
-			if (cachedSettings) {
-				this.settings = cachedSettings.settings;
-				this.metadata = cachedSettings.metadata;
-				this.stats = _.isEmpty(cachedSettings.stats) ? null : cachedSettings.stats;
-			}
-			else if (fs.existsSync(this.filePath)) {
+			if (fs.existsSync(this.filePath)) {
 				const game = this.retrieveSlippiGame();
 				this.settings = game.getSettings();
 				this.metadata = game.getMetadata();
-			}
-			else {
+
+				console.log('what do we get for metadata', this.metadata);
+			} else {
 				console.error('something went extra wrong!');
 			}
 
-
 			this.rawData.settings = _.cloneDeep(this.settings);
 			this.rawData.metadata = _.cloneDeep(this.metadata);
-			if (!cachedSettings) {
-				this.saveCache();
-			}
 
 			if (_.isEmpty(this.metadata)) {
 				this.possibleErrors.noMetadata = true;
@@ -299,8 +316,7 @@ export default class Replay extends CacheableDataObject {
 				this.hasErrors = true;
 				return;
 			}
-		}
-		catch (error) {
+		} catch (error) {
 			console.log('fundamental parse error');
 			console.error(error);
 			this.hasErrors = true;
@@ -317,12 +333,6 @@ export default class Replay extends CacheableDataObject {
 			return SlippiPlayer.create(player);
 		});
 		this.settings.stage = MeleeStage.retrieve(this.settings.stageId);
-		if (!_.isEmpty(this.metadata)) {
-			this.metadata.startAt = moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true);
-
-			this.metadata.lastFrame = SlippiFrame.createFromFameNumber(this.metadata.lastFrame);
-			this.metadata.endAt = this.metadata.startAt.clone().add(this.metadata.lastFrame.seconds(), 'seconds');
-		}
 	}
 
 	getFileName() {
@@ -365,6 +375,14 @@ export default class Replay extends CacheableDataObject {
 
 	toString() {
 		return this.id;
+	}
+
+}
+
+class ReplayEnd extends CacheableDataObject {
+	beforeCreate() {
+		this.gameEndMethod = null;
+		this.lrasInitiatorIndex = null;
 	}
 
 }

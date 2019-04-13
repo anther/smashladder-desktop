@@ -3,6 +3,7 @@ import path from 'path';
 import DolphinLauncher from '../utils/BuildLauncher';
 import { requestMeleeIsoPath } from './dolphinSettings';
 import Constants from '../utils/Constants';
+import crypto from 'crypto';
 
 const buildLauncher = new DolphinLauncher();
 
@@ -25,6 +26,7 @@ export const launchReplay = (params) => (dispatch, getState) => {
 	const meleeIsoPath = state.dolphinSettings.meleeIsoPath;
 	const build = replay.getBuild();
 	const replayPath = replay.filePath;
+	const dolphinInstallPath = state.dolphinSettings.dolphinInstallPath;
 
 	const replayStatusPayload = {
 		build,
@@ -50,10 +52,20 @@ export const launchReplay = (params) => (dispatch, getState) => {
 		return dispatch(replayLaunchFail('None of your Active Dolphin Builds have Replay Playback Capabilities...'));
 	}
 
-	const platform = process.platform;
+	const { platform } = process;
 
-	let commands;
-	let destinationFile = path.join(slippiReplayDirectory, Constants.SLIPPI_REPLAY_FILE_NAME);
+	const jsonString = JSON.stringify({
+		mode: 'normal',
+		replay: replayPath,
+		isRealTimeMode: false,
+		commandId: crypto.randomBytes(3 * 4).toString('hex')
+	});
+
+	const slippiReadSettingsPath = `${dolphinInstallPath}/read.json`;
+
+	fse.writeFileSync(slippiReadSettingsPath, jsonString);
+
+	let commands = [];
 	const dolphinLaunchParameters = [];
 
 	switch (platform) {
@@ -62,19 +74,20 @@ export const launchReplay = (params) => (dispatch, getState) => {
 			dolphinLaunchParameters.push('-b');
 			dolphinLaunchParameters.push('-e');
 			commands = [
-				`cp "${replayPath}" "${destinationFile}"`,
-				`cd "${dolphinPath}"`,
-				`open "Dolphin.app" --args -b -e "${meleeIsoPath}"`
+				`open "Dolphin.app" --args -b -e "${meleeIsoPath} -i ${slippiReadSettingsPath}"`
 			];
 			break;
 		case 'win32': // windows
-			dolphinLaunchParameters.push('/b');
-			dolphinLaunchParameters.push(`/e`);
-			dolphinLaunchParameters.push(`${meleeIsoPath}`);
+			dolphinLaunchParameters.push('-i');
+			dolphinLaunchParameters.push(slippiReadSettingsPath);
+			dolphinLaunchParameters.push('-b');
+			dolphinLaunchParameters.push('-e');
+			dolphinLaunchParameters.push(meleeIsoPath);
 			break;
 		default:
 			return dispatch(replayLaunchFail(`The current operating system (${platform}) is not supported`));
 	}
+	console.log('the params', dolphinLaunchParameters);
 
 	buildLauncher.close()
 		.catch(error => {
@@ -83,7 +96,6 @@ export const launchReplay = (params) => (dispatch, getState) => {
 		})
 		.then(() => {
 			console.log('unlink done');
-			return fse.copyFile(replayPath, destinationFile);
 		})
 		.catch(error => {
 			return dispatch(replayLaunchFail(`Error copying replay file: ${error.message}`));
@@ -96,11 +108,6 @@ export const launchReplay = (params) => (dispatch, getState) => {
 
 			const cleanupDolphin = () => {
 				build.setSlippiToRecord();
-				fse.unlink(destinationFile, (replayUnlinkError) => {
-					if (replayUnlinkError) {
-						console.error(replayUnlinkError);
-					}
-				});
 			};
 			console.log('launching build');
 			buildLauncher.launch(build, dolphinLaunchParameters)

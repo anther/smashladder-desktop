@@ -12,15 +12,22 @@ export default class ReplaySync extends Component {
 	static propTypes = {
 		authentication: PropTypes.instanceOf(SmashLadderAuthentication).isRequired,
 		replayWatchEnabled: PropTypes.bool.isRequired,
-		connectionEnabled: PropTypes.bool.isRequired
+		connectionEnabled: PropTypes.bool.isRequired,
+		sendingReplay: PropTypes.bool,
+		enableReplayWatching: PropTypes.func.isRequired,
+		disableReplayWatching: PropTypes.func.isRequired
+	};
+
+	static defaultProps = {
+		sendingReplay: false
 	};
 
 	updateCheckForReplays(set) {
+		const { enableReplayWatching, disableReplayWatching } = this.props;
 		if (set) {
-			this.props.enableReplayWatching();
-		}
-		else {
-			this.props.disableReplayWatching();
+			enableReplayWatching();
+		} else {
+			disableReplayWatching();
 		}
 	}
 

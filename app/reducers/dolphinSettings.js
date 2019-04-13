@@ -1,5 +1,6 @@
 import electronSettings from 'electron-settings';
 import { remote } from 'electron';
+import path from 'path';
 import {
 	UPDATE_ALLOW_DOLPHIN_ANALYTICS,
 	ADD_ROM_PATH,
@@ -19,14 +20,16 @@ import {
 } from '../actions/dolphinSettings';
 
 
+const defaultDolphinInstallPath = path.join(remote.app.getPath('userData'), 'dolphin_downloads');
 const initialState = {
 	romPaths: electronSettings.get('dolphinSettings.romPaths', {}),
 	searchRomSubdirectories: electronSettings.get('dolphinSettings.searchRomSubdirectories', null),
 	allowDolphinAnalytics: electronSettings.get('dolphinSettings.allowDolphinAnalytics', true),
 	meleeIsoPath: electronSettings.get('dolphinSettings.meleeIsoPath', null),
-	dolphinInstallPath: electronSettings.get('dolphinSettings.dolphinInstallPath', remote.app.getPath('userData')),
+	dolphinInstallPath: electronSettings.get('dolphinSettings.dolphinInstallPath', defaultDolphinInstallPath),
 	settingMeleeIsoPath: false,
-	selectingRomPath: false
+	selectingRomPath: false,
+	settingDolphinInstallPath: false
 };
 
 export default (state = initialState, action) => {
@@ -91,13 +94,14 @@ export default (state = initialState, action) => {
 				dolphinInstallPath: action.payload,
 				settingDolphinInstallPath: false
 			};
-		case UNSET_DOLPHIN_INSTALL_PATH:
-			electronSettings.set('dolphinSettings.dolphinInstallPath', remote.app.getPath('userData'));
+		case UNSET_DOLPHIN_INSTALL_PATH: {
+			electronSettings.set('dolphinSettings.dolphinInstallPath', defaultDolphinInstallPath);
 			return {
 				...newState,
-				dolphinInstallPath: remote.app.getPath('userData'),
+				dolphinInstallPath: defaultDolphinInstallPath,
 				settingDolphinInstallPath: false
 			};
+		}
 		case SET_DOLPHIN_INSTALL_PATH_FAIL:
 			return {
 				...newState,

@@ -35,7 +35,7 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 	fullEndpointUrl(endpoint) {
 		let SITE_URL = 'https://www.smashladder.com';
 		if (this.productionUrls === false) {
-			SITE_URL = 'http://localhost/smashladder';
+			SITE_URL = 'http://www.smashladder.localhost';
 		}
 		const API_URL = `${SITE_URL}/api/v1`;
 		if (typeof endpoint === 'string') {

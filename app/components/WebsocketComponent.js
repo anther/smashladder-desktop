@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import { ipcRenderer } from 'electron';
 import { LinearBackoff } from 'simple-backoff';
 import urlSerialize from '../utils/urlSerialize';
 import ProgressDeterminate from './elements/ProgressDeterminate';
@@ -30,7 +31,6 @@ export default class WebsocketComponent extends Component {
 	constructor(props) {
 		super(props);
 		this.websocket = null;
-		this.websocketServer = null;
 		this.potentialFailure = null;
 		this.state = {
 			forcedDisconnect: false,
@@ -47,6 +47,8 @@ export default class WebsocketComponent extends Component {
 		this.reconnectTimeout = null;
 		this.retryingCounter = null;
 		this.connectedForABitTimeout = null;
+
+		this.onControlMessage = this.onControlMessage.bind(this);
 
 		this.websocketCommands = {
 			selectVersion: () => {
@@ -99,6 +101,13 @@ export default class WebsocketComponent extends Component {
 
 	componentDidMount() {
 		this.updateWebsocketIfNecessary();
+		ipcRenderer.removeAllListeners('websocket-message');
+		ipcRenderer.send('websocket-host');
+		ipcRenderer.on('websocket-message', (event, message) => {
+			const parsed = JSON.parse(message);
+			console.log('got websocket message', event, parsed);
+			this.processMessage(parsed);
+		});
 	}
 
 	componentDidUpdate() {
@@ -208,43 +217,7 @@ export default class WebsocketComponent extends Component {
 			this.resetAlonenessTimer();
 		};
 
-		this.websocket.onmessage = event => {
-			this.resetAlonenessTimer();
-			let message = {};
-			try {
-				message = JSON.parse(event.data);
-			} catch (error) {
-				console.error(error);
-			}
-			if (!message.functionCall) {
-				return;
-			}
-			console.log('received message', message);
-			if (!this.websocketCommands[message.functionCall]) {
-				console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
-			}
-
-			try {
-				if (message.data) {
-					if (message.data.dolphin_version) {
-						message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
-					}
-					if (message.data.game_launch_name) {
-						const gameInfo = message.data.game_launch_name;
-
-						gameInfo.dolphin_game_id_hint = gameInfo.launch;
-						gameInfo.name = gameInfo.game;
-					}
-					if (message.parameters) {
-						message.data.parameters = message.parameters;
-					}
-				}
-				this.websocketCommands[message.functionCall](message.data);
-			} catch (error) {
-				console.error('websocket message error');
-				console.error(error);
-			}
-		};
+		this.websocket.onmessage = this.onControlMessage;
 
 		this.websocket.onerror = evt => {
 			console.error(evt);
@@ -258,6 +231,48 @@ export default class WebsocketComponent extends Component {
 			clearTimeout(this.connectedForABitTimeout);
 			clearTimeout(this.potentialFailure);
 		};
+	}
+
+	onControlMessage(event) {
+		this.resetAlonenessTimer(); // TODO Probably moev this only to the Smashladder connection on message
+		let message = {};
+		try {
+			message = JSON.parse(event.data);
+		} catch (error) {
+			console.error(error);
+		}
+		this.processMessage(message);
+	}
+
+	processMessage(message) {
+		if (!message.functionCall) {
+			return;
+		}
+		console.log('received message', message);
+		if (!this.websocketCommands[message.functionCall]) {
+			console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
+		}
+
+		try {
+			if (message.data) {
+				if (message.data.dolphin_version) {
+					message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
+				}
+				if (message.data.game_launch_name) {
+					const gameInfo = message.data.game_launch_name;
+
+					gameInfo.dolphin_game_id_hint = gameInfo.launch;
+					gameInfo.name = gameInfo.game;
+				}
+				if (message.parameters) {
+					message.data.parameters = message.parameters;
+				}
+			}
+			this.websocketCommands[message.functionCall](message.data);
+		} catch (error) {
+			console.error('websocket message error');
+			console.error(error);
+		}
 	}
 
 	resetAlonenessTimer() {

@@ -20,6 +20,15 @@ export default class SlippiPlayer extends CacheableDataObject {
 		}
 	}
 
+	getNameTag() {
+		const playerTypeStr = this.type === 1 ? 'CPU' : 'Player';
+		const portName = `${playerTypeStr} ${this.port}`;
+
+		const netplayName = null;
+		const nameTag = null;
+		return netplayName || nameTag || portName;
+	}
+
 	addConversions(conversions) {
 		for (const conversion of conversions) {
 			if (conversion.playerIndex === this.playerIndex) {

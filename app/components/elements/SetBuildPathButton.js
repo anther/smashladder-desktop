@@ -24,7 +24,7 @@ export default class SetBuildPathButton extends Component {
 	}
 
 	render() {
-		const { buildSettingPath, buildOpen, downloading, build } = this.props;
+		const { buildSettingPath, buildOpen, downloading, build, disabled } = this.props;
 		const extraProps = {};
 		if (!build.path) {
 			extraProps['data-tooltip'] = 'Use a Dolphin that you already have on your System';
@@ -38,12 +38,12 @@ export default class SetBuildPathButton extends Component {
 		return (
 			<span className={build.path ? 'has_path' : 'no_path'}>
 				<Button
-					disabled={buildSettingPath || buildOpen || !!downloading}
+					disabled={buildSettingPath || buildOpen || !!downloading || disabled}
 					onClick={this.onSetBuildPathClick}
 					{...extraProps}
 				>
 					{buildSettingPath === build.id &&
-						<ProgressIndeterminate/>
+					<ProgressIndeterminate/>
 					}
 					{build.path ? 'Path Set' : 'Set Path'}
 				</Button>

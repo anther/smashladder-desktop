@@ -134,9 +134,12 @@ export default class ReplayComponent extends Component {
 									console.error('player was a failure for some reason');
 									return null;
 								}
-
 								return (
 									<div className="player" key={player.playerIndex}>
+										{player.nametag !== undefined}
+										<div className='nametag'>
+											{player.getNameTag()}
+										</div>
 										<StocksComponent
 											stocks={player.getLadderStocks()}
 											showSelfDestructs

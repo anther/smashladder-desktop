@@ -144,7 +144,7 @@ export default class DolphinSettings extends Component {
 				<h6>Replays</h6>
 				<div className="input-field joined_inputs set_melee_iso_path">
 					<Button
-						className={`btn-small ${meleeIsoPath ? 'set' : 'not_set'}`}
+						className={`btn-small ${meleeIsoPath ? 'set' : 'not_set no_check'}`}
 						disabled={settingMeleeIsoPath}
 						onClick={this.onSetMeleeIsoPathClick}
 					>
@@ -165,7 +165,7 @@ export default class DolphinSettings extends Component {
 						</a>
 					)}
 				</div>
-				<h6>Install Path</h6>
+				<h6>Set Optional Dolphin Install Path</h6>
 				<div className="input-field joined_inputs set_melee_iso_path">
 					<Button
 						className={`btn-small no_check ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
@@ -173,7 +173,7 @@ export default class DolphinSettings extends Component {
 						onClick={setDolphinInstallPath}
 					>
 						{settingDolphinInstallPath && <ProgressIndeterminate/>}
-						Set Optional Dolphin Install Path
+						Update Path
 					</Button>
 					<Button
 						disabled={settingDolphinInstallPath}
@@ -181,8 +181,12 @@ export default class DolphinSettings extends Component {
 						onClick={this.unsetDolphinInstallPath}
 					/>
 					<a onClick={this.dolphinInstallPathNavigate} className='iso_path_display'>
-						{!!dolphinInstallPath && dolphinInstallPath}
-						{!dolphinInstallPath && 'Default Location'}
+						<span className='iso_path'>
+							<span className='text'>
+								{!!dolphinInstallPath && dolphinInstallPath}
+								{!dolphinInstallPath && 'Default Location'}
+							</span>
+						</span>
 					</a>
 				</div>
 			</div>

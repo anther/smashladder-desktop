@@ -13,9 +13,13 @@ const defaultLoginState = {
 	player: null,
 	loginCode: null,
 	sessionId: null,
-	productionUrls: true
+	productionUrls: false
 };
-const loginDatas = electronSettings.get('login', defaultLoginState);
+const loginDatas = { ...defaultLoginState };
+loginDatas.player = electronSettings.get('login.player', defaultLoginState.player);
+loginDatas.loginCode = electronSettings.get('login.loginCode', defaultLoginState.loginCode);
+loginDatas.sessionId = electronSettings.get('login.sessionId', defaultLoginState.sessionId);
+loginDatas.productionUrls = electronSettings.get('login.productionUrls', defaultLoginState.productionUrls);
 
 const initialState = {
 	loginErrors: [],
@@ -27,6 +31,8 @@ const initialState = {
 	isLoggingIn: false,
 	showLoginButton: false
 };
+
+console.log('what are login datas?', initialState.productionUrls, loginDatas);
 
 export default (state = initialState, action) => {
 	switch (action.type) {

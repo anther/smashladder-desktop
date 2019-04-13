@@ -5,6 +5,7 @@ import Build from '../utils/BuildData';
 import Files from '../utils/Files';
 import Constants from '../utils/Constants';
 import Replay from '../utils/Replay';
+import yieldingLoop from '../utils/yieldingLoop';
 
 
 export const REPLAY_BROWSE_START = 'REPLAY_BROWSE_START';
@@ -73,25 +74,22 @@ export const startReplayBrowser = () => (dispatch, getState) => {
 
 export const updateBrowsedReplayList = () => (dispatch, getState) => {
 	const state = getState();
-	const { replayWatchBuilds, allReplays} = state.replayBrowse;
+	const { replayWatchBuilds, allReplays } = state.replayBrowse;
 	const { verifyingReplayFiles } = state.replayWatch;
 	const replaysBeingVerified = new Set();
 	_.forEach(verifyingReplayFiles, (replayPath) => {
 		replaysBeingVerified.add(Replay.retrieve({ id: replayPath }));
 	});
-	dispatch({
-		type: REPLAY_BROWSE_UPDATE_START
-	});
+	dispatch({ type: REPLAY_BROWSE_UPDATE_START });
 	let newReplayList = null;
+	console.log(replaysBeingVerified, 'hmm?');
 	if (replaysBeingVerified.size) { // Do not search the file system if the user is possibly in a match
 		console.log('Do not use file system directly');
 		newReplayList = new Set(allReplays);
 		replaysBeingVerified.forEach((replay) => {
 			newReplayList.add(replay);
 		});
-	}
-	else {
-
+	} else {
 		newReplayList = new Set();
 		_.each(replayWatchBuilds, (build) => {
 			const slippiPath = build.getSlippiPath();
@@ -114,35 +112,6 @@ export const updateBrowsedReplayList = () => (dispatch, getState) => {
 	});
 	dispatch(displayReplaysBasedOnCurrentPage());
 };
-
-function yieldingLoop(count, chunksize, callback, cancelToken = {}) {
-	let i = 0;
-	let totalSkipped = 0;
-	return new Promise((resolve, reject) => {
-		(function chunk() {
-			const end = Math.min(i + chunksize, count);
-			let skipTimeout = false;
-			for (; i < end; ++i) {
-				skipTimeout = callback.call(null, i);
-			}
-			if (cancelToken.cancelled) {
-				reject();
-				return;
-			}
-			if (i < count) {
-				if (skipTimeout === true) {
-					totalSkipped++;
-					chunk.call(null);
-				}
-				else {
-					setTimeout(chunk, 0);
-				}
-			} else {
-				resolve(totalSkipped);
-			}
-		})();
-	});
-}
 
 let lastCancelToken = {
 	cancelled: false
@@ -184,8 +153,7 @@ const displayReplaysBasedOnCurrentPage = () => (dispatch, getState) => {
 		if (firstReplayIndex > totalReplays) {
 			console.log('first index is beyond total');
 			replays = [];
-		}
-		else {
+		} else {
 			replays = replays.slice(firstReplayIndex, lastReplayIndex);
 		}
 

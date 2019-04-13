@@ -49,16 +49,14 @@ export const setLoginKey = (loginCode) => {
 				let error = null;
 				if (response.statusCode === 401) {
 					error = 'Invalid Code, Maybe it expired?';
-				}
-				else {
+				} else {
 					try {
 						error = JSON.parse(response.error);
 						if (error.error) {
 							error = error.error;
 						}
-					}
-					catch (parseError) {
-						error = `Something is probably wrong with SmashLadder's server's right now, please try again later!`;
+					} catch (parseError) {
+						error = `Something is probably wrong with SmashLadder's server's right now, please try again later! Prod:${productionUrls}`;
 					}
 				}
 				if (typeof error === 'string') {

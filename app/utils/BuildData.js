@@ -78,8 +78,18 @@ export default class Build extends CacheableDataObject {
 		return (this._slippiPath = null);
 	}
 
+	getMeleeCodeIniLocation() {
+		const iniSettingsLocation = Files.findInDirectory(this.executableDirectory(), 'GALE01r2.ini');
+		console.log('code Ini Location', iniSettingsLocation);
+		if (!iniSettingsLocation.length) {
+			return null;
+		}
+		return iniSettingsLocation[0];
+	}
+
 	getMeleeSettingsIniLocation() {
 		const iniSettingsLocation = Files.findInDirectory(this.executableDirectory(), 'GALE01.ini');
+		console.log('settings locatin', iniSettingsLocation);
 		if (!iniSettingsLocation.length) {
 			return null;
 		}
@@ -88,19 +98,21 @@ export default class Build extends CacheableDataObject {
 
 	setSlippiToPlayback() {
 		const settings = this.getMeleeSettingsIniLocation();
-		if (!settings) {
+		const codeIniLocation = this.getMeleeCodeIniLocation();
+		if (!settings || !codeIniLocation) {
 			return false;
 		}
-		DolphinConfigurationUpdater.setSlippiToPlayback(settings);
+		DolphinConfigurationUpdater.setSlippiToPlayback(settings, codeIniLocation);
 		return true;
 	}
 
 	setSlippiToRecord() {
 		const settings = this.getMeleeSettingsIniLocation();
-		if (!settings) {
+		const codeIniLocation = this.getMeleeCodeIniLocation();
+		if (!settings || !codeIniLocation) {
 			return false;
 		}
-		DolphinConfigurationUpdater.setSlippiToRecord(settings);
+		DolphinConfigurationUpdater.setSlippiToRecord(settings, codeIniLocation);
 		return true;
 	}
 

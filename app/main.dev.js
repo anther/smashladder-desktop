@@ -17,6 +17,7 @@ import AutoLaunch from 'auto-launch';
 import electronSettings from 'electron-settings';
 import path from 'path';
 import Files from './utils/Files';
+import './utils/WebsocketServer';
 
 let mainWindow = null;
 

@@ -77,17 +77,28 @@ export default class DolphinConfigurationUpdater {
 		return !!(config['Gecko_Enabled']['$Slippi Recording'] || config['Gecko_Enabled']['$Slippi Playback']);
 	}
 
-	static setSlippiToPlayback(configPath) {
+	static setSlippiToPlayback(configPath, codeIniLocation) {
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
+		console.log('what is config path', configPath);
+		console.log('part 2', codeIniLocation);
+
 		if (config['Gecko_Enabled']['$Slippi Recording']) {
 			delete config['Gecko_Enabled']['$Slippi Recording'];
 			config['Gecko_Enabled']['$Slippi Playback'] = true;
 			updater.saveGeckoCodeConfiguration(config);
 		}
+
+		if(!codeIniLocation){
+			throw new Error('Code ini location is required!');
+		}
+
+		const playbackTextLocation = Files.createApplicationPath('./dolphin_configs/sysPlayback.ini');
+		const playbackIni = fs.readFileSync(playbackTextLocation, 'utf8');
+		fs.writeFileSync(codeIniLocation, playbackIni);
 	}
 
-	static setSlippiToRecord(configPath) {
+	static setSlippiToRecord(configPath, codeIniLocation) {
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
 		if (config['Gecko_Enabled']['$Slippi Playback']) {
@@ -95,6 +106,14 @@ export default class DolphinConfigurationUpdater {
 			config['Gecko_Enabled']['$Slippi Recording'] = true;
 			updater.saveGeckoCodeConfiguration(config);
 		}
+
+		if(!codeIniLocation){
+			throw new Error('Code ini location is required!');
+		}
+
+		const recordTextLocation = Files.createApplicationPath('./dolphin_configs/sysRecord.ini');
+		const recordIni = fs.readFileSync(recordTextLocation, 'utf8');
+		fs.writeFileSync(codeIniLocation, recordIni);
 	}
 
 	static eraseAll(string, search) {
@@ -149,8 +168,7 @@ export default class DolphinConfigurationUpdater {
 					currentIsoPathName,
 					entryNumber
 				);
-			}
-			else {
+			} else {
 				hasIsoEntry = false;
 			}
 			entryNumber++;

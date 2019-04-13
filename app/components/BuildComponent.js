@@ -58,7 +58,8 @@ export default class BuildComponent extends Component {
 			downloadingProgress: null,
 			downloadError: null,
 			glowing: true,
-			unsettingBuildPathView: false
+			unsettingBuildPathView: false,
+			transitioning: false,
 		};
 
 		this.glowTimeout = null;
@@ -115,9 +116,19 @@ export default class BuildComponent extends Component {
 	confirmUnsetBuildPath() {
 		const { setBuildPath, build } = this.props;
 		this.setState({
-			unsettingBuildPathView: false
+			transitioning: true
 		});
-		setBuildPath(build, null);
+		setTimeout(()=>{
+			this.setState({
+				unsettingBuildPathView: false
+			});
+			setBuildPath(build, null);
+			setTimeout(()=>{
+				this.setState({
+					transitioning: false
+				});
+			},1000);
+		},1000)
 	}
 
 	downloadClick() {
@@ -129,7 +140,7 @@ export default class BuildComponent extends Component {
 
 		const { build, dolphinInstallPath } = this.props;
 
-		const basePath = path.join(dolphinInstallPath, 'dolphin_downloads');
+		const basePath = path.join(dolphinInstallPath);
 		console.log('downloading from', build.download_file);
 
 		const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
@@ -314,7 +325,8 @@ export default class BuildComponent extends Component {
 			downloadingProgress,
 			unzipStatus,
 			enterJoinCode,
-			unsettingBuildPathView
+			unsettingBuildPathView,
+			transitioning,
 		} = this.state;
 
 		const error = this.state.error || buildError;
@@ -328,11 +340,14 @@ export default class BuildComponent extends Component {
 						</a>
 						<div className='remove_build_path confirming'>
 							<Button
+								disabled={transitioning}
 								className='error_button'
 								onClick={this.confirmUnsetBuildPath}>
-								Remove
+								Unset
 							</Button>
-							<Button onClick={this.cancelUnsettingBuildPath}>
+							<Button
+								disabled={transitioning}
+								onClick={this.cancelUnsettingBuildPath}>
 								Cancel
 							</Button>
 						</div>
@@ -343,6 +358,7 @@ export default class BuildComponent extends Component {
 						<div className="path_button">
 							<SetBuildPathButton
 								{...this.props}
+								disabled={transitioning}
 								key={build.path}
 								downloading={downloading}
 							/>
@@ -439,6 +455,7 @@ export default class BuildComponent extends Component {
 										<Button
 											className={`download_build ${glowing ? 'pulse' : ''}`}
 											onClick={this.onDownloadClick}
+											disabled={transitioning}
 										>
 											Install <span className="download_arrow">⇩</span>
 										</Button>

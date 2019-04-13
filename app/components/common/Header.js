@@ -23,6 +23,31 @@ export default class Header extends Component {
 		logout: null
 	};
 
+	constructor(props) {
+		super(props);
+
+		this.logoTimeout = null;
+		this.logoClick = this.logoClick.bind(this);
+
+		this.setState({
+			logoClicks: 0
+		});
+	}
+
+	logoClick() {
+		clearTimeout(this.logoTimeout);
+		this.setState((prevState) => {
+			return {
+				logoClicks: prevState.logoClicks + 1
+			};
+		});
+		this.logoTimeout = this.setTimeout(() => {
+			this.setState({
+				logoClicks: 0
+			});
+		}, 4000);
+	}
+
 	render() {
 		const { player, logout, productionUrls, enableDevelopmentUrls, enableProductionUrls } = this.props;
 		return (
@@ -58,7 +83,9 @@ export default class Header extends Component {
 				<h3 className="page-title">
 					<span className='site_name'>
 						<span className='logo-smash'>Smash</span>
-						<img alt='' src={ladderLogoIcon}/>
+						<img
+							onClick={this.logoClick}
+							alt='' src={ladderLogoIcon}/>
 						<span className='logo-ladder'>Ladder</span>
 					</span>
 					<span className='launcher_name'>

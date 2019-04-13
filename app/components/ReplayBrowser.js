@@ -32,7 +32,7 @@ export default class ReplayBrowser extends Component {
 		if (viewingReplayDetails) {
 			return (
 				<div className="replay_browser detailed">
-					<ReplayComponent {...this.props} detailed replay={viewingReplayDetails} />
+					<ReplayComponent {...this.props} detailed replay={viewingReplayDetails}/>
 				</div>
 			);
 		}
@@ -57,26 +57,26 @@ export default class ReplayBrowser extends Component {
 						<div className="collection">
 							{updatingReplayList && (
 								<div className="replay_list_updating_progress">
-									<ProgressDeterminate percent={updatingReplayListPercent} />
+									<ProgressDeterminate percent={updatingReplayListPercent}/>
 								</div>
 							)}
 							{activeBrowseReplays.map((replay) => (
 								<div key={replay.id} className="collection-item replay">
-									<ReplayComponent {...this.props} replay={replay} />
+									<ReplayComponent {...this.props} replay={replay}/>
 								</div>
 							))}
 						</div>
 					</React.Fragment>
 				)}
 				{activeBrowseReplays.length === 0 &&
-					updatingReplayList && (
-						<React.Fragment>
-							<h5>Loading Replays</h5>
-							<div className="replay_list_updating_progress">
-								<ProgressDeterminate percent={updatingReplayListPercent} />
-							</div>
-						</React.Fragment>
-					)}
+				updatingReplayList && (
+					<React.Fragment>
+						<h5>Loading Replays</h5>
+						<div className="replay_list_updating_progress">
+							<ProgressDeterminate percent={updatingReplayListPercent}/>
+						</div>
+					</React.Fragment>
+				)}
 			</div>
 		);
 	}
