@@ -13,7 +13,7 @@ export default class SlippiFrame {
 		}
 	}
 
-	static createFromFameNumber(frame) {
+	static createFromFrameNumber(frame) {
 		return Number.isInteger(frame) ? new SlippiFrame(frame) : new SlippiFrame(null);
 	}
 

@@ -13,7 +13,7 @@ const defaultLoginState = {
 	player: null,
 	loginCode: null,
 	sessionId: null,
-	productionUrls: false
+	productionUrls: true
 };
 const loginDatas = { ...defaultLoginState };
 loginDatas.player = electronSettings.get('login.player', defaultLoginState.player);

@@ -4,8 +4,8 @@ import SlippiFrame from "./SlippiFrame";
 export default class SlippiStock extends CacheableDataObject{
 
     beforeConstruct(){
-        this.startFrame = SlippiFrame.createFromFameNumber(null);
-        this.endFrame = SlippiFrame.createFromFameNumber(null);
+        this.startFrame = SlippiFrame.createFromFrameNumber(null);
+        this.endFrame = SlippiFrame.createFromFrameNumber(null);
     }
 
     convertToLadderStock(){
@@ -28,10 +28,10 @@ export default class SlippiStock extends CacheableDataObject{
 }
 SlippiStock.prototype.dataLocationParsers= {
     startFrame(stock, data){
-        stock.startFrame = SlippiFrame.createFromFameNumber(data.startFrame);
+        stock.startFrame = SlippiFrame.createFromFrameNumber(data.startFrame);
     },
     endFrame(stock, data){
-        stock.endFrame = SlippiFrame.createFromFameNumber(data.endFrame);
+        stock.endFrame = SlippiFrame.createFromFrameNumber(data.endFrame);
     },
     count(stock, data){
         stock.count = Number.parseInt(data.count, 10);

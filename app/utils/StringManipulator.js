@@ -1,7 +1,7 @@
 /* eslint-disable no-bitwise */
 import slugify from 'slugify';
 
-class StringManipulator {
+export default class StringManipulator {
 	static slugify(str) {
 		str = str.replace(/[~`!@#$%^&*(){}\[\];:"'<,.>?\/\\|_+=-]/g, '-');
 		if (str.charAt(str.length - 1) === '-') {
@@ -59,5 +59,3 @@ class StringManipulator {
 		return `${bytes.toFixed(1)  } ${  units[u]}`;
 	}
 }
-
-module.exports = StringManipulator;

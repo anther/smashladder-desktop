@@ -24,7 +24,6 @@ export const ENABLE_REPLAY_UPLOADS = 'ENABLE_REPLAY_UPLOADS';
 export const DISABLE_REPLAY_UPLOADS = 'DISABLE_REPLAY_UPLOADS';
 
 export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
-	return;
 	console.log('begin watching');
 	const state = getState();
 	const authentication = getAuthenticationFromState(getState);
@@ -60,6 +59,18 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 		return;
 	}
 
+	const limitedCheckReplay = _.debounce((replay) => {
+		console.log('checking due to fresh file update');
+		checkReplay(replay, replayWatchProcessCounter, dispatch, getState)
+			.catch((error) => {
+				console.log('oh well');
+				console.error(error);
+			});
+	}, 5000, {
+		leading: false,
+		trailing: true
+	});
+
 	try {
 		if (replayWatchProcess) {
 			dispatch(stopWatchingForReplayChanges('Starting a new watch process'));
@@ -76,12 +87,8 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 
 				if (verifyingReplayFiles[filePath]) {
 					const replay = Replay.retrieve({ id: filePath });
-					console.log('checking due to fresh file update');
-					checkReplay(replay, replayWatchProcessCounter, dispatch, getState)
-						.catch((error) => {
-							console.log('oh well');
-							console.error(error);
-						});
+					console.log('what to check');
+					limitedCheckReplay(replay);
 				} else {
 					fs.lstat(filePath, (err, stats) => {
 						if (err) {
@@ -170,7 +177,6 @@ const checkReplay = async (replay, watchProcessCounter, dispatch, getState) => {
 	if (state.replayWatch.sendingReplay) {
 		throw new Error('already working with a replay, no reason to get antsy....');
 	}
-	console.log('load game attempt ', replay);
 	replay.resetData();
 	dispatch({
 		type: VERIFY_FILE_START,
@@ -181,17 +187,12 @@ const checkReplay = async (replay, watchProcessCounter, dispatch, getState) => {
 			dispatch({
 				type: VERIFY_FILE_POSSIBLE
 			});
-			if (errors) {
-				console.error(errors[0]);
-			} else {
-				console.error(errors);
-			}
 			return null;
 		})
-		.then(() => {
-			const gameEnd = replay.retrieveSlippiGame().getGameEnd();
-			console.log('game end?', gameEnd);
-			return;
+		.then((replayResult) => {
+			if (!replayResult) {
+				return;
+			}
 			return dispatch(sendReplayOff(replay))
 				.catch((error) => {
 					dispatch({
@@ -256,11 +257,11 @@ export const sendReplayOff = (replay) => (dispatch, getState) => {
 };
 
 const loadGame = async (replay) => {
-	if (!replay.isReadable()) {
-		throw new Error(replay.getErrorReasons());
-	}
 	if (!replay.isNewish()) {
 		throw new Error('Replay is too old to attempt?');
+	}
+	if (!replay.isEnded()) {
+		throw new Error('Replay is not ended');
 	}
 	return replay;
 };

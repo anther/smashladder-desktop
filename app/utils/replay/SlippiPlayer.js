@@ -10,6 +10,7 @@ export default class SlippiPlayer extends CacheableDataObject {
 		this.actions = {};
 		this.overall = {};
 		this.conversions = [];
+		this.character = null;
 	}
 
 	addActions(actions) {
@@ -24,8 +25,15 @@ export default class SlippiPlayer extends CacheableDataObject {
 		const playerTypeStr = this.type === 1 ? 'CPU' : 'Player';
 		const portName = `${playerTypeStr} ${this.port}`;
 
-		const netplayName = null;
-		const nameTag = null;
+		const netplayName = this.netplayName;
+		const nameTag = this.nametag;
+
+		if (netplayName === 'Player') {
+			if(nameTag) {
+				return `${nameTag} (${netplayName})`;
+			}
+			return nameTag || netplayName || portName;
+		}
 		return netplayName || nameTag || portName;
 	}
 
@@ -96,6 +104,7 @@ export default class SlippiPlayer extends CacheableDataObject {
 SlippiPlayer.prototype.dataLocationParsers = {
 	characterId(player, data) {
 		player.character = MeleeCharacter.retrieve(data.characterId, data.characterColor);
+		player.characterId = data.characterId;
 	},
 	character(player, data) {
 		// just ignore this?

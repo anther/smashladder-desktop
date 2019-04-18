@@ -9364,10 +9364,10 @@ slice-ansi@1.0.0:
   dependencies:
     is-fullwidth-code-point "^2.0.0"
 
-slp-parser-js@^2.3.2:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/slp-parser-js/-/slp-parser-js-2.3.2.tgz#8f6ef2f377918ea9df42cd9ed5ab1580f19d3a8d"
-  integrity sha512-uX0xHWj7hrh2jqKZN+1LLV8BiXUu/uSDKTa2NNBIZMtqs7ZrYNzcuw6VO0Zx0ywk9TuiQOzhuj4e14T7FdPHfw==
+slp-parser-js@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/slp-parser-js/-/slp-parser-js-2.4.0.tgz#c854514f9a239cf978188d181b99baca7e9449af"
+  integrity sha512-W7n0Qyc7vye32cZ0AiOPaNzI28qpLaHe0w/CMrTCPZssv/55BZNqxtSL1YpyiATAoXmUhR6fEqgEcJvyYFcB0Q==
   dependencies:
     "@shelacek/ubjson" "^1.0.1"
     iconv-lite "^0.4.24"

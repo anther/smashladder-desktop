@@ -29,6 +29,7 @@ export const DELETE_REPLAY_FAIL = 'DELETE_REPLAY_FAIL';
 export const VIEW_REPLAY_DETAILS_BEGIN = 'VIEW_REPLAY_DETAILS_BEGIN';
 export const VIEW_REPLAY_DETAILS_END = 'VIEW_REPLAY_DETAILS_END';
 
+const replayCheckDelay = 60000;
 
 export const startReplayBrowser = () => (dispatch, getState) => {
 	const state = getState();
@@ -51,15 +52,13 @@ export const startReplayBrowser = () => (dispatch, getState) => {
 	}
 
 	const limitedUpdateBrowsedReplayList = _.debounce(() => {
-		console.log('limited browse replay list update');
 		dispatch(updateBrowsedReplayList());
-	}, 60000, {
-		leading: true,
+	}, replayCheckDelay, {
+		leading: false,
 		trailing: true
 	});
 	const newWatcher = watch(slippiBuildPaths, { recursive: true }, (event, filePath) => {
 		// Just brute force it for now, people with thousands of games will suffer...
-		console.log('file updated');
 		limitedUpdateBrowsedReplayList();
 	});
 	dispatch({
@@ -83,8 +82,8 @@ export const updateBrowsedReplayList = () => (dispatch, getState) => {
 	dispatch({ type: REPLAY_BROWSE_UPDATE_START });
 	let newReplayList = null;
 	console.log(replaysBeingVerified, 'hmm?');
-	if (replaysBeingVerified.size) { // Do not search the file system if the user is possibly in a match
-		console.log('Do not use file system directly');
+	if (replaysBeingVerified.size) {
+		console.warn('Avoiding fetching replays from the file system since a replay is being watched');
 		newReplayList = new Set(allReplays);
 		replaysBeingVerified.forEach((replay) => {
 			newReplayList.add(replay);
@@ -100,6 +99,7 @@ export const updateBrowsedReplayList = () => (dispatch, getState) => {
 				}
 				const replay = Replay.retrieve({ id: file });
 				replay.setBuild(build);
+				replay.getStats();
 				newReplayList.add(replay);
 			});
 		});

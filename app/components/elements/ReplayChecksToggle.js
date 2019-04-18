@@ -24,19 +24,18 @@ export default class ReplayChecksToggle extends Component {
 	render() {
 		const { replayWatchEnabled } = this.props;
 		return (
-			<div ref={this.replayToggleElement}
-			     data-position="top"
-			     data-tooltip="If Replay Checks are too CPU heavy then disable this"
+			<div
+				ref={this.replayToggleElement}
+				data-position="top"
+				data-tooltip="If Replay Checks are too CPU heavy then disable this"
 			>
 				<label>
-					<label>
-						<input
-							type="checkbox"
-							onChange={this.onCheckForReplaysChange}
-							checked={replayWatchEnabled}
-						/>
-						<span>Upload Replay Results</span>
-					</label>
+					<input
+						type="checkbox"
+						onChange={this.onCheckForReplaysChange}
+						checked={replayWatchEnabled}
+					/>
+					<span>Upload Replay Results</span>
 				</label>
 			</div>
 		);

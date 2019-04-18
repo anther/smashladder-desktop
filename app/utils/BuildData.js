@@ -96,10 +96,21 @@ export default class Build extends CacheableDataObject {
 		return iniSettingsLocation[0];
 	}
 
-	setSlippiToPlayback() {
+	_retrieveSlippiSetup() {
+		if(!this.getSlippiPath()){
+			return {};
+		}
 		const settings = this.getMeleeSettingsIniLocation();
 		const codeIniLocation = this.getMeleeCodeIniLocation();
 		if (!settings || !codeIniLocation) {
+			return {};
+		}
+		return { settings, codeIniLocation };
+	}
+
+	setSlippiToPlayback() {
+		const { settings, codeIniLocation } = this._retrieveSlippiSetup();
+		if(!settings){
 			return false;
 		}
 		DolphinConfigurationUpdater.setSlippiToPlayback(settings, codeIniLocation);
@@ -107,9 +118,8 @@ export default class Build extends CacheableDataObject {
 	}
 
 	setSlippiToRecord() {
-		const settings = this.getMeleeSettingsIniLocation();
-		const codeIniLocation = this.getMeleeCodeIniLocation();
-		if (!settings || !codeIniLocation) {
+		const { settings, codeIniLocation } = this._retrieveSlippiSetup();
+		if(!settings){
 			return false;
 		}
 		DolphinConfigurationUpdater.setSlippiToRecord(settings, codeIniLocation);

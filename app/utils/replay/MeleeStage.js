@@ -1,15 +1,15 @@
 import Files from '../Files';
 
-const StringManipulator = require('../StringManipulator');
+import StringManipulator from '../StringManipulator';
 
 export default class MeleeStage {
 	static retrieve(id) {
-		if (!id) {
+		if(!id) {
 			return null;
 		}
 		const name = MeleeStage.stages[id].name;
-		if (name) {
-			if (cache[name]) {
+		if(name) {
+			if(cache[name]) {
 				return cache[name];
 			}
 			return (cache[name] = new MeleeStage(id, name));
@@ -23,7 +23,7 @@ export default class MeleeStage {
 	}
 
 	imageUrl() {
-		if (this._imagePath) {
+		if(this._imagePath) {
 			return this._imagePath;
 		}
 		return (this._imagePath = Files.createApplicationPath(
@@ -46,7 +46,7 @@ MeleeStage.stages = {
 	},
 	4: {
 		id: 4,
-		name: "Princess Peach's Castle"
+		name: 'Princess Peach\'s Castle'
 	},
 	5: {
 		id: 5,
@@ -62,7 +62,7 @@ MeleeStage.stages = {
 	},
 	8: {
 		id: 8,
-		name: "Yoshi's Story"
+		name: 'Yoshi\'s Story'
 	},
 	9: {
 		id: 9,
@@ -94,7 +94,7 @@ MeleeStage.stages = {
 	},
 	16: {
 		id: 16,
-		name: "Yoshi's Island"
+		name: 'Yoshi\'s Island'
 	},
 	17: {
 		id: 17,
@@ -142,7 +142,7 @@ MeleeStage.stages = {
 	},
 	29: {
 		id: 29,
-		name: "Yoshi's Island N64"
+		name: 'Yoshi\'s Island N64'
 	},
 	30: {
 		id: 30,

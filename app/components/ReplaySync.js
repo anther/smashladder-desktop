@@ -59,7 +59,7 @@ export default class ReplaySync extends Component {
 			return { message: 'Connection Disabled' };
 		}
 		if (!replayWatchEnabled) {
-			return { isError: true, message: '...Not Enabled...' };
+			return { isError: true, message: '...Replay Watch Disabled...' };
 		}
 
 		if (!_.isEmpty(verifyingReplayFiles)) {

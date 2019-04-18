@@ -93,7 +93,7 @@ export default class DolphinConfigurationUpdater {
 			throw new Error('Code ini location is required!');
 		}
 
-		const playbackTextLocation = Files.createApplicationPath('./dolphin_configs/sysPlayback.ini');
+		const playbackTextLocation = Files.createApplicationPath('./external/dolphin_configs/sysPlayback.ini');
 		const playbackIni = fs.readFileSync(playbackTextLocation, 'utf8');
 		fs.writeFileSync(codeIniLocation, playbackIni);
 	}
@@ -111,7 +111,7 @@ export default class DolphinConfigurationUpdater {
 			throw new Error('Code ini location is required!');
 		}
 
-		const recordTextLocation = Files.createApplicationPath('./dolphin_configs/sysRecord.ini');
+		const recordTextLocation = Files.createApplicationPath('./external/dolphin_configs/sysRecord.ini');
 		const recordIni = fs.readFileSync(recordTextLocation, 'utf8');
 		fs.writeFileSync(codeIniLocation, recordIni);
 	}

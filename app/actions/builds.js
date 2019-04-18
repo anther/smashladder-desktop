@@ -368,7 +368,7 @@ export const closeDolphin = () => (dispatch, getState) => {
 						type: CLOSE_BUILD_SEND_FAIL
 					});
 				});
-			dispatch(updateReplayWatchProcesses());
+			dispatch(updateReplayWatchProcesses()); // So that the replay list gets updated upon closing dolphin?
 		})
 		.catch((error) => {
 			console.error(error);

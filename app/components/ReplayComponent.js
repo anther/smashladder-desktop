@@ -5,6 +5,7 @@ import StocksComponent from './StocksComponent';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import KillsTable from './KillsTable';
 import SlippiPlayer from '../utils/replay/SlippiPlayer';
+import Replay from '../utils/Replay';
 
 export default class ReplayComponent extends Component {
 	constructor(props) {
@@ -109,7 +110,6 @@ export default class ReplayComponent extends Component {
 		const isBeingWatched = !!verifyingReplayFiles[replay.id];
 		const isBeingUploaded = sendingReplay && sendingReplay.id === replay.id;
 		const stage = replay.getStage();
-		replay.getStats(); // Currently used to fetch detailed stats
 		return (
 			<React.Fragment>
 				<div className="replay_content">
@@ -136,7 +136,6 @@ export default class ReplayComponent extends Component {
 								}
 								return (
 									<div className="player" key={player.playerIndex}>
-										{player.nametag !== undefined}
 										<div className='nametag'>
 											{player.getNameTag()}
 										</div>
@@ -191,13 +190,19 @@ export default class ReplayComponent extends Component {
 								);
 							})}
 						</div>
-						<div className="details">
+						<a className="details" onClick={this.onOpenInExplorer}>
 							{stage && (
 								<div className="stage">
 									<img alt={stage.name} src={stage.imageUrl()}/>
 								</div>
 							)}
 							<div className="match_time">
+								<span className="when">
+									{isBeingWatched &&
+									<span>Started{' '}</span>
+									}
+									{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
+								</span>
 								<div className='match_time_display'>
 									{replay.getMatchTime() && <span>{replay.getMatchTime()}</span>}
 									{!replay.getMatchTime() && (
@@ -208,18 +213,9 @@ export default class ReplayComponent extends Component {
 											{isBeingWatched &&
 											<span>Waiting for Replay to Finish</span>
 											}
-											{replay.isALittleGlitchy() && !isBeingWatched &&
-											<React.Fragment>
-												<div className="error">Duration Unknown</div>
-												<div className="error_reason">
-													Possibly (r9) Bug
-												</div>
-											</React.Fragment>
-											}
 											{!replay.isALittleGlitchy() && !isBeingWatched &&
 											<React.Fragment>
-												<div className="error">Game Unreadable</div>
-												<div className="error_reason">
+												<div className="error error_reason">
 													Dolphin Closed Before Match Ended?
 												</div>
 											</React.Fragment>
@@ -227,23 +223,20 @@ export default class ReplayComponent extends Component {
 										</div>
 									)}
 								</div>
-
-								<span className="when">
-									{isBeingWatched &&
-									<span>Started{' '}</span>
-									}
-									{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
-								</span>
+								{replay.isEnded() &&
+								replay.getGameEnd().gameEndMethod === Replay.REPLAY_END_LRA_START &&
+								<div className='lra_start'>Exited by {replay.getLraStartPlayerName()}</div>
+								}
 							</div>
-						</div>
+						</a>
 					</div>
 
 					<div className="footer">
-						{meleeIsoPath &&
+						{meleeIsoPath && !stage &&
 						<div className="file_data">
 							<div className="file_name_holder">
 								<a onClick={this.onOpenInExplorer} className="file_name">
-									{replay.getName()}
+									{replay.getFileName()}
 								</a>
 							</div>
 						</div>

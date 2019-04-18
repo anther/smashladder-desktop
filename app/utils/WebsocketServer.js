@@ -7,10 +7,15 @@ export default class WebsocketServer {
 	}
 
 	host(sender) {
-		if (this.server) {
+		if(this.server) {
 			return this.server;
 		}
+
+
 		this.server = new WebSocket.Server({ port: 8081 });
+		this.server.on('error', () => {
+			console.log('errored');
+		});
 
 		this.server.on('connection', (websocket) => {
 			websocket.on('message', (message) => {
