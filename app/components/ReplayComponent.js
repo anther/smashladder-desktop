@@ -6,6 +6,7 @@ import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import KillsTable from './KillsTable';
 import SlippiPlayer from '../utils/replay/SlippiPlayer';
 import Replay from '../utils/Replay';
+import StockComponent from './StockComponent';
 
 export default class ReplayComponent extends Component {
 	constructor(props) {
@@ -139,10 +140,19 @@ export default class ReplayComponent extends Component {
 										<div className='nametag'>
 											{player.getNameTag()}
 										</div>
+										{player.stocks.size > 0 &&
 										<StocksComponent
 											stocks={player.getLadderStocks()}
 											showSelfDestructs
 										/>
+										}
+										{!player.stocks.size &&
+										<div className='stocks'>
+											<StockComponent
+												stockIconUrl={player.character.getStockIcon()}
+											/>
+										</div>
+										}
 										{detailed && (
 											<div className="detailed_stats">
 												{this.renderElement('Kills', player.overall.killCount)}

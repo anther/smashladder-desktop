@@ -99,7 +99,7 @@ export const updateBrowsedReplayList = () => (dispatch, getState) => {
 				}
 				const replay = Replay.retrieve({ id: file });
 				replay.setBuild(build);
-				replay.getStats();
+				// replay.getStats();
 				newReplayList.add(replay);
 			});
 		});
@@ -175,6 +175,10 @@ const displayReplaysBasedOnCurrentPage = () => (dispatch, getState) => {
 
 export const viewReplayDetails = (replay) => (dispatch, getState) => {
 	console.log(getState().replayBrowse);
+	if(replay){
+		replay.getStats();
+		replay.getMetadata();
+	}
 	if (replay === getState().replayBrowse.viewingReplayDetails) {
 		return dispatch({
 			type: VIEW_REPLAY_DETAILS_END,
