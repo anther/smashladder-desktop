@@ -200,7 +200,7 @@ export default class ReplayComponent extends Component {
 								);
 							})}
 						</div>
-						<a className="details" onClick={this.onOpenInExplorer}>
+						<a className="details waves-effect" onClick={this.onOpenInExplorer}>
 							{stage && (
 								<div className="stage">
 									<img alt={stage.name} src={stage.imageUrl()}/>

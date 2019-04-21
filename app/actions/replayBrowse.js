@@ -81,7 +81,6 @@ export const updateBrowsedReplayList = () => (dispatch, getState) => {
 	});
 	dispatch({ type: REPLAY_BROWSE_UPDATE_START });
 	let newReplayList = null;
-	console.log(replaysBeingVerified, 'hmm?');
 	if (replaysBeingVerified.size) {
 		console.warn('Avoiding fetching replays from the file system since a replay is being watched');
 		newReplayList = new Set(allReplays);

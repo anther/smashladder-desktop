@@ -1,6 +1,4 @@
 import electronSettings from 'electron-settings';
-import { remote } from 'electron';
-import path from 'path';
 import {
 	UPDATE_ALLOW_DOLPHIN_ANALYTICS,
 	ADD_ROM_PATH,
@@ -16,20 +14,21 @@ import {
 	SET_DOLPHIN_INSTALL_PATH_BEGIN,
 	SET_DOLPHIN_INSTALL_PATH_SUCCESS,
 	SET_DOLPHIN_INSTALL_PATH_FAIL,
-	UNSET_DOLPHIN_INSTALL_PATH
+	UNSET_DOLPHIN_INSTALL_PATH, MELEE_ISO_VERIFY_SUCCESS, MELEE_ISO_VERIFY_FAIL, MELEE_ISO_VERIFY_BEGIN
 } from '../actions/dolphinSettings';
+import defaultDolphinInstallPath from '../constants/defaultDolphinInstallPath';
 
-
-const defaultDolphinInstallPath = path.join(remote.app.getPath('userData'), 'dolphin_downloads');
 const initialState = {
 	romPaths: electronSettings.get('dolphinSettings.romPaths', {}),
 	searchRomSubdirectories: electronSettings.get('dolphinSettings.searchRomSubdirectories', null),
 	allowDolphinAnalytics: electronSettings.get('dolphinSettings.allowDolphinAnalytics', true),
 	meleeIsoPath: electronSettings.get('dolphinSettings.meleeIsoPath', null),
 	dolphinInstallPath: electronSettings.get('dolphinSettings.dolphinInstallPath', defaultDolphinInstallPath),
+	meleeIsoVerified: electronSettings.get('dolphinSettings.meleeIsoVerified', true),
 	settingMeleeIsoPath: false,
 	selectingRomPath: false,
-	settingDolphinInstallPath: false
+	settingDolphinInstallPath: false,
+	meleeIsoPathError: null,
 };
 
 export default (state = initialState, action) => {
@@ -86,6 +85,29 @@ export default (state = initialState, action) => {
 			return {
 				...newState,
 				settingDolphinInstallPath: true
+			};
+		case MELEE_ISO_VERIFY_BEGIN:
+			return {
+				...newState,
+				meleeIsoPathError: null,
+				meleeIsoVerified: false,
+				verifyingMeleeIso: true,
+			};
+		case MELEE_ISO_VERIFY_FAIL:
+			electronSettings.set('dolphinSettings.meleeIsoVerified', false);
+			return {
+				...newState,
+				meleeIsoPathError: action.payload,
+				meleeIsoVerified: false,
+				verifyingMeleeIso: false,
+			};
+		case MELEE_ISO_VERIFY_SUCCESS:
+			electronSettings.set('dolphinSettings.meleeIsoVerified', true);
+			return {
+				...newState,
+				meleeIsoPathError: null,
+				meleeIsoVerified: true,
+				verifyingMeleeIso: false,
 			};
 		case SET_DOLPHIN_INSTALL_PATH_SUCCESS:
 			electronSettings.set('dolphinSettings.dolphinInstallPath', action.payload);

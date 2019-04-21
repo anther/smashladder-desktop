@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
+import HtmlClassList from '../../utils/HtmlClassList';
 
 export default class Button extends Component {
 
 	render() {
-		let { className, ...props } = this.props;
-		if (!className) {
-			className = '';
+		let { className, small, ...props } = this.props;
+		const classes = new HtmlClassList(className);
+		classes.add('btn waves-effect waves-light');
+		if(small){
+			classes.add('btn-small');
 		}
-		className += ' btn waves-effect waves-light';
 		return (
-			<button type='button' className={className} {...props} />
+			<button type='button' className={classes.toString()} {...props} />
 		);
 	}
 }

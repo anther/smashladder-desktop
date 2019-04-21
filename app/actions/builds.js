@@ -85,12 +85,23 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 		type: FETCH_BUILDS_BEGIN
 	});
 	const savedBuildData = electronSettings.get('builds', {});
+	if (!_.isEmpty(savedBuildData)) {
+		_.each(savedBuildData, (build, i) => {
+			savedBuildData[i] = Build.create(build);
+		});
+		console.log('what is saved', savedBuildData);
+		dispatch({
+			type: FETCH_BUILDS_SUCCESS,
+			payload: {
+				builds: savedBuildData
+			}
+		});
+	}
 	getAuthenticationFromState(getState)
 		.apiGet(endpoints.DOLPHIN_BUILDS)
 		.then((response) => {
 			let builds = convertLadderBuildListToSomethingThatMakesSense(response.builds);
 			builds = combineWithSavedBuildData(builds, savedBuildData);
-
 			electronSettings.set('builds', builds);
 
 			dispatch({

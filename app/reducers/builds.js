@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {
 	FETCH_BUILDS_SUCCESS,
 	FETCH_BUILDS_BEGIN,
@@ -26,12 +27,13 @@ import {
 
 const initialState = {
 	builds: {},
+	buildList: [],
 	activeBuild: null,
 	buildOpen: false,
 	buildOpening: false,
 	buildError: null,
 	fetchingBuilds: false,
-	buildSettingPath: null,
+	buildSettingPath: null
 };
 
 export default (state = initialState, action) => {
@@ -45,7 +47,30 @@ export default (state = initialState, action) => {
 				...state,
 				fetchingBuilds: true
 			};
-		case FETCH_BUILDS_SUCCESS:
+		case FETCH_BUILDS_SUCCESS: {
+			console.log('what is payload', action.payload);
+			const buildList = _.values(action.payload.builds).sort((a, b) => {
+				if (a.path && !b.path) {
+					return -1;
+				}
+				if (b.path && !a.path) {
+					return 1;
+				}
+				if (a.hasDownload() && !b.hasDownload()) {
+					return -1;
+				}
+				if (b.hasDownload() && !a.hasDownload()) {
+					return 1;
+				}
+				return 0;
+			});
+			return {
+				...state,
+				...action.payload,
+				fetchingBuilds: false,
+				buildList
+			};
+		}
 		case FETCH_BUILDS_FAIL:
 		case UPDATED_BUILD:
 		case COPY_BUILD_SETTINGS_SUCCESS:

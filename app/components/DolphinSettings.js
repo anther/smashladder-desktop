@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import Button from './elements/Button';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
+import defaultDolphinInstallPath from '../constants/defaultDolphinInstallPath';
 
 export default class DolphinSettings extends Component {
 	static propTypes = {
@@ -36,7 +37,7 @@ export default class DolphinSettings extends Component {
 	constructor(props) {
 		super(props);
 		this.onUpdateSearchSubdirectories = this.updateSearchSubdirectoriesChange.bind(this);
-		this.onUpdateAllowDolphinAnalytics = this.updateAllowDolphinAnalytics.bind(this);
+		this.onUpdateAllowDolphinAnalytics = this.onUpdateAllowDolphinAnalytics.bind(this);
 		this.onSetMeleeIsoPathClick = this.setMeleeIsoPathClick.bind(this);
 
 		this.onSelectRomPathClick = this.selectRomPathClick.bind(this);
@@ -48,8 +49,12 @@ export default class DolphinSettings extends Component {
 		this.meleeIsoPathNavigate = this.meleeIsoPathNavigate.bind(this);
 
 		this.state = {
-			settingMeleeIsoPath: false
+			currentSubPage: null
 		};
+	}
+
+	onUpdateAllowDolphinAnalytics() {
+		this.props.updateAllowDolphinAnalytics(!this.props.allowDolphinAnalytics);
 	}
 
 	meleeIsoPathNavigate() {
@@ -60,8 +65,9 @@ export default class DolphinSettings extends Component {
 		shell.showItemInFolder(meleeIsoPath);
 	}
 
-	dolphinInstallPathNavigate() {
+	dolphinInstallPathNavigate(e) {
 		const { dolphinInstallPath } = this.props;
+		e.stopPropagation();
 		shell.showItemInFolder(dolphinInstallPath);
 	}
 
@@ -86,10 +92,6 @@ export default class DolphinSettings extends Component {
 		this.props.updateSearchRomSubdirectories(event.target.checked);
 	}
 
-	updateAllowDolphinAnalytics(event) {
-		this.props.updateAllowDolphinAnalytics(event.target.checked);
-	}
-
 	getRomPathsButtonText() {
 		return 'Add Rom Path';
 	}
@@ -103,92 +105,155 @@ export default class DolphinSettings extends Component {
 			beginSelectingNewRomPath,
 			setDolphinInstallPath,
 			settingDolphinInstallPath,
-			dolphinInstallPath
+			dolphinInstallPath,
+			verifyingMeleeIso,
+			meleeIsoVerified,
+			meleeIsoPathError
 		} = this.props;
 
+		const usingDefaultInstallPath = dolphinInstallPath === defaultDolphinInstallPath;
+
 		return (
-			<div className="file_paths">
-				<h6>Roms</h6>
-				<div className="input-field">
-					<Button
-						className={`btn-small ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
-						disabled={selectingRomPath}
-						onClick={this.onSelectRomPathClick}
-					>
-						{selectingRomPath && <ProgressIndeterminate/>}
-						{this.getRomPathsButtonText()}
-					</Button>
-					<div className="rom_paths">
-						{_.map(romPaths, (romPath) => (
-							<div key={romPath} className="rom_path">
-								<div className="options">
-									<Button onClick={this.props.removeRomPath.bind(this, romPath)}
-									        className="btn-small">
-										X
-									</Button>
-								</div>
-								<span className="path">{romPath}</span>
-							</div>
-						))}
+			<div className="file_paths collection">
+				<div
+					className={`collection-item ${!meleeIsoPath ? 'waves-effect' : ''}`}
+					onClick={!meleeIsoPath && this.onSetMeleeIsoPathClick}
+				>
+					<h6>Melee ISO Path</h6>
+					<div className='sub-content'>
+						{!meleeIsoPath &&
+						<div className='sub-content'>
+							<span className='error'>
+							Not Set, needed to Launch Replays
+							</span>
+						</div>
+						}
+						{meleeIsoPath && (
+							<a onClick={this.meleeIsoPathNavigate} className="iso_path_display">
+								<span className="iso_path">
+									<span className="text">{meleeIsoPath}</span>
+								</span>
+							</a>
+						)}
+						{!verifyingMeleeIso &&
+						<div>
+							{meleeIsoPath && meleeIsoVerified &&
+							<div className='success-text'>1.02 ISO correctly configured</div>}
+							{meleeIsoPath && !meleeIsoVerified && <div className='error'>Is Not 1.02</div>}
+						</div>
+						}
+						{verifyingMeleeIso &&
+						<div>
+							<i className='fa fa-spin fa-cog'/>
+							{' '}Verifying Melee Iso...
+						</div>
+
+						}
+						{meleeIsoPath &&
+						<Button
+							className={`${meleeIsoPath ? 'set no_check' : 'not_set no_check'}`}
+							small
+							disabled={settingMeleeIsoPath}
+							onClick={this.onSetMeleeIsoPathClick}
+						>
+							{settingMeleeIsoPath && <ProgressIndeterminate/>}
+							Set Melee ISO Path
+						</Button>
+						}
+						{meleeIsoPath &&
+						<div className='secondary-content'>
+							<Button
+								small
+								disabled={settingMeleeIsoPath}
+								className="not_set remove_path no_check"
+								onClick={this.onUnsetRomPathClick}
+							>
+								Remove
+							</Button>
+						</div>
+						}
 					</div>
 				</div>
-				<h6>Dolphin Team Analytics</h6>
-				<label>
-					<input
-						type="checkbox"
-						onChange={this.onUpdateAllowDolphinAnalytics}
-						checked={this.props.allowDolphinAnalytics}
-					/>
-					<span>Send Dolphin Analytics</span>
-				</label>
-				<h6>Replays</h6>
-				<div className="input-field joined_inputs set_melee_iso_path">
-					<Button
-						className={`btn-small ${meleeIsoPath ? 'set' : 'not_set no_check'}`}
-						disabled={settingMeleeIsoPath}
-						onClick={this.onSetMeleeIsoPathClick}
-					>
-						{settingMeleeIsoPath && <ProgressIndeterminate/>}
-						Set Melee ISO Path
-					</Button>
-					<Button
-						disabled={settingMeleeIsoPath}
-						className="btn-small not_set remove_path"
-						onClick={this.onUnsetRomPathClick}
-					/>
-					{meleeIsoPath && (
-						<a onClick={this.meleeIsoPathNavigate} className="iso_path_display">
-							<span className="iso_path">
-								<i className="fa fa-compact-disc"/>
-								<span className="text">{meleeIsoPath}</span>
-							</span>
-						</a>
-					)}
+				<div className='collection-item'>
+					<h6>Rom Paths</h6>
+					<label>
+						{_.size(romPaths)} Path{_.size(romPaths) !== 1 && 's'} Set
+					</label>
+					{_.map(romPaths, (romPath) => (
+						<div key={romPath}>
+							<div className="options">
+								<div className='clickable'>{romPath}</div>
+								<Button onClick={this.props.removeRomPath.bind(this, romPath)}
+								        className="btn-small">
+									Remove
+								</Button>
+							</div>
+						</div>
+					))}
+					<div>
+						<Button
+							small
+							disabled={selectingRomPath}
+							onClick={this.onSelectRomPathClick}
+							className="btn-small set no_check">
+							{selectingRomPath && <ProgressIndeterminate/>}
+							Add
+						</Button>
+					</div>
+
 				</div>
-				<h6>Set Optional Dolphin Install Path</h6>
-				<div className="input-field joined_inputs set_melee_iso_path">
+
+				<div className={`collection-item ${usingDefaultInstallPath ? 'waves-effect' : ''}`}
+				     onClick={usingDefaultInstallPath && setDolphinInstallPath}
+				>
+					<h6>Dolphin Install Path</h6>
+
+					<span onClick={this.dolphinInstallPathNavigate} className='sub-content iso_path_display clickable'>
+						<span className='iso_path'>
+							<span className='text'>
+								{!usingDefaultInstallPath && dolphinInstallPath}
+								{usingDefaultInstallPath && 'Default Location'}
+							</span>
+						</span>
+					</span>
+
+					{!usingDefaultInstallPath &&
 					<Button
-						className={`btn-small no_check ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
+						small
+						className={`no_check ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
 						disabled={settingDolphinInstallPath}
 						onClick={setDolphinInstallPath}
 					>
 						{settingDolphinInstallPath && <ProgressIndeterminate/>}
 						Update Path
 					</Button>
-					<Button
-						disabled={settingDolphinInstallPath}
-						className="btn-small not_set remove_path"
-						onClick={this.unsetDolphinInstallPath}
-					/>
-					<a onClick={this.dolphinInstallPathNavigate} className='iso_path_display'>
-						<span className='iso_path'>
-							<span className='text'>
-								{!!dolphinInstallPath && dolphinInstallPath}
-								{!dolphinInstallPath && 'Default Location'}
-							</span>
-						</span>
-					</a>
+					}
+					{!usingDefaultInstallPath &&
+					<div className='secondary-content'>
+						<Button
+							disabled={settingDolphinInstallPath}
+							small
+							className="not_set remove_path no_check"
+							onClick={this.unsetDolphinInstallPath}
+						>
+							Use Default
+						</Button>
+					</div>
+					}
 				</div>
+				<div className='collection-item waves-effect'
+				     onClick={this.onUpdateAllowDolphinAnalytics}
+				>
+					<h6>Dolphin Team Analytics</h6>
+					<label>
+						<input
+							type="checkbox"
+							checked={this.props.allowDolphinAnalytics}
+						/>
+						<span>Send Dolphin Analytics</span>
+					</label>
+				</div>
+
 			</div>
 		);
 	}

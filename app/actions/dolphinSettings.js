@@ -1,3 +1,4 @@
+import md5File from 'md5-file/promise';
 import Files from '../utils/Files';
 
 export const ADD_ROM_PATH = 'ADD_ROM_PATH';
@@ -15,6 +16,10 @@ export const SET_MELEE_ISO_PATH_BEGIN = 'SET_MELEE_ISO_PATH_BEGIN';
 export const SET_MELEE_ISO_PATH_SUCCESS = 'SET_MELEE_ISO_PATH_SUCCESS';
 export const SET_MELEE_ISO_PATH_FAIL = 'SET_MELEE_ISO_PATH_FAIL';
 export const UNSET_MELEE_ISO_PATH = 'UNSET_MELEE_ISO_PATH';
+
+export const MELEE_ISO_VERIFY_BEGIN = 'MELEE_ISO_VERIFY_BEGIN';
+export const MELEE_ISO_VERIFY_FAIL = 'MELEE_ISO_VERIFY_FAIL';
+export const MELEE_ISO_VERIFY_SUCCESS = 'MELEE_ISO_VERIFY_SUCCESS';
 
 export const SET_DOLPHIN_INSTALL_PATH_BEGIN = 'SET_DOLPHIN_INSTALL_PATH_BEGIN';
 export const SET_DOLPHIN_INSTALL_PATH_SUCCESS = 'SET_DOLPHIN_INSTALL_PATH_SUCCESS';
@@ -136,6 +141,40 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 			if (!selectedPath) {
 				throw new Error('No path was selected');
 			}
+			console.log('selectedPath');
+			dispatch({
+				type: MELEE_ISO_VERIFY_BEGIN
+			});
+			md5File(selectedPath)
+				.then((hash) => {
+					console.log('the hash!', hash);
+					const hashes = require('../constants/meleeHashes.json');
+					const buildFound = hashes[hash];
+					if (buildFound) {
+						if (hash === '0e63d4223b01d9aba596259dc155a174') {
+							dispatch({
+								type: MELEE_ISO_VERIFY_SUCCESS
+							});
+						} else {
+							dispatch({
+								type: MELEE_ISO_VERIFY_FAIL,
+								payload: `Found the wrong melee build, the selected ISO is ${buildFound}`
+							});
+						}
+					} else {
+						dispatch({
+							type: MELEE_ISO_VERIFY_FAIL,
+							payload: 'File does not match a known Melee ISO'
+						});
+					}
+				})
+				.catch((error) => {
+					console.error(error);
+					dispatch({
+						type: MELEE_ISO_VERIFY_FAIL,
+						payload: error.toString(),
+					});
+				});
 			dispatch({
 				type: SET_MELEE_ISO_PATH_SUCCESS,
 				payload: {

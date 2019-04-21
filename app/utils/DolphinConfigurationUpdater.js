@@ -184,7 +184,6 @@ export default class DolphinConfigurationUpdater {
 		if (!config.General) {
 			config.General = {};
 		}
-		// console.log('the rom paths', romPaths);
 		if (!_.isEmpty(romPaths)) {
 			DolphinConfigurationUpdater.forEachIsoEntries(
 				config,

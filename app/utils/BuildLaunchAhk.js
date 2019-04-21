@@ -17,7 +17,6 @@ export default class BuildLaunchAhk extends EventEmitter {
 		this.activeProcess = new DolphinProcessWithHotkeyPets();
 
 		this.hotkeyLocation = Files.createApplicationPath('./external/ahk/NetPlayHotkeySL.exe');
-		console.log('hotkey location', this.hotkeyLocation);
 	}
 
 	async launchHotKey(passedParameters: [], build, successOnAction = [], failOnActions = [], activeProcess) {

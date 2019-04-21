@@ -14,6 +14,7 @@ export default class Builds extends Component {
 		retrieveBuilds: PropTypes.func.isRequired,
 		setBuildPath: PropTypes.func.isRequired,
 		builds: PropTypes.objectOf(PropTypes.instanceOf(Build)).isRequired,
+		buildList: PropTypes.arrayOf(PropTypes.instanceOf(Build)).isRequired,
 		buildError: PropTypes.any,
 		player: PropTypes.object,
 		fetchingBuilds: PropTypes.bool.isRequired,
@@ -47,34 +48,20 @@ export default class Builds extends Component {
 	}
 
 	render() {
-		const { builds, buildError, fetchingBuilds, player } = this.props;
-		const buildList = _.values(builds).sort((a, b) => {
-			if (a.path && !b.path) {
-				return -1;
-			}
-			if (b.path && !a.path) {
-				return 1;
-			}
-			if (a.hasDownload() && !b.hasDownload()) {
-				return -1;
-			}
-			if (b.hasDownload() && !a.hasDownload()) {
-				return 1;
-			}
-			return 0;
-		});
+		const { buildList, buildError, fetchingBuilds, player } = this.props;
+
 		if (!player) {
 			return <Redirect to="/"/>;
 		}
 		return (
 			<React.Fragment>
-				{fetchingBuilds && (
+				{fetchingBuilds && !buildList.length && (
 					<div className="fetching_builds">
 						<ProgressIndeterminate/>
 						<h6>Fetching Build List</h6>
 					</div>
 				)}
-				{!fetchingBuilds && (
+				{(!fetchingBuilds || buildList.length) && (
 					<div className="builds collection">
 						{buildList.length > 0 && (
 							<div className="">

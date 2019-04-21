@@ -1,11 +1,9 @@
 export default class HtmlClassList {
 	constructor(initialClassList) {
-		this.classes = new Map();
+		this.classes = new Set();
 		this.finalValue = '';
 		if (initialClassList) {
-			initialClassList.split(' ').forEach((className) => {
-				this.addClass(className);
-			});
+			this.addClass(initialClassList);
 		}
 	}
 
@@ -13,11 +11,15 @@ export default class HtmlClassList {
 		return this.classes.has(entry);
 	}
 
-	addClass(entry, value) {
-		this.classes.set(entry, value);
-		if (value) {
-			this.finalValue = value;
+	addClass(entry) {
+		const split = entry.split(' ');
+		if(split.length > 1){
+			split.forEach((className) => {
+				this.addClass(className);
+			});
+			return this;
 		}
+		this.classes.add(entry);
 		return this;
 	}
 
