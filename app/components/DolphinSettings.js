@@ -117,7 +117,7 @@ export default class DolphinSettings extends Component {
 			<div className="file_paths collection">
 				<div
 					className={`collection-item ${!meleeIsoPath ? 'waves-effect' : ''}`}
-					onClick={!meleeIsoPath && this.onSetMeleeIsoPathClick}
+					onClick={meleeIsoPath ? undefined : this.onSetMeleeIsoPathClick}
 				>
 					<h6>Melee ISO Path</h6>
 					<div className='sub-content'>
@@ -190,7 +190,7 @@ export default class DolphinSettings extends Component {
 							</div>
 						</div>
 					))}
-					<div>
+					<div className='input-field'>
 						<Button
 							small
 							disabled={selectingRomPath}
@@ -204,7 +204,7 @@ export default class DolphinSettings extends Component {
 				</div>
 
 				<div className={`collection-item ${usingDefaultInstallPath ? 'waves-effect' : ''}`}
-				     onClick={usingDefaultInstallPath && setDolphinInstallPath}
+				     onClick={usingDefaultInstallPath ? setDolphinInstallPath : undefined}
 				>
 					<h6>Dolphin Install Path</h6>
 
@@ -217,29 +217,31 @@ export default class DolphinSettings extends Component {
 						</span>
 					</span>
 
-					{!usingDefaultInstallPath &&
-					<Button
-						small
-						className={`no_check ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
-						disabled={settingDolphinInstallPath}
-						onClick={setDolphinInstallPath}
-					>
-						{settingDolphinInstallPath && <ProgressIndeterminate/>}
-						Update Path
-					</Button>
-					}
-					{!usingDefaultInstallPath &&
-					<div className='secondary-content'>
+					<div>
+						{!usingDefaultInstallPath &&
 						<Button
-							disabled={settingDolphinInstallPath}
 							small
-							className="not_set remove_path no_check"
-							onClick={this.unsetDolphinInstallPath}
+							className={`no_check ${_.size(romPaths) > 0 ? 'set' : 'not_set'}`}
+							disabled={settingDolphinInstallPath}
+							onClick={setDolphinInstallPath}
 						>
-							Use Default
+							{settingDolphinInstallPath && <ProgressIndeterminate/>}
+							Update Path
 						</Button>
+						}
+						{!usingDefaultInstallPath &&
+						<div className='secondary-content'>
+							<Button
+								disabled={settingDolphinInstallPath}
+								small
+								className="not_set remove_path no_check"
+								onClick={this.unsetDolphinInstallPath}
+							>
+								Use Default
+							</Button>
+						</div>
+						}
 					</div>
-					}
 				</div>
 				<div className='collection-item waves-effect'
 				     onClick={this.onUpdateAllowDolphinAnalytics}
