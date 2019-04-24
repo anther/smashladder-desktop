@@ -213,6 +213,7 @@ export default class ReplayComponent extends Component {
 									}
 									{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
 								</span>
+								{replay.metadataIsComplete() &&
 								<div className='match_time_display'>
 									{replay.getMatchTime() && <span>{replay.getMatchTime()}</span>}
 									{!replay.getMatchTime() && (
@@ -233,6 +234,7 @@ export default class ReplayComponent extends Component {
 										</div>
 									)}
 								</div>
+								}
 								{replay.isEnded() &&
 								replay.getGameEnd().gameEndMethod === Replay.REPLAY_END_LRA_START &&
 								<div className='lra_start'>Exited by {replay.getLraStartPlayerName()}</div>

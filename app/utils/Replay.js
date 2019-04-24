@@ -278,17 +278,13 @@ export default class Replay extends CacheableDataObject {
 			return true;
 		}
 		try {
-			console.log('parsing replay...');
+			console.trace('parsing replay...');
 			const game = this.retrieveSlippiGame();
 			if (this.getGameEnd(game)) {
 				this.metadata = game.getMetadata();
 				this.rawData.metadata = _.cloneDeep(this.metadata);
 			}
-			if (!this.settingsAreComplete()) {
-				this.settings = game.getSettings(); // Settings stay the same always
-				this.rawData.settings = _.cloneDeep(this.settings);
-				this.updateSettings();
-			}
+			this.getSettings();
 
 		} catch (error) {
 			console.log('fundamental parse error');
@@ -330,11 +326,19 @@ export default class Replay extends CacheableDataObject {
 		return this.id;
 	}
 
-	getStage() {
-		if (this.settings && this.settings.stage) {
-			return this.settings.stage;
+	getSettings() {
+		if (!this.settingsAreComplete()) {
+			console.log('getting settings');
+			const game = this.retrieveSlippiGame();
+			this.settings = game.getSettings(); // Settings stay the same always
+			this.rawData.settings = _.cloneDeep(this.settings);
+			this.updateSettings();
 		}
-		this.parseMetadata();
+		return this.settings;
+	}
+
+	getStage() {
+		this.getSettings();
 		if (this.settings && this.settings.stage) {
 			return this.settings.stage;
 		}
