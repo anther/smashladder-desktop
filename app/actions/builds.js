@@ -18,6 +18,7 @@ import { startReplayBrowser } from './replayBrowse';
 import { parseDolphinPlayerList } from './dolphinStatus';
 import { beginWatchingForReplayChanges } from './replayWatch';
 import Files from '../utils/Files';
+import Constants from '../utils/Constants';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
 export const FETCH_BUILDS_SUCCESS = 'FETCH_BUILDS_SUCCESS';
@@ -98,7 +99,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 		});
 	}
 	getAuthenticationFromState(getState)
-		.apiGet(endpoints.DOLPHIN_BUILDS)
+		.apiGet(endpoints.DOLPHIN_BUILDS, {default_game: Constants.MELEE_SMASHLADDER_GAME_ID})
 		.then((response) => {
 			let builds = convertLadderBuildListToSomethingThatMakesSense(response.builds);
 			builds = combineWithSavedBuildData(builds, savedBuildData);

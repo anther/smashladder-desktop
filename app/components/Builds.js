@@ -61,7 +61,7 @@ export default class Builds extends Component {
 						<h6>Fetching Build List</h6>
 					</div>
 				)}
-				{(!fetchingBuilds || buildList.length) && (
+				{(!fetchingBuilds || !!buildList.length) && (
 					<div className="builds collection">
 						{buildList.length > 0 && (
 							<div className="">
@@ -89,7 +89,9 @@ export default class Builds extends Component {
 							</div>
 						)}
 						{buildList.length === 0 && (
-							<div className="no_builds">I was not prepared for this</div>
+							<div className="no_builds">
+								Your SmashLadder account currently has no builds selected that can use Dolphin Launcher.
+							</div>
 						)}
 					</div>
 				)}

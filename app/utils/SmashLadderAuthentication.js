@@ -65,10 +65,11 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 		return credentials.access;
 	}
 
-	apiGet(endpoint) {
+	apiGet(endpoint, queryOptions) {
 		return this.request({
 			url: this.fullEndpointUrl(endpoint),
-			method: 'GET'
+			method: 'GET',
+			qs: queryOptions
 		});
 	}
 

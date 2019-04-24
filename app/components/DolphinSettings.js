@@ -183,8 +183,10 @@ export default class DolphinSettings extends Component {
 						<div key={romPath}>
 							<div className="options">
 								<div className='clickable'>{romPath}</div>
-								<Button onClick={this.props.removeRomPath.bind(this, romPath)}
-								        className="btn-small">
+								<Button
+									small
+									onClick={this.props.removeRomPath.bind(this, romPath)}
+								        className="not_set">
 									Remove
 								</Button>
 							</div>
