@@ -30,6 +30,8 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 		this.loginCode = null;
 		this.sessionId = null;
 		this.productionUrls = null;
+
+		this.requestId = 1;
 	}
 
 	fullEndpointUrl(endpoint) {
@@ -90,7 +92,8 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 
 	_sendRequest(requestData) {
 		const oauthAuth = new ClientOAuth2({});
-		console.log('[SEND REQUEST]', requestData);
+		this.requestId++;
+		console.log(`[SEND REQUEST] - ${this.requestId}`, requestData);
 		if (!this.getAccessCode()) {
 			throw new Error('Invalid Login Code');
 		}
@@ -99,7 +102,9 @@ export class SmashLadderAuthentication extends CacheableDataObject {
 		// console.log('['+requestData.method+']', requestData);
 		return request(signedRequest).then(response => {
 			try {
-				return JSON.parse(response);
+				const jsonResponse = JSON.parse(response);
+				console.log(`[response - ${this.requestId}]`, jsonResponse);
+				return jsonResponse;
 			} catch (error) {
 				throw new Error(response);
 			}

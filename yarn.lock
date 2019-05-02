@@ -9364,7 +9364,7 @@ slice-ansi@1.0.0:
   dependencies:
     is-fullwidth-code-point "^2.0.0"
 
-slp-parser-js@^2.4.0:
+slp-parser-js@^2.3.2:
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/slp-parser-js/-/slp-parser-js-2.4.0.tgz#c854514f9a239cf978188d181b99baca7e9449af"
   integrity sha512-W7n0Qyc7vye32cZ0AiOPaNzI28qpLaHe0w/CMrTCPZssv/55BZNqxtSL1YpyiATAoXmUhR6fEqgEcJvyYFcB0Q==

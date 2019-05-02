@@ -40,7 +40,6 @@ export default class Replay extends CacheableDataObject {
 			this.metadata = {};
 			this.rawData.metadata = {};
 		}
-		this.game = null;
 		if (this.gameEnd === null) {
 			this.gameEnd = undefined;
 		}
@@ -172,7 +171,7 @@ export default class Replay extends CacheableDataObject {
 		if (this.stats === null) {
 			const game = this.retrieveSlippiGame();
 			try {
-				this.stats = game.getStats();
+				this.stats = _.cloneDeep(game.getStats());
 			} catch (error) {
 				console.log(`Slippi stats retrieval error ${this.filePath}`);
 				console.error(error);
@@ -197,7 +196,6 @@ export default class Replay extends CacheableDataObject {
 	}
 
 	updateStats() {
-		console.log('the repay', this);
 		const stockData = this.stats.stocks;
 		this.stats.stocks = [];
 		for (const stock of stockData) {
@@ -278,10 +276,10 @@ export default class Replay extends CacheableDataObject {
 			return true;
 		}
 		try {
-			console.trace('parsing replay...');
+			// console.trace('parsing replay...');
 			const game = this.retrieveSlippiGame();
 			if (this.getGameEnd(game)) {
-				this.metadata = game.getMetadata();
+				this.metadata = _.cloneDeep(game.getMetadata());
 				this.rawData.metadata = _.cloneDeep(this.metadata);
 			}
 			this.getSettings();
@@ -329,10 +327,16 @@ export default class Replay extends CacheableDataObject {
 	getSettings() {
 		if (!this.settingsAreComplete()) {
 			console.log('getting settings');
+			this.slippiGame = null;
 			const game = this.retrieveSlippiGame();
-			this.settings = game.getSettings(); // Settings stay the same always
-			this.rawData.settings = _.cloneDeep(this.settings);
-			this.updateSettings();
+			try {
+				this.settings = _.cloneDeep(game.getSettings()); // Settings stay the same always
+				this.rawData.settings = _.cloneDeep(this.settings);
+				this.updateSettings();
+			} catch (error) {
+				console.log('error with slippi file', this.id);
+				console.error(error);
+			}
 		}
 		return this.settings;
 	}

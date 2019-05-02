@@ -48,16 +48,15 @@ export default class Builds extends Component {
 	}
 
 	render() {
-		const { buildList, buildError, fetchingBuilds, player } = this.props;
+		const { buildList, buildError, fetchingBuilds } = this.props;
 
-		if (!player) {
-			return <Redirect to="/"/>;
-		}
 		return (
 			<React.Fragment>
 				{fetchingBuilds && !buildList.length && (
 					<div className="fetching_builds">
-						<ProgressIndeterminate/>
+						<ProgressIndeterminate
+							windowFocused={this.props.windowFocused}
+						/>
 						<h6>Fetching Build List</h6>
 					</div>
 				)}

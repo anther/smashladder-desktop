@@ -73,56 +73,79 @@ export const SET_BUILD_PATH_FAIL = 'SET_BUILD_PATH_FAIL';
 
 let buildLauncher = null;
 export const initializeBuildLauncher = () => (dispatch) => {
-	buildLauncher = new BuildLaunchAhk();
-	buildLauncher.on('ahkEvent', (event) => {
-		if (event.action === 'player_list_info') {
-			dispatch(parseDolphinPlayerList(event.value));
-		}
-	});
+	if (!buildLauncher) {
+		buildLauncher = new BuildLaunchAhk();
+		buildLauncher.on('ahkEvent', (event) => {
+			if (event.action === 'player_list_info') {
+				dispatch(parseDolphinPlayerList(event.value));
+			}
+		});
+	}
 };
 
 export const retrieveBuilds = () => (dispatch, getState) => {
 	dispatch({
 		type: FETCH_BUILDS_BEGIN
 	});
-	const savedBuildData = electronSettings.get('builds', {});
-	if (!_.isEmpty(savedBuildData)) {
-		_.each(savedBuildData, (build, i) => {
-			savedBuildData[i] = Build.create(build);
-		});
-		console.log('what is saved', savedBuildData);
-		dispatch({
-			type: FETCH_BUILDS_SUCCESS,
-			payload: {
-				builds: savedBuildData
-			}
-		});
-	}
-	getAuthenticationFromState(getState)
-		.apiGet(endpoints.DOLPHIN_BUILDS, {default_game: Constants.MELEE_SMASHLADDER_GAME_ID})
-		.then((response) => {
-			let builds = convertLadderBuildListToSomethingThatMakesSense(response.builds);
-			builds = combineWithSavedBuildData(builds, savedBuildData);
-			electronSettings.set('builds', builds);
 
+	const convertBuildResponse = (response) => {
+		if (!response) {
+			response = electronSettings.get('buildsResponse', {});
+			console.log('last saved response', response);
+		}
+		const savedBuildData = electronSettings.get('builds', {});
+		if (!_.isEmpty(savedBuildData)) {
+			_.each(savedBuildData, (build, i) => {
+				savedBuildData[i] = Build.create(build);
+			});
+		}
+
+		let builds = convertLadderBuildListToSomethingThatMakesSense(response);
+		builds = combineWithSavedBuildData(builds, savedBuildData);
+
+		if (!_.isEmpty(builds)) {
 			dispatch({
 				type: FETCH_BUILDS_SUCCESS,
 				payload: {
 					builds
 				}
 			});
-			dispatch(updateReplayWatchProcesses());
-			return response;
-		})
-		.catch(() => {
-			const builds = combineWithSavedBuildData(savedBuildData, savedBuildData);
+			electronSettings.set('builds', builds);
+			if (response && !_.isEmpty(response)) {
+				electronSettings.set('buildsResponse', response);
+			}
+		} else {
 			dispatch({
-				type: FETCH_BUILDS_FAIL,
-				payload: {
-					builds
-				}
+				type: FETCH_BUILDS_FAIL
 			});
+		}
+		return builds;
+	};
+
+
+	Promise.resolve()
+		.then(() => {
+
+			// Get cached data
+			return convertBuildResponse();
+		})
+		.then(() => {
+			// Get real data
+			return getAuthenticationFromState(getState)
+				.apiGet(endpoints.DOLPHIN_BUILDS, { default_game: Constants.MELEE_SMASHLADDER_GAME_ID });
+		})
+		.then((response) => {
+			console.log('what is the response', response);
+			return convertBuildResponse(response.builds);
+		})
+		.catch((error) => {
+			console.error(error);
+		})
+		.then(() => {
 			dispatch(updateReplayWatchProcesses());
+		})
+		.catch((error) => {
+			console.error(error);
 		});
 };
 
@@ -390,7 +413,14 @@ export const closeDolphin = () => (dispatch, getState) => {
 		});
 };
 
-const updateReplayWatchProcesses = () => (dispatch) => {
+const updateReplayWatchProcesses = () => (dispatch, getState) => {
+
+	const state = getState();
+	if (!state.login.sessionId) {
+		console.warn('Ignore replay watch process since we are not logged in yet');
+		return;
+	}
+
 	dispatch(beginWatchingForReplayChanges());
 	dispatch(startReplayBrowser());
 };
@@ -478,12 +508,16 @@ export const hostBuild = (build, game) => async (dispatch, getState) => {
 		dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
 		return;
 	}
-	DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(build.executablePath(), {
+	const dolphinIniSettingsToSet = {
 		NetPlay: {
-			NickName: state.login.player.username,
 			TraversalChoice: 'traversal'
 		}
-	})
+	};
+	if (state.login.player && state.login.player.username) {
+		dolphinIniSettingsToSet.NetPlay.NickName = state.login.player.username;
+	}
+
+	DolphinConfigurationUpdater.mergeSettingsIntoDolphinIni(build.executablePath(), dolphinIniSettingsToSet)
 		.then(() => buildLauncher.host(build, game))
 		.then(({ dolphinProcess, result }) => {
 			authentication.apiPost(endpoints.OPENED_DOLPHIN);
@@ -510,7 +544,8 @@ export const hostBuild = (build, game) => async (dispatch, getState) => {
 					beginSelectingNewRomPath(`Select your ${game.name} ROM!`, hostBuild.apply(this, [build, game]))
 				);
 			}
-			console.log('the error', error);
+			console.log('the error');
+			console.error(error);
 			dispatch(closeDolphin());
 			dispatch(buildFailError(HOST_BUILD_FAIL, build, error));
 		});

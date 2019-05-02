@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { Redirect } from 'react-router';
 import Builds from '../components/Builds';
 import * as BuildActions from '../actions/builds';
 import * as ReplayActions from '../actions/replays';
@@ -11,6 +12,7 @@ import * as ReplayWatchActions from '../actions/replayWatch';
 import * as DolphinStatusActions from '../actions/dolphinStatus';
 import * as ReplayBrowseActions from '../actions/replayBrowse';
 import * as LoginActions from '../actions/login';
+import * as WindowActions from '../actions/window';
 import WebsocketComponent from '../components/WebsocketComponent';
 import ReplaySync from '../components/ReplaySync';
 import DolphinSettings from '../components/DolphinSettings';
@@ -49,6 +51,7 @@ class BuildsPage extends Component<Props> {
 		this.props.initializeAutoUpdater();
 		this.props.initializeBuildLauncher();
 		this.props.beginWatchingForReplayChanges();
+		this.props.startWindowWatcher();
 	}
 
 	static getDerivedStateFromProps(props, state) {
@@ -71,7 +74,11 @@ class BuildsPage extends Component<Props> {
 			...this.props,
 			...this.state
 		};
-		const { activeUpdate, allReplays, viewingReplayDetails } = props;
+		const { activeUpdate, allReplays, viewingReplayDetails, player } = props;
+
+		if (!player) {
+			return <Redirect to="/"/>;
+		}
 
 		let sideBar = null;
 		let bottomContent = null;
@@ -119,7 +126,8 @@ const mapStateToProps = (state) => ({
 	...state.replays,
 	...state.autoUpdates,
 	...state.replayWatch,
-	...state.replayBrowse
+	...state.replayBrowse,
+	...state.window
 });
 
 function mapDispatchToProps(dispatch) {
@@ -132,7 +140,8 @@ function mapDispatchToProps(dispatch) {
 			...ReplayWatchActions,
 			...ReplayBrowseActions,
 			...DolphinStatusActions,
-			...LoginActions
+			...LoginActions,
+			...WindowActions
 		},
 		dispatch
 	);

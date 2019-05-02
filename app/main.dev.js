@@ -29,6 +29,15 @@ autoUpdater.autoDownload = false;
 ipcMain.on('autoUpdate-start', () => {
 	autoUpdater.downloadUpdate();
 });
+ipcMain.on('windowFocusEvents', (event) => {
+	console.log('we has window focus events');
+	app.on('browser-window-blur', () => {
+		event.sender.send('blur');
+	});
+	app.on('browser-window-focus', () => {
+		event.sender.send('focus');
+	});
+});
 ipcMain.on('autoUpdate-initialize', (event) => {
 	const listeners = {
 		error: (error) => {
@@ -94,8 +103,7 @@ const isSecondInstance = app.makeSingleInstance(() => {
 
 if (isSecondInstance) {
 	app.quit();
-}
-else {
+} else {
 	let tray = null;
 	let debugTray = {
 		send: () => {

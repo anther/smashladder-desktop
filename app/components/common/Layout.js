@@ -13,7 +13,7 @@ export default class Layout extends Component {
 		const { children } = this.props;
 		const elements = children.slice();
 		const heading = elements.shift();
-		const mainContent = elements.slice(0, 1);
+		const mainContent = elements.slice(0);
 		return (
 			<div className="container">
 				{heading}

@@ -43,7 +43,9 @@ export default class SetBuildPathButton extends Component {
 					{...extraProps}
 				>
 					{buildSettingPath === build.id &&
-					<ProgressIndeterminate/>
+					<ProgressIndeterminate
+						windowFocused={this.props.windowFocused}
+					/>
 					}
 					{build.path ? 'Path Set' : 'Set Path'}
 				</Button>

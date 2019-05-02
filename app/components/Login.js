@@ -65,9 +65,9 @@ export default class Login extends Component {
 			<form className='login_form'>
 				{!player &&
 				<React.Fragment>
-					<Button onClick={this.getLoginCodeButtonClick} className='btn-large green accent-4 pulse'>Retrieve A
-						Login
-						Code!</Button>
+					<Button onClick={this.getLoginCodeButtonClick} className='btn-large green accent-4 pulse'>
+						Retrieve A Login Code!
+					</Button>
 					<div className="input-field">
 						<input
 							placeholder='Paste Login Code Here'
@@ -93,7 +93,9 @@ export default class Login extends Component {
 				}
 
 				{isLoggingIn &&
-				<ProgressIndeterminate/>
+				<ProgressIndeterminate
+					windowFocused={this.props.windowFocused}
+				/>
 				}
 			</form>
 		);

@@ -3,11 +3,30 @@ import Pagination from 'react-js-pagination';
 import ReplayComponent from './ReplayComponent';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import ReplayChecksToggle from './elements/ReplayChecksToggle';
+import Button from './elements/Button';
 
 export default class ReplayBrowser extends Component {
 	constructor(props) {
 		super(props);
+
 		this.onPageChange = this.handlePageChange.bind(this);
+		this.endError = this.endError.bind(this);
+		this.state = {
+			hasError: false
+		};
+
+	}
+
+	componentDidCatch(error, info) {
+		this.setState({
+			hasError: true
+		});
+	}
+
+	endError() {
+		this.setState({
+			hasError: false
+		});
 	}
 
 	handlePageChange(pageNumber) {
@@ -28,6 +47,26 @@ export default class ReplayBrowser extends Component {
 			meleeIsoPath,
 			replayWatchEnabled
 		} = this.props;
+		const { hasError } = this.state;
+
+		if (hasError) {
+			return (
+				<div className="collection">
+					<div className='collection-item'>
+						<h6>
+							Something has gone wrong with the replay browser!
+						</h6>
+						<div>
+							<Button
+								onClick={this.endError}
+							>
+								Reload?
+							</Button>
+						</div>
+					</div>
+				</div>
+			);
+		}
 
 		if (viewingReplayDetails) {
 			return (

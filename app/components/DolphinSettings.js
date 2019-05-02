@@ -156,7 +156,9 @@ export default class DolphinSettings extends Component {
 							disabled={settingMeleeIsoPath}
 							onClick={this.onSetMeleeIsoPathClick}
 						>
-							{settingMeleeIsoPath && <ProgressIndeterminate/>}
+							{settingMeleeIsoPath && <ProgressIndeterminate
+								windowFocused={this.props.windowFocused}
+							/>}
 							Set Melee ISO Path
 						</Button>
 						}
@@ -186,7 +188,7 @@ export default class DolphinSettings extends Component {
 								<Button
 									small
 									onClick={this.props.removeRomPath.bind(this, romPath)}
-								        className="not_set">
+									className="not_set">
 									Remove
 								</Button>
 							</div>
@@ -198,7 +200,9 @@ export default class DolphinSettings extends Component {
 							disabled={selectingRomPath}
 							onClick={this.onSelectRomPathClick}
 							className="btn-small set no_check">
-							{selectingRomPath && <ProgressIndeterminate/>}
+							{selectingRomPath && <ProgressIndeterminate
+								windowFocused={this.props.windowFocused}
+							/>}
 							Add
 						</Button>
 					</div>
@@ -227,7 +231,9 @@ export default class DolphinSettings extends Component {
 							disabled={settingDolphinInstallPath}
 							onClick={setDolphinInstallPath}
 						>
-							{settingDolphinInstallPath && <ProgressIndeterminate/>}
+							{settingDolphinInstallPath && <ProgressIndeterminate
+								windowFocused={this.props.windowFocused}
+							/>}
 							Update Path
 						</Button>
 						}

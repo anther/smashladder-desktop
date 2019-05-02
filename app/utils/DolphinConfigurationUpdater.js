@@ -85,7 +85,11 @@ export default class DolphinConfigurationUpdater {
 
 		if (config['Gecko_Enabled']['$Slippi Recording']) {
 			delete config['Gecko_Enabled']['$Slippi Recording'];
+			delete config['Gecko_Enabled']['$Faster Melee Netplay Settings'];
+
 			config['Gecko_Enabled']['$Slippi Playback'] = true;
+			config['Gecko_Enabled']['$Required FM Codes'] = true;
+			config['Core']['FastDiscSpeed'] = 'True';
 			updater.saveGeckoCodeConfiguration(config);
 		}
 
@@ -96,14 +100,19 @@ export default class DolphinConfigurationUpdater {
 		const playbackTextLocation = Files.createApplicationPath('./external/dolphin_configs/sysPlayback.ini');
 		const playbackIni = fs.readFileSync(playbackTextLocation, 'utf8');
 		fs.writeFileSync(codeIniLocation, playbackIni);
-	}
+	}r
 
 	static setSlippiToRecord(configPath, codeIniLocation) {
 		const updater = new DolphinConfigurationUpdater(configPath);
 		const config = updater.loadAConfiguration(configPath);
 		if (config['Gecko_Enabled']['$Slippi Playback']) {
 			delete config['Gecko_Enabled']['$Slippi Playback'];
+			delete config['Gecko_Enabled']['$Required FM Codes'];
+			delete config['Core']['FastDiscSpeed'];
+
+
 			config['Gecko_Enabled']['$Slippi Recording'] = true;
+			config['Gecko_Enabled']['$Faster Melee Netplay Settings'] = true;
 			updater.saveGeckoCodeConfiguration(config);
 		}
 

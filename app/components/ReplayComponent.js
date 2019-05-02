@@ -124,7 +124,9 @@ export default class ReplayComponent extends Component {
 					)}
 					<div className='watching_replay'>
 						{(isBeingWatched || isBeingUploaded) &&
-						<ProgressIndeterminate/>
+						<ProgressIndeterminate
+							windowFocused={this.props.windowFocused}
+						/>
 						}
 					</div>
 					<div className="game_data">
@@ -261,7 +263,9 @@ export default class ReplayComponent extends Component {
 								disabled={settingMeleeIsoPath}
 								onClick={this.onSetMeleeIsoPathClick}
 							>
-								{settingMeleeIsoPath && <ProgressIndeterminate/>}
+								{settingMeleeIsoPath && <ProgressIndeterminate
+									windowFocused={this.props.windowFocused}
+								/>}
 								Set Melee ISO Path
 							</Button>
 							<span className='error error_reason'>

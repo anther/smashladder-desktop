@@ -48,7 +48,6 @@ export default (state = initialState, action) => {
 				fetchingBuilds: true
 			};
 		case FETCH_BUILDS_SUCCESS: {
-			console.log('what is payload', action.payload);
 			const buildList = _.values(action.payload.builds).sort((a, b) => {
 				if (a.path && !b.path) {
 					return -1;

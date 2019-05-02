@@ -59,7 +59,7 @@ export default class BuildComponent extends Component {
 			downloadError: null,
 			glowing: true,
 			unsettingBuildPathView: false,
-			transitioning: false,
+			transitioning: false
 		};
 
 		this.glowTimeout = null;
@@ -118,17 +118,17 @@ export default class BuildComponent extends Component {
 		this.setState({
 			transitioning: true
 		});
-		setTimeout(()=>{
+		setTimeout(() => {
 			this.setState({
 				unsettingBuildPathView: false
 			});
 			setBuildPath(build, null);
-			setTimeout(()=>{
+			setTimeout(() => {
 				this.setState({
 					transitioning: false
 				});
-			},1000);
-		},1000)
+			}, 1000);
+		}, 1000);
 	}
 
 	downloadClick() {
@@ -288,7 +288,7 @@ export default class BuildComponent extends Component {
 		});
 		if (!game) {
 			this.setState({
-				error: 'Somehow No Game Is Selected'
+				error: 'Somehow No Game is Selected'
 			});
 			return null;
 		}
@@ -326,7 +326,7 @@ export default class BuildComponent extends Component {
 			unzipStatus,
 			enterJoinCode,
 			unsettingBuildPathView,
-			transitioning,
+			transitioning
 		} = this.state;
 
 		const error = this.state.error || buildError;
@@ -479,7 +479,9 @@ export default class BuildComponent extends Component {
 										<div className="nowrap">{unzipStatus}</div>
 									</span>
 									{downloadingProgress && <ProgressDeterminate percent={downloadingProgress * 100}/>}
-									{!downloadingProgress && <ProgressIndeterminate/>}
+									{!downloadingProgress && <ProgressIndeterminate
+										windowFocused={this.props.windowFocused}
+									/>}
 								</React.Fragment>
 							)}
 						</React.Fragment>
@@ -487,7 +489,9 @@ export default class BuildComponent extends Component {
 				</div>
 
 				<div>
-					{buildOpening && <ProgressIndeterminate/>}
+					{buildOpening && <ProgressIndeterminate
+						windowFocused={this.props.windowFocused}
+					/>}
 					{buildOpen && !buildOpening && <ProgressDeterminate/>}
 					{error && <div className="error">{error}</div>}
 				</div>

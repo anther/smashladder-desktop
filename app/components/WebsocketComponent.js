@@ -328,7 +328,10 @@ export default class WebsocketComponent extends Component {
 				<div className="progress_status">
 					{this.isConnected() && <ProgressDeterminate/>}
 					{!this.isConnected() && (
-						<ProgressIndeterminate color={connectionEnabled ? null : 'red'}/>
+						<ProgressIndeterminate
+							color={connectionEnabled ? null : 'red'}
+							windowFocused={this.props.windowFocused}
+						/>
 					)}
 					<span className="connection_state">{this.websocketState()}</span>
 					<div className="switch">
