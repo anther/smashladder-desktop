@@ -82,17 +82,6 @@ export const enableDevelopmentUrls = () => {
 	};
 };
 
-export const disableConnection = () => (dispatch) => {
-	dispatch({
-		type: DISABLE_CONNECTION
-	});
-};
-export const enableConnection = () => (dispatch) => {
-	dispatch({
-		type: ENABLE_CONNECTION
-	});
-};
-
 export const logout = () => (dispatch, getState) => {
 	const authentication = getAuthenticationFromState(getState);
 	dispatch({

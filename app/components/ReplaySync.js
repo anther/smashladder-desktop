@@ -12,7 +12,7 @@ export default class ReplaySync extends Component {
 	static propTypes = {
 		authentication: PropTypes.instanceOf(SmashLadderAuthentication).isRequired,
 		replayWatchEnabled: PropTypes.bool.isRequired,
-		connectionEnabled: PropTypes.bool.isRequired,
+		ladderWebsocketConnectionEnabled: PropTypes.bool.isRequired,
 		sendingReplay: PropTypes.bool,
 		enableReplayWatching: PropTypes.func.isRequired,
 		disableReplayWatching: PropTypes.func.isRequired
@@ -21,6 +21,19 @@ export default class ReplaySync extends Component {
 	static defaultProps = {
 		sendingReplay: false
 	};
+
+	constructor(props) {
+		super(props);
+		this.enabledChange = this.enabledChange.bind(this);
+	}
+
+	enabledChange(event) {
+		if (event.target.checked) {
+			this.props.enableReplayWatching();
+		} else {
+			this.props.disableReplayWatching();
+		}
+	}
 
 	updateCheckForReplays(set) {
 		const { enableReplayWatching, disableReplayWatching } = this.props;
@@ -38,15 +51,15 @@ export default class ReplaySync extends Component {
 	}
 
 	getProgressColor() {
-		const { connectionEnabled, replayWatchEnabled } = this.props;
-		return connectionEnabled && replayWatchEnabled ? 'teal' : 'red';
+		const { ladderWebsocketConnectionEnabled, replayWatchEnabled } = this.props;
+		return ladderWebsocketConnectionEnabled && replayWatchEnabled ? 'teal' : 'red';
 	}
 
 	getSyncStatusStatement() {
 		const {
 			sendingReplay, authentication,
 			lastReplaySubmissionError,
-			connectionEnabled, verifyingReplayFiles, replayWatchEnabled
+			ladderWebsocketConnectionEnabled, verifyingReplayFiles, replayWatchEnabled
 		} = this.props;
 
 		if (!authentication) {
@@ -55,8 +68,8 @@ export default class ReplaySync extends Component {
 		if (sendingReplay) {
 			return { message: 'Sending Game Data...' };
 		}
-		if (!connectionEnabled) {
-			return { message: 'Connection Disabled' };
+		if (!ladderWebsocketConnectionEnabled) {
+			return { message: 'Connection Disabled Stops Replay Uploads' };
 		}
 		if (!replayWatchEnabled) {
 			return { isError: true, message: '...Replay Watch Disabled...' };
@@ -72,7 +85,7 @@ export default class ReplaySync extends Component {
 	}
 
 	render() {
-		const { lastSubmittedReplay } = this.props;
+		const { lastSubmittedReplay, replayWatchEnabled, ladderWebsocketConnectionEnabled } = this.props;
 		return (
 			<div className="replays">
 				<div className="progress_status">
@@ -86,9 +99,21 @@ export default class ReplaySync extends Component {
 						/>
 					)}
 					<h6 className={`connection_state ${this.getSyncStatusStatement().isError ? 'error' : ''}`}>{this.getSyncStatusStatement().message}</h6>
-
+					<div className="switch">
+						<label>
+							<span>Disabled</span>
+							<input
+								onChange={this.enabledChange}
+								disabled={!ladderWebsocketConnectionEnabled}
+								checked={ladderWebsocketConnectionEnabled && replayWatchEnabled}
+								type="checkbox"
+							/>
+							<span className="lever"/>
+							<span>Enabled</span>
+						</label>
+					</div>
 					<span className="what_am_i">
-			            Compatible only with Project Slippi. Your replay directory will be
+			            Compatible with Project Slippi. Your replay directory will be
 			            watched for new files and will automatically send the results to
 			            SmashLadder.
 					</span>

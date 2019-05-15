@@ -30,26 +30,30 @@ export default class SetBuildPathButton extends Component {
 			extraProps['data-tooltip'] = 'Use a Dolphin that you already have on your System';
 			extraProps['data-position'] = 'top';
 			extraProps.className = 'btn-small not_set no_check';
-		}
-		else {
+		} else {
 			extraProps.className = 'btn-small set';
 			extraProps.title = build.path;
 		}
+		if (build.path) {
+			return null;
+		}
 		return (
-			<span className={build.path ? 'has_path' : 'no_path'}>
-				<Button
-					disabled={buildSettingPath || buildOpen || !!downloading || disabled}
-					onClick={this.onSetBuildPathClick}
-					{...extraProps}
-				>
-					{buildSettingPath === build.id &&
-					<ProgressIndeterminate
-						windowFocused={this.props.windowFocused}
-					/>
-					}
-					{build.path ? 'Path Set' : 'Set Path'}
-				</Button>
-			</span>
+			<div className="path_button">
+				<span className={build.path ? 'has_path' : 'no_path'}>
+					<Button
+						disabled={buildSettingPath || buildOpen || !!downloading || disabled}
+						onClick={this.onSetBuildPathClick}
+						{...extraProps}
+					>
+						{buildSettingPath === build.id &&
+						<ProgressIndeterminate
+							windowFocused={this.props.windowFocused}
+						/>
+						}
+						{build.path ? 'Path Set' : 'Set Path'}
+					</Button>
+				</span>
+			</div>
 		);
 	}
 }

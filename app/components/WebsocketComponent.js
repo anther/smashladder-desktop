@@ -1,127 +1,28 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { ipcRenderer } from 'electron';
-import { LinearBackoff } from 'simple-backoff';
-import urlSerialize from '../utils/urlSerialize';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 
-import {
-	endpoints,
-	SmashLadderAuthentication
-} from '../utils/SmashLadderAuthentication';
-import Build from '../utils/BuildData';
-
-const noResponseTimeoutInSeconds = 30;
-
 export default class WebsocketComponent extends Component {
 	static propTypes = {
-		authentication: PropTypes.instanceOf(SmashLadderAuthentication).isRequired,
-		sessionId: PropTypes.string.isRequired,
-		builds: PropTypes.objectOf(PropTypes.instanceOf(Build)).isRequired,
-		hostBuild: PropTypes.func.isRequired,
-		joinBuild: PropTypes.func.isRequired,
-		startGame: PropTypes.func.isRequired,
-		closeDolphin: PropTypes.func.isRequired,
+		windowFocused: PropTypes.bool.isRequired,
 		enableConnection: PropTypes.func.isRequired,
 		disableConnection: PropTypes.func.isRequired,
-		connectionEnabled: PropTypes.bool.isRequired
+		ladderWebsocketConnectionEnabled: PropTypes.bool.isRequired,
+		secondsUntilRetry: PropTypes.number,
+		ladderWebsocketForcedDisconnect: PropTypes.bool.isRequired,
+		ladderWebsocketConnecting: PropTypes.bool.isRequired,
+		ladderWebsocketConnectionOpen: PropTypes.bool.isRequired,
+		ladderWebsocketConnectionStable: PropTypes.bool.isRequired
+	};
+
+	static defaultProps = {
+		secondsUntilRetry: null
 	};
 
 	constructor(props) {
 		super(props);
-		this.websocket = null;
-		this.potentialFailure = null;
-		this.state = {
-			forcedDisconnect: false,
-			secondsUntilRetry: null
-		};
-
-		this.onEnabledChange = this.enabledChange.bind(this);
-
-		this.connectionBackoff = new LinearBackoff({
-			min: 0,
-			step: 5000,
-			max: 600000 // 60000 = Ten Minutes
-		});
-		this.reconnectTimeout = null;
-		this.retryingCounter = null;
-		this.connectedForABitTimeout = null;
-
-		this.onControlMessage = this.onControlMessage.bind(this);
-
-		this.websocketCommands = {
-			selectVersion: () => {
-				console.info('select version trigger');
-			},
-
-			startedMatch: () => {
-				console.info('started match trigger');
-			},
-
-			hostNetplay: message => {
-				this.props.hostBuild(message.dolphin_version, message.game_launch_name);
-			},
-
-			sendChatMessage: message => {
-				if (
-					!message.data ||
-					!message.data.dolphin_version ||
-					!message.data.dolphin_version.id
-				) {
-					throw new Error('Dolphin Data not included');
-				}
-			},
-
-			startNetplay: message => {
-				if (!message.force_close) {
-					console.log('the message', message);
-					return;
-				}
-				this.props.joinBuild(message.dolphin_version, message.parameters && message.parameters.host_code);
-			},
-
-			quitDolphin: () => {
-				this.props.closeDolphin();
-			},
-
-			startGame: () => {
-				this.props.startGame();
-			},
-
-			disableConnection: message => {
-				if (String(this.props.sessionId) === String(message.session_id)) {
-					console.log('[I GET TO LIVE]');
-				} else {
-					this.props.disableConnection();
-				}
-			}
-		};
-	}
-
-	componentDidMount() {
-		this.updateWebsocketIfNecessary();
-		ipcRenderer.removeAllListeners('websocket-message');
-		ipcRenderer.send('websocket-host');
-		ipcRenderer.on('websocket-message', (event, message) => {
-			const parsed = JSON.parse(message);
-			console.log('got websocket message', event, parsed);
-			this.processMessage(parsed);
-		});
-	}
-
-	componentDidUpdate() {
-		this.updateWebsocketIfNecessary();
-	}
-
-	componentWillUnmount() {
-		this.clearTimers();
-		if (this.websocket) {
-			if (this.websocket.readyState !== 2 || this.websocket.readyState !== 3) {
-				this.websocket.onclose = null;
-				this.websocket.close();
-			}
-		}
+		this.enabledChange = this.enabledChange.bind(this);
 	}
 
 	enabledChange(event) {
@@ -132,205 +33,50 @@ export default class WebsocketComponent extends Component {
 		}
 	}
 
-	fetchBuildFromDolphinVersion(dolphinVersion) {
-		return this.props.builds[dolphinVersion.id];
-	}
-
-	clearTimers() {
-		clearTimeout(this.reconnectTimeout);
-		clearTimeout(this.retryingCounter);
-		clearTimeout(this.potentialFailure);
-
-		this.reconnectTimeout = null;
-	}
-
-	updateWebsocketIfNecessary() {
-		const { connectionEnabled } = this.props;
-		if (this.websocket) {
-			if (!connectionEnabled) {
-				this.websocket.close();
-				return;
-			}
-			if (
-				this.websocket.readyState === WebSocket.OPEN ||
-				this.websocket.readyState === WebSocket.CONNECTING
-			) {
-				return;
-			}
-		}
-
-		if (!this.reconnectTimeout) {
-			const nextRetry = this.connectionBackoff.next();
-			const estimatedWhen = new Date(Date.now() + nextRetry);
-			this.retryingCounter = setInterval(() => {
-				const time = Math.floor((estimatedWhen.getTime() - Date.now()) / 1000);
-				this.setState({
-					secondsUntilRetry: time > 0 ? time : 0
-				});
-			}, 1000);
-
-			this.reconnectTimeout = setTimeout(() => {
-				const { authentication } = this.props;
-				if (this.websocket) {
-					this.websocket.close();
-				}
-
-				this.clearTimers();
-				const connectData = {
-					access_token: authentication.getAccessCode(),
-					version: '1.0.0',
-					type: 5,
-					launcher_version: '2.0.0'
-				};
-				const parameters = urlSerialize(connectData);
-
-				this.websocket = new WebSocket(
-					`${authentication.fullEndpointUrl(
-						endpoints.WEBSOCKET_URL
-					)}?${parameters}`
-				);
-
-				this.setState({
-					connectionOpen: false,
-					connecting: false
-				});
-
-				this.setWebsocketCallbacks();
-			}, nextRetry);
-		}
-	}
-
-	setWebsocketCallbacks() {
-		this.websocket.onopen = () => {
-			this.setState({
-				connectionOpen: true,
-				connecting: false,
-				forcedDisconnect: false,
-				connectionStable: false
-			});
-			this.connectedForABitTimeout = setTimeout(() => {
-				this.setState({
-					connectionStable: true
-				});
-				this.connectionBackoff.reset();
-			}, 2000);
-			this.resetAlonenessTimer();
-		};
-
-		this.websocket.onmessage = this.onControlMessage;
-
-		this.websocket.onerror = evt => {
-			console.error(evt);
-		};
-
-		this.websocket.onclose = () => {
-			this.setState({
-				connectionOpen: false,
-				connecting: false
-			});
-			clearTimeout(this.connectedForABitTimeout);
-			clearTimeout(this.potentialFailure);
-		};
-	}
-
-	onControlMessage(event) {
-		this.resetAlonenessTimer(); // TODO Probably moev this only to the Smashladder connection on message
-		let message = {};
-		try {
-			message = JSON.parse(event.data);
-		} catch (error) {
-			console.error(error);
-		}
-		this.processMessage(message);
-	}
-
-	processMessage(message) {
-		if (!message.functionCall) {
-			return;
-		}
-		console.log('received message', message);
-		if (!this.websocketCommands[message.functionCall]) {
-			console.error(`[ACTION NOT FOUND] ${message.functionCall}`);
-		}
-
-		try {
-			if (message.data) {
-				if (message.data.dolphin_version) {
-					message.data.dolphin_version = this.fetchBuildFromDolphinVersion(message.data.dolphin_version);
-				}
-				if (message.data.game_launch_name) {
-					const gameInfo = message.data.game_launch_name;
-
-					gameInfo.dolphin_game_id_hint = gameInfo.launch;
-					gameInfo.name = gameInfo.game;
-				}
-				if (message.parameters) {
-					message.data.parameters = message.parameters;
-				}
-			}
-			this.websocketCommands[message.functionCall](message.data);
-		} catch (error) {
-			console.error('websocket message error');
-			console.error(error);
-		}
-	}
-
-	resetAlonenessTimer() {
-		clearTimeout(this.potentialFailure);
-		this.potentialFailure = setTimeout(() => {
-			this.setState({ forcedDisconnect: true });
-			this.websocket.close();
-		}, noResponseTimeoutInSeconds * 1000);
-	}
-
 	websocketState() {
-		const { connectionEnabled } = this.props;
-		if (this.state.forcedDisconnect) {
+		const {
+			ladderWebsocketConnectionEnabled, ladderWebsocketForcedDisconnect, secondsUntilRetry, ladderWebsocketConnectionOpen,
+			ladderWebsocketConnecting, ladderWebsocketConnectionStable
+		} = this.props;
+		if (ladderWebsocketForcedDisconnect) {
 			return 'Disconnected (Timeout)';
 		}
 
-		if (!connectionEnabled) {
+		if (!ladderWebsocketConnectionEnabled) {
 			return 'Connection Disabled';
 		}
-		if (this.reconnectTimeout) {
-			return `Reconnecting (${this.state.secondsUntilRetry}s)`;
+		if (secondsUntilRetry !== null) {
+			return `Reconnecting (${this.secondsUntilRetry}s)`;
 		}
 
-		if (!this.websocket) {
-			return 'Waiting...';
+		if (ladderWebsocketConnectionStable) {
+			return 'Connection Active';
 		}
-		switch (this.websocket.readyState) {
-			case 0:
-				return 'Connecting...';
-			case 1:
-				return 'Connection Active';
-			case 2:
-				return 'Closing';
-			case 3:
-				return 'Closed';
-			default:
-				return 'Authentication Failed';
+		if (ladderWebsocketConnectionOpen) {
+			return 'Waiting for Ping...';
 		}
+		if (ladderWebsocketConnecting) {
+			return 'Connecting...';
+		}
+		return 'Auth Failure?';
 	}
 
 	isConnected() {
 		return (
-			this.websocket &&
-			this.websocket.readyState === WebSocket.OPEN &&
-			this.state.connectionStable
+			this.props.ladderWebsocketConnectionStable
 		);
 	}
 
 	render() {
-		const { connectionEnabled } = this.props;
+		const { ladderWebsocketConnectionEnabled, windowFocused } = this.props;
 		return (
 			<div className="websocket">
 				<div className="progress_status">
 					{this.isConnected() && <ProgressDeterminate/>}
 					{!this.isConnected() && (
 						<ProgressIndeterminate
-							color={connectionEnabled ? null : 'red'}
-							windowFocused={this.props.windowFocused}
+							color={ladderWebsocketConnectionEnabled ? null : 'red'}
+							windowFocused={windowFocused}
 						/>
 					)}
 					<span className="connection_state">{this.websocketState()}</span>
@@ -338,8 +84,8 @@ export default class WebsocketComponent extends Component {
 						<label>
 							<span>Disabled</span>
 							<input
-								onChange={this.onEnabledChange}
-								checked={connectionEnabled}
+								onChange={this.enabledChange}
+								checked={ladderWebsocketConnectionEnabled}
 								type="checkbox"
 							/>
 							<span className="lever"/>

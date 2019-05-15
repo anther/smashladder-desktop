@@ -1,13 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { remote, shell } from 'electron';
-import path from 'path';
-import _ from 'lodash';
-import unzipper from 'unzipper';
-import Build from '../utils/BuildData';
-import Files from '../utils/Files';
 
-import multitry from '../utils/multitry';
+import Build from '../utils/BuildData';
 
 import Button from './elements/Button';
 import Select from './elements/Select';
@@ -15,10 +10,6 @@ import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import RemoveBuildPathsButton from './elements/RemoveBuildPathsButton';
 import SetBuildPathButton from './elements/SetBuildPathButton';
-
-const fs = require('fs');
-const request = require('request');
-const progress = require('request-progress');
 
 export default class BuildComponent extends Component {
 	static propTypes = {
@@ -34,11 +25,14 @@ export default class BuildComponent extends Component {
 		buildOpening: PropTypes.bool.isRequired,
 		buildError: PropTypes.any,
 		hostCode: PropTypes.string.isRequired,
-		dolphinInstallPath: PropTypes.string.isRequired
+		dolphinInstallPath: PropTypes.string.isRequired,
+		windowFocused: PropTypes.bool.isRequired,
+		buildDownload: PropTypes.object
 	};
 
 	static defaultProps = {
-		buildError: null
+		buildError: null,
+		buildDownload: null
 	};
 
 	constructor(props) {
@@ -54,9 +48,6 @@ export default class BuildComponent extends Component {
 			enterJoinCode: false,
 			submittingJoinCode: false,
 
-			downloading: null,
-			downloadingProgress: null,
-			downloadError: null,
 			glowing: true,
 			unsettingBuildPathView: false,
 			transitioning: false
@@ -132,123 +123,7 @@ export default class BuildComponent extends Component {
 	}
 
 	downloadClick() {
-		this.setState({
-			downloading: 'Downloading...',
-			downloadError: null,
-			error: null
-		});
-
-		const { build, dolphinInstallPath } = this.props;
-
-		const basePath = path.join(dolphinInstallPath);
-		console.log('downloading from', build.download_file);
-
-		const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
-		const extension = path.extname(build.download_file);
-		const baseNameAndExtension = `${baseName}${extension}`;
-		const unzipLocation = path.join(basePath, baseName, '/');
-		const zipWriteLocation = path.join(basePath, baseNameAndExtension);
-
-		Files.ensureDirectoryExists(basePath, 0o0755)
-			.then(() => {
-				this.setState({
-					downloading: build.download_file
-				});
-				return progress(request(build.download_file), {})
-					.on('progress', (state) => {
-						this.setState({
-							downloadingProgress: state.percent
-						});
-						console.log('progress', state);
-					})
-					.on('error', (err) => {
-						console.error(err);
-						this.setState({
-							downloadError: err,
-							downloading: null
-						});
-					})
-					.once('finish', () => {
-						console.log('finished!');
-					})
-					.on('end', () => {
-						console.log('ended!');
-						const stats = fs.statSync(zipWriteLocation);
-						if (stats.size <= 30) {
-							this.setState({
-								error: 'File was not found... Probably',
-								downloading: null
-							});
-							return;
-						}
-
-
-						// Do something after request finishes
-						this.setState({
-							downloading: 'Unzipping Build',
-							downloadingProgress: null
-						});
-
-						const updateUnzipDisplay = _.throttle((entry) => {
-							this.setState({
-								unzipStatus: entry.path ? entry.path : null
-							});
-						}, 100);
-						switch (extension.toLowerCase()) {
-							case '.zip':
-								console.log('Before open zip', zipWriteLocation);
-								multitry(500, 5, () => {
-									fs.createReadStream(zipWriteLocation).pipe(
-										unzipper
-											.Extract({ path: unzipLocation })
-											.on('close', () => {
-												console.log('cllosed?');
-												const dolphinLocation = Files.findInDirectory(unzipLocation, 'Dolphin.exe');
-												console.log(dolphinLocation, 'what is dolphin lcoation');
-												if (dolphinLocation.length) {
-													this.props.setBuildPath(build, dolphinLocation[0], true);
-													this.props.setDefaultPreferableNewUserBuildOptions(build);
-												} else {
-													this.setState({
-														error: 'Could not find Dolphin.exe after extracting the archive'
-													});
-												}
-												this.setState({
-													downloading: null,
-													unzipStatus: null
-												});
-											})
-											.on('entry', updateUnzipDisplay)
-											.on('error', (error) => {
-												console.error(error);
-												this.setState({
-													downloading: null,
-													unzipStatus: null,
-													error: error.toString()
-												});
-											})
-									);
-								}).catch((error) => {
-									console.log('unzip fail multiple times...');
-									console.error(error);
-								});
-
-								break;
-							default:
-								this.setState({
-									unzipStatus: null,
-									downloading: null,
-									error: 'Could not extract archive! (Invalid Extension)'
-								});
-						}
-					})
-					.pipe(fs.createWriteStream(zipWriteLocation));
-			})
-			.catch((error) => {
-				this.setState({
-					error: error ? error.toString() : 'Error Downloading File...'
-				});
-			});
+		this.props.downloadBuild(this.props.build);
 	}
 
 	joinCodeCancel() {
@@ -316,18 +191,23 @@ export default class BuildComponent extends Component {
 	}
 
 	render() {
-		const { build, buildOpen, buildOpening, hostCode, buildError, buildSettingPath } = this.props;
+		const { build, buildOpen, buildOpening, hostCode, buildError, windowFocused, buildSettingPath } = this.props;
 		const {
 			submittingJoinCode,
 			glowing,
 			selectedGame,
-			downloading,
-			downloadingProgress,
-			unzipStatus,
 			enterJoinCode,
 			unsettingBuildPathView,
 			transitioning
 		} = this.state;
+		let { buildDownload } = this.props;
+		if (buildDownload) {
+		}
+		if (!buildDownload) {
+			buildDownload = {};
+		}
+		const { downloading, downloadingProgress, unzipStatus } = buildDownload;
+
 
 		const error = this.state.error || buildError;
 		return (
@@ -355,14 +235,12 @@ export default class BuildComponent extends Component {
 					}
 					{!unsettingBuildPathView &&
 					<React.Fragment>
-						<div className="path_button">
-							<SetBuildPathButton
-								{...this.props}
-								disabled={transitioning}
-								key={build.path}
-								downloading={downloading}
-							/>
-						</div>
+						<SetBuildPathButton
+							{...this.props}
+							disabled={transitioning}
+							key={build.path}
+							downloading={downloading}
+						/>
 
 						{!!build.path && (
 							<a title="Show in Explorer" onClick={this.onBuildNameClick} className="build_name has_path">
@@ -480,7 +358,7 @@ export default class BuildComponent extends Component {
 									</span>
 									{downloadingProgress && <ProgressDeterminate percent={downloadingProgress * 100}/>}
 									{!downloadingProgress && <ProgressIndeterminate
-										windowFocused={this.props.windowFocused}
+										windowFocused={windowFocused}
 									/>}
 								</React.Fragment>
 							)}

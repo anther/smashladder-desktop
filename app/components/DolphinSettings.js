@@ -199,6 +199,7 @@ export default class DolphinSettings extends Component {
 							small
 							disabled={selectingRomPath}
 							onClick={this.onSelectRomPathClick}
+							loading={selectingRomPath}
 							className="btn-small set no_check">
 							{selectingRomPath && <ProgressIndeterminate
 								windowFocused={this.props.windowFocused}

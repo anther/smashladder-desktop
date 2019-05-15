@@ -1,5 +1,7 @@
+import path from 'path';
 import md5File from 'md5-file/promise';
 import Files from '../utils/Files';
+
 
 export const ADD_ROM_PATH = 'ADD_ROM_PATH';
 export const REMOVE_ROM_PATH = 'REMOVE_ROM_PATH';
@@ -141,6 +143,8 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 			if (!selectedPath) {
 				throw new Error('No path was selected');
 			}
+			const theDirectory = path.dirname(selectedPath);
+
 			console.log('selectedPath');
 			dispatch({
 				type: MELEE_ISO_VERIFY_BEGIN
@@ -172,7 +176,7 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 					console.error(error);
 					dispatch({
 						type: MELEE_ISO_VERIFY_FAIL,
-						payload: error.toString(),
+						payload: error.toString()
 					});
 				});
 			dispatch({
@@ -181,6 +185,7 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 					meleeIsoPath: selectedPath
 				}
 			});
+			dispatch(addRomPath(theDirectory));
 			if (onSuccessCallback) {
 				dispatch(onSuccessCallback());
 			}

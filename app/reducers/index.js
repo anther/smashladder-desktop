@@ -10,6 +10,8 @@ import replayWatch from './replayWatch';
 import replayBrowse from './replayBrowse';
 import window from './window';
 import dolphinStatus from './dolphinStatus';
+import ladderWebsocket from './ladderWebsocket';
+import tabs from './tabs';
 
 const rootReducer = combineReducers({
 	login,
@@ -19,8 +21,10 @@ const rootReducer = combineReducers({
 	autoUpdates,
 	replayWatch,
 	replayBrowse,
-	dolphinStatus,
 	window,
+	dolphinStatus,
+	ladderWebsocket,
+	tabs,
 	router
 });
 

@@ -3,7 +3,6 @@ import {
 	FETCH_BUILDS_SUCCESS,
 	FETCH_BUILDS_BEGIN,
 	FETCH_BUILDS_FAIL,
-	CLOSE_BUILD,
 	LAUNCH_BUILD_BEGIN,
 	LAUNCH_BUILD_FAIL,
 	LAUNCH_BUILD_SUCCESS,
@@ -22,7 +21,17 @@ import {
 	COPY_BUILD_SETTINGS_SUCCESS,
 	COPY_BUILD_SETTINGS_FAIL,
 	SET_BUILD_PATH_BEGIN,
-	SET_BUILD_PATH_SUCCESS, SET_BUILD_PATH_FAIL
+	SET_BUILD_PATH_SUCCESS,
+	SET_BUILD_PATH_FAIL,
+	BUILD_DOWNLOAD_PROGRESS_UPDATE,
+	UNZIP_BUILD_ERROR,
+	UNZIP_BUILD_SUCCESS,
+	UNZIP_BUILD_BEGIN,
+	DOWNLOAD_BUILD_ERROR,
+	DOWNLOAD_BUILD_SUCCESS,
+	DOWNLOAD_BUILD_BEGIN,
+	UNZIP_BUILD_PROGRESS_UPDATE,
+	UPDATING_NEW_BUILDS_BEGIN, UPDATING_NEW_BUILDS_SUCCESS, UPDATING_NEW_BUILDS_FAIL
 } from '../actions/builds';
 
 const initialState = {
@@ -33,9 +42,40 @@ const initialState = {
 	buildOpening: false,
 	buildError: null,
 	fetchingBuilds: false,
-	buildSettingPath: null
+	buildSettingPath: null,
+	allBuildsDownloading: false,
+
+	buildsDownloading: {}
+	/**
+	 * download,
+	 * unzipping,
+	 * downloadErrors,
+	 * unzipErrors,
+	 */
 };
 
+const updateBuildDownloading = (state, build, updates) => {
+	const newState = _.cloneDeep(state);
+	let buildsDownloadingForBuild = null;
+	const buildsDownloading = newState.buildsDownloading;
+
+	if (buildsDownloading[build.id]) {
+		buildsDownloadingForBuild = { ...buildsDownloading[build.id] };
+	} else {
+		buildsDownloadingForBuild = {};
+	}
+
+	if (updates) {
+		buildsDownloadingForBuild = {
+			...buildsDownloadingForBuild,
+			...updates
+		};
+		newState.buildsDownloading[build.id] = buildsDownloadingForBuild;
+	} else {
+		delete newState.buildsDownloading[build.id];
+	}
+	return newState;
+};
 export default (state = initialState, action) => {
 	switch (action.type) {
 		case MERGE_SETTINGS_INTO_BUILD_FAIL:
@@ -66,10 +106,20 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				...action.payload,
-				fetchingBuilds: false,
-				buildList
+				fetchingBuilds: false
 			};
 		}
+		case UPDATING_NEW_BUILDS_BEGIN:
+			return {
+				...state,
+				allBuildsDownloading: true
+			};
+		case UPDATING_NEW_BUILDS_SUCCESS:
+		case UPDATING_NEW_BUILDS_FAIL:
+			return {
+				...state,
+				allBuildsDownloading: false
+			};
 		case FETCH_BUILDS_FAIL:
 		case UPDATED_BUILD:
 		case COPY_BUILD_SETTINGS_SUCCESS:
@@ -137,6 +187,35 @@ export default (state = initialState, action) => {
 				...state,
 				buildSettingPath: null
 			};
+		case DOWNLOAD_BUILD_BEGIN:
+			return updateBuildDownloading(state, action.payload.build, {
+				downloading: action.payload.build.download_file
+			});
+		case DOWNLOAD_BUILD_SUCCESS:
+		case UNZIP_BUILD_BEGIN:
+			return updateBuildDownloading(state, action.payload.build, {
+				downloading: 'Unzipping Build',
+				downloadingProgress: null
+			});
+		case DOWNLOAD_BUILD_ERROR:
+			return updateBuildDownloading(state, action.payload.build, {
+				downloading: null,
+				error: action.payload.error
+			});
+		case UNZIP_BUILD_PROGRESS_UPDATE:
+			return updateBuildDownloading(state, action.payload.build, {
+				unzipStatus: action.payload.path
+			});
+		case UNZIP_BUILD_SUCCESS:
+			return updateBuildDownloading(state, action.payload.build, null);
+		case UNZIP_BUILD_ERROR:
+			return updateBuildDownloading(state, action.payload.build, {
+				error: action.payload.error
+			});
+		case BUILD_DOWNLOAD_PROGRESS_UPDATE:
+			return updateBuildDownloading(state, action.payload.build, {
+				downloadingProgress: action.payload.percent
+			});
 		default:
 			return state;
 	}

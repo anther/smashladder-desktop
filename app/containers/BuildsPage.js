@@ -13,6 +13,8 @@ import * as DolphinStatusActions from '../actions/dolphinStatus';
 import * as ReplayBrowseActions from '../actions/replayBrowse';
 import * as LoginActions from '../actions/login';
 import * as WindowActions from '../actions/window';
+import * as LadderWebsocketActions from '../actions/ladderWebsocket';
+import * as TabActions from '../actions/tabs';
 import WebsocketComponent from '../components/WebsocketComponent';
 import ReplaySync from '../components/ReplaySync';
 import DolphinSettings from '../components/DolphinSettings';
@@ -21,18 +23,20 @@ import Header from '../components/common/Header';
 import Layout from '../components/common/Layout';
 import ReplayBrowser from '../components/ReplayBrowser';
 import AutoUpdates from '../components/AutoUpdates';
+import Tabs from '../components/elements/Tabs';
+import QuickSetup from '../components/QuickSetup';
 
 class BuildsPage extends Component<Props> {
 	static renderConnectionSettings(props) {
 		return (
-			<div className="container connecties">
+			<div className="connecties">
 				<div className="row">
-					<div className="connections">
+					<div className="connections col m6">
 						<h5>Connections</h5>
 						<WebsocketComponent {...props} />
 						<ReplaySync {...props} />
 					</div>
-					<div className="dolphin_settings">
+					<div className="dolphin_settings col m6">
 						<h5>Dolphin Settings</h5>
 						<DolphinSettings {...props} />
 					</div>
@@ -69,6 +73,14 @@ class BuildsPage extends Component<Props> {
 		return null;
 	}
 
+	componentDidMount() {
+		this.props.ladderWebsocketConnect();
+	}
+
+	componentWillUnmount() {
+		this.props.ladderWebsocketDisconnect();
+	}
+
 	render() {
 		const props = {
 			...this.props,
@@ -80,41 +92,38 @@ class BuildsPage extends Component<Props> {
 			return <Redirect to="/"/>;
 		}
 
-		let sideBar = null;
-		let bottomContent = null;
-		const connectionInformation = BuildsPage.renderConnectionSettings(props);
-		if (allReplays.size > 0) {
-			sideBar = <ReplayBrowser {...props} />;
-			bottomContent = connectionInformation;
-		} else {
-			sideBar = connectionInformation;
+		const settingsAndSuch = BuildsPage.renderConnectionSettings(props);
+		const sideBar = <ReplayBrowser {...props} />;
+		if (activeUpdate) {
+			return (
+				<div className="row">
+					<div className="container">
+						<AutoUpdates {...props} />
+					</div>
+				</div>
+			);
 		}
 
 		return (
-			<React.Fragment>
-				<Layout>
-					<Header {...props} />
-					{!activeUpdate && (
-						<React.Fragment>
-							{!viewingReplayDetails && (
-								<div className="col m8">
-									<Builds {...props} />
-								</div>
-							)}
-							{viewingReplayDetails && <div className="col m12">{sideBar}</div>}
-							{!viewingReplayDetails && <div className="col m4 sidebar">{sideBar}</div>}
-						</React.Fragment>
-					)}
-				</Layout>
-				{!activeUpdate && <div className="bottom_bar">{bottomContent}</div>}
-				{activeUpdate && (
-					<div className="row">
-						<div className="container">
-							<AutoUpdates {...props} />
-						</div>
+			<Layout>
+				<Header {...props} />
+				<Tabs
+					onTabChange={this.props.changeTab}
+					activeTab={this.props.currentTab}>
+					<div label='Home'>
+						{!viewingReplayDetails && (
+							<div className="col m8">
+								<Builds {...props} />
+							</div>
+						)}
+						{viewingReplayDetails && <div className="col m12">{sideBar}</div>}
+						{!viewingReplayDetails && <div className="col m4 sidebar">{sideBar}</div>}
 					</div>
-				)}
-			</React.Fragment>
+					<div label='Settings'>
+						{settingsAndSuch}
+					</div>
+				</Tabs>
+			</Layout>
 		);
 	}
 }
@@ -127,7 +136,10 @@ const mapStateToProps = (state) => ({
 	...state.autoUpdates,
 	...state.replayWatch,
 	...state.replayBrowse,
-	...state.window
+	...state.ladderWebsocket,
+	...state.tabs,
+	...state.window,
+	buildList: BuildActions.getSortedBuilds(state)
 });
 
 function mapDispatchToProps(dispatch) {
@@ -141,7 +153,9 @@ function mapDispatchToProps(dispatch) {
 			...ReplayBrowseActions,
 			...DolphinStatusActions,
 			...LoginActions,
-			...WindowActions
+			...WindowActions,
+			...LadderWebsocketActions,
+			...TabActions
 		},
 		dispatch
 	);

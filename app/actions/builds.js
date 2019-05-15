@@ -2,6 +2,15 @@
 import electronSettings from 'electron-settings';
 import _ from 'lodash';
 import fs from 'fs';
+import unzipper from 'unzipper';
+import request from 'request';
+import progress from 'request-progress';
+import path from 'path';
+import { createSelector } from 'reselect';
+
+import Files from '../utils/Files';
+import multitry from '../utils/multitry';
+
 import { endpoints } from '../utils/SmashLadderAuthentication';
 import Build from '../utils/BuildData';
 import BuildLaunchAhk from '../utils/BuildLaunchAhk';
@@ -17,7 +26,6 @@ import {
 import { startReplayBrowser } from './replayBrowse';
 import { parseDolphinPlayerList } from './dolphinStatus';
 import { beginWatchingForReplayChanges } from './replayWatch';
-import Files from '../utils/Files';
 import Constants from '../utils/Constants';
 
 export const FETCH_BUILDS_BEGIN = 'FETCH_BUILDS_BEGIN';
@@ -71,6 +79,19 @@ export const SET_BUILD_PATH_BEGIN = 'SET_BUILD_PATH_BEGIN';
 export const SET_BUILD_PATH_SUCCESS = 'SET_BUILD_PATH_SUCCESS';
 export const SET_BUILD_PATH_FAIL = 'SET_BUILD_PATH_FAIL';
 
+export const DOWNLOAD_BUILD_BEGIN = 'DOWNLOAD_BUILD_BEGIN';
+export const DOWNLOAD_BUILD_SUCCESS = 'DOWNLOAD_BUILD_SUCCESS';
+export const DOWNLOAD_BUILD_ERROR = 'DOWNLOAD_BUILD_ERROR';
+export const UNZIP_BUILD_BEGIN = 'UNZIP_BUILD_BEGIN';
+export const UNZIP_BUILD_SUCCESS = 'UNZIP_BUILD_SUCCESS';
+export const UNZIP_BUILD_ERROR = 'UNZIP_BUILD_ERROR';
+export const UNZIP_BUILD_PROGRESS_UPDATE = 'UNZIP_BUILD_PROGRESS_UPDATE';
+export const BUILD_DOWNLOAD_PROGRESS_UPDATE = 'BUILD_DOWNLOAD_PROGRESS_UPDATE';
+export const UPDATING_NEW_BUILDS_BEGIN = 'UPDATING_NEW_BUILDS_BEGIN';
+export const UPDATING_NEW_BUILDS_SUCCESS = 'UPDATING_NEW_BUILDS_SUCCESS';
+export const UPDATING_NEW_BUILDS_FAIL = 'UPDATING_NEW_BUILDS_FAIL';
+
+
 let buildLauncher = null;
 export const initializeBuildLauncher = () => (dispatch) => {
 	if (!buildLauncher) {
@@ -83,7 +104,51 @@ export const initializeBuildLauncher = () => (dispatch) => {
 	}
 };
 
-export const retrieveBuilds = () => (dispatch, getState) => {
+export const retrieveBuildsAndInstall = () => (dispatch, getState) => {
+	fetchBuildsMainFunction(dispatch, getState)
+		.then(() => {
+			dispatch({
+				type: UPDATING_NEW_BUILDS_BEGIN
+			});
+			const allBuilds = getState().builds.builds;
+			const buildsList = _.values(allBuilds).filter((build) => {
+				return !build.path && build.hasDownload();
+			});
+
+
+			const downloadBuilds = (builds) => {
+				console.log('attempting download for builds', builds);
+				let p = Promise.resolve(); // Q() in q
+
+				builds.forEach(build =>
+					p = p.then(() => {
+						console.log('completed');
+						return installDolphinMainFunction(build, dispatch, getState);
+					}).catch((error) => {
+						console.error('Retrieve and install failed');
+						console.error(error);
+					})
+				);
+				return p;
+			};
+
+			return downloadBuilds(buildsList);
+		})
+		.then(() => {
+			dispatch({
+				type: UPDATING_NEW_BUILDS_SUCCESS
+			});
+			console.log('promise fulfilled????');
+		})
+		.catch((error) => {
+			dispatch({
+				type: UPDATING_NEW_BUILDS_FAIL
+			});
+			console.error(error);
+		});
+};
+
+const fetchBuildsMainFunction = (dispatch, getState) => {
 	dispatch({
 		type: FETCH_BUILDS_BEGIN
 	});
@@ -123,7 +188,7 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 	};
 
 
-	Promise.resolve()
+	return Promise.resolve()
 		.then(() => {
 
 			// Get cached data
@@ -147,6 +212,10 @@ export const retrieveBuilds = () => (dispatch, getState) => {
 		.catch((error) => {
 			console.error(error);
 		});
+};
+
+export const retrieveBuilds = () => (dispatch, getState) => {
+	fetchBuildsMainFunction(dispatch, getState);
 };
 
 const convertLadderBuildListToSomethingThatMakesSense = (ladderList) => {
@@ -201,8 +270,8 @@ const copyBuildSettings = (build: Build) => (dispatch, getState) => {
 	const state = getState();
 	const currentBuilds = { ...state.builds.builds };
 	if (build.executablePath()) {
-		const addRom = (path) => {
-			dispatch(addRomPath(path));
+		const addRom = (romPath) => {
+			dispatch(addRomPath(romPath));
 		};
 		const allowAnalytics = (set) => {
 			dispatch(updateAllowDolphinAnalytics(set));
@@ -275,13 +344,190 @@ export const promptToSetBuildPath = (build: Build) => (dispatch) => {
 		});
 };
 
-export const setBuildPath = (build: Build, path) => (dispatch, getState) => {
-	build.path = path;
+export const setBuildPath = (build: Build, newBuildPath) => (dispatch, getState) => {
+	build.path = newBuildPath;
 	dispatch(saveBuild(build, getState));
 	if (build.executablePath()) {
 		dispatch(mergeInitialSettingsIntoBuild(build));
 	}
 	dispatch(syncBuildsWithServer());
+};
+
+const installDolphinMainFunction = (build, dispatch, getState) => {
+	const { dolphinInstallPath } = getState().dolphinSettings;
+
+	const basePath = path.join(dolphinInstallPath);
+	console.log('downloading from', build.download_file);
+
+	const baseName = `${Files.makeFilenameSafe(build.name + build.id)}`;
+	const extension = path.extname(build.download_file);
+	const baseNameAndExtension = `${baseName}${extension}`;
+	const unzipLocation = path.join(basePath, baseName, '/');
+	const zipWriteLocation = path.join(basePath, baseNameAndExtension);
+
+	return Files.ensureDirectoryExists(basePath, 0o0755)
+		.then(() => {
+			dispatch({
+				type: DOWNLOAD_BUILD_BEGIN,
+				payload: {
+					build
+				}
+			});
+
+			return new Promise((resolve, reject) => {
+				progress(request(build.download_file), {})
+					.on('progress', (state) => {
+						dispatch({
+							type: BUILD_DOWNLOAD_PROGRESS_UPDATE,
+							payload: {
+								build,
+								percent: state.percent
+							}
+						});
+						console.log('progress', state);
+					})
+					.on('error', (err) => {
+						console.error(err);
+						dispatch({
+							type: DOWNLOAD_BUILD_ERROR,
+							payload: {
+								build,
+								error: err
+							}
+						});
+						reject(err);
+					})
+					.once('finish', () => {
+						console.log('finished!');
+					})
+					.on('end', () => {
+						console.log('ended!');
+						const error = new Error('File was not found... Probably');
+						const stats = fs.statSync(zipWriteLocation);
+						if (stats.size <= 30) {
+							dispatch({
+								type: DOWNLOAD_BUILD_ERROR,
+								payload: {
+									build,
+									error: error
+								}
+							});
+							reject(error);
+							return;
+						}
+
+
+						// Do something after request finishes
+						dispatch({
+							type: DOWNLOAD_BUILD_SUCCESS,
+							payload: {
+								build
+							}
+						});
+						dispatch({
+							type: UNZIP_BUILD_BEGIN,
+							payload: {
+								build
+							}
+						});
+						const updateUnzipDisplay = _.throttle((entry) => {
+							dispatch({
+								type: UNZIP_BUILD_PROGRESS_UPDATE,
+								payload: {
+									build,
+									path: entry.path ? entry.path : null
+								}
+							});
+						}, 100);
+						switch (extension.toLowerCase()) {
+							case '.zip':
+								console.log('Before open zip', zipWriteLocation);
+								multitry(500, 5, () => {
+									fs.createReadStream(zipWriteLocation).pipe(
+										unzipper
+											.Extract({ path: unzipLocation })
+											.on('close', () => {
+												console.log('cllosed?');
+												const dolphinLocation = Files.findInDirectory(unzipLocation, 'Dolphin.exe');
+												console.log(dolphinLocation, 'what is dolphin lcoation');
+												if (dolphinLocation.length) {
+													dispatch(setBuildPath(build, dolphinLocation[0], true));
+													dispatch(setDefaultPreferableNewUserBuildOptions(build));
+													dispatch({
+														type: UNZIP_BUILD_SUCCESS,
+														payload: {
+															build
+														}
+													});
+													resolve();
+												} else {
+													const error = new Error('Could not find Dolphin.exe after extracting the archive');
+													dispatch({
+														type: UNZIP_BUILD_ERROR,
+														payload: {
+															build,
+															error: error
+														}
+													});
+													reject(error);
+												}
+											})
+											.on('entry', updateUnzipDisplay)
+											.on('error', (error) => {
+												console.error(error);
+												dispatch({
+													type: UNZIP_BUILD_ERROR,
+													payload: {
+														build,
+														downloading: null,
+														unzipStatus: null,
+														error: error.toString()
+													}
+												});
+												reject(error);
+											})
+									);
+								}).catch((error) => {
+									console.log('unzip fail multiple times...');
+									console.error(error);
+									reject(error);
+								});
+								break;
+							default: {
+								const error = new Error('Could not extract archive! (Invalid Extension)');
+								dispatch({
+									type: UNZIP_BUILD_ERROR,
+									payload: {
+										build,
+										downloading: null,
+										unzipStatus: null,
+										error: error
+									}
+								});
+								reject(error);
+							}
+						}
+					})
+					.pipe(fs.createWriteStream(zipWriteLocation));
+			});
+
+		})
+		.then(() => {
+			console.log('ALL DONE WITH ', build.name);
+		})
+		.catch((error) => {
+			dispatch({
+				type: DOWNLOAD_BUILD_ERROR,
+				payload: {
+					build,
+					error: error ? error.toString() : 'Error Downloading File...'
+				}
+			});
+		});
+};
+
+export const downloadBuild = (build: Build) => (dispatch, getState) => {
+	installDolphinMainFunction(build, dispatch, getState);
 };
 
 const syncBuildsWithServer = () => (dispatch, getState) => {
@@ -493,6 +739,7 @@ export const joinBuild = (build, hostCode) => (dispatch, getState) => {
 
 export const hostBuild = (build, game) => async (dispatch, getState) => {
 	const authentication = getAuthenticationFromState(getState);
+	console.log('what we get from host build', build, game, dispatch, getState);
 	const state = getState();
 	dispatch({
 		type: HOST_BUILD_BEGIN,
@@ -570,3 +817,29 @@ const buildFailError = (type, build, error) => {
 		}
 	};
 };
+
+const getBuilds = (state) => state.builds.builds;
+
+export const getSortedBuilds = createSelector(
+	[getBuilds],
+	(builds) => {
+		return _.values(builds).sort((a, b) => {
+			if (a.path && !b.path) {
+				return -1;
+			}
+			if (b.path && !a.path) {
+				return 1;
+			}
+			if (a.hasDownload() && !b.hasDownload()) {
+				return -1;
+			}
+			if (b.hasDownload() && !a.hasDownload()) {
+				return 1;
+			}
+			if (a.order !== b.order) {
+				return a.order > b.order ? 1 : -1;
+			}
+			return 0;
+		});
+	}
+);

@@ -24,11 +24,11 @@ const initialState = {
 	allowDolphinAnalytics: electronSettings.get('dolphinSettings.allowDolphinAnalytics', true),
 	meleeIsoPath: electronSettings.get('dolphinSettings.meleeIsoPath', null),
 	dolphinInstallPath: electronSettings.get('dolphinSettings.dolphinInstallPath', defaultDolphinInstallPath),
-	meleeIsoVerified: electronSettings.get('dolphinSettings.meleeIsoVerified', true),
+	meleeIsoVerified: electronSettings.get('dolphinSettings.meleeIsoVerified', false),
 	settingMeleeIsoPath: false,
 	selectingRomPath: false,
 	settingDolphinInstallPath: false,
-	meleeIsoPathError: null,
+	meleeIsoPathError: null
 };
 
 export default (state = initialState, action) => {
@@ -91,7 +91,7 @@ export default (state = initialState, action) => {
 				...newState,
 				meleeIsoPathError: null,
 				meleeIsoVerified: false,
-				verifyingMeleeIso: true,
+				verifyingMeleeIso: true
 			};
 		case MELEE_ISO_VERIFY_FAIL:
 			electronSettings.set('dolphinSettings.meleeIsoVerified', false);
@@ -99,7 +99,7 @@ export default (state = initialState, action) => {
 				...newState,
 				meleeIsoPathError: action.payload,
 				meleeIsoVerified: false,
-				verifyingMeleeIso: false,
+				verifyingMeleeIso: false
 			};
 		case MELEE_ISO_VERIFY_SUCCESS:
 			electronSettings.set('dolphinSettings.meleeIsoVerified', true);
@@ -107,7 +107,7 @@ export default (state = initialState, action) => {
 				...newState,
 				meleeIsoPathError: null,
 				meleeIsoVerified: true,
-				verifyingMeleeIso: false,
+				verifyingMeleeIso: false
 			};
 		case SET_DOLPHIN_INSTALL_PATH_SUCCESS:
 			electronSettings.set('dolphinSettings.dolphinInstallPath', action.payload);

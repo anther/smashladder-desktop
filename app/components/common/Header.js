@@ -81,17 +81,22 @@ export default class Header extends Component {
 				</div>
 				}
 				<h3 className="page-title">
-					<span className='site_name'>
-						<span className='logo-smash'>Smash</span>
+					<div className='logo_stuff'>
 						<img
 							onClick={this.logoClick}
-							alt='' src={ladderLogoIcon}/>
-						<span className='logo-ladder'>Ladder</span>
-					</span>
-					<span className='launcher_name'>
-						<span className='logo-dolphin'>Dolphin Launcher <span
-							className='beta'>Beta {remote.app.getVersion()}</span> </span>
-					</span>
+							alt='' src={ladderLogoIcon} />
+					</div>
+					<div className='name_stuff'>
+						<span className='site_name'>
+							<span className='logo-smash'>Smash</span>
+							<span className='logo-ladder'>Ladder</span>
+						</span>
+						<span className='launcher_name'>
+							<span className='logo-dolphin'>
+								<span>Dolphin Launcher</span>
+								<span className='beta'>Beta {remote.app.getVersion()}</span> </span>
+						</span>
+					</div>
 				</h3>
 			</div>
 		);

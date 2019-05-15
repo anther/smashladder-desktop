@@ -6,6 +6,8 @@ import Root from './containers/Root';
 import { configureStore, history } from './store/configureStore';
 import './app.global.scss';
 import 'materialize-css/dist/js/materialize';
+import 'rc-steps/assets/index.css';
+import 'rc-steps/assets/iconfont.css';
 
 const store = configureStore();
 

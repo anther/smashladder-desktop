@@ -7,6 +7,9 @@ import { Redirect } from 'react-router';
 import BuildComponent from './BuildComponent';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
 import Build from '../utils/BuildData';
+import AlertBox from './elements/AlertBox';
+import Button from './elements/Button';
+import SetMeleeIsoAlertBox from './SetMeleeIsoAlertBox';
 
 export default class Builds extends Component {
 	static propTypes = {
@@ -25,7 +28,9 @@ export default class Builds extends Component {
 		closeDolphin: PropTypes.func.isRequired,
 		hostCode: PropTypes.string,
 		buildOpening: PropTypes.bool.isRequired,
-		buildOpen: PropTypes.bool.isRequired
+		buildOpen: PropTypes.bool.isRequired,
+		buildsDownloading: PropTypes.object.isRequired,
+		windowFocused: PropTypes.bool.isRequired
 	};
 
 	static defaultProps = {
@@ -36,7 +41,8 @@ export default class Builds extends Component {
 	};
 
 	componentDidMount() {
-		this.props.retrieveBuilds();
+		// this.props.retrieveBuilds();
+		this.props.retrieveBuildsAndInstall();
 	}
 
 	isActiveBuild(build) {
@@ -60,39 +66,48 @@ export default class Builds extends Component {
 						<h6>Fetching Build List</h6>
 					</div>
 				)}
-				{(!fetchingBuilds || !!buildList.length) && (
-					<div className="builds collection">
-						{buildList.length > 0 && (
-							<div className="">
-								{buildList.map(build => (
-									<BuildComponent
-										key={build.dolphin_build_id}
-										{...this.props}
-										build={build}
-										buildOpen={
-											this.isActiveBuild(build) && this.props.buildOpen
-										}
-										buildOpening={
-											this.isActiveBuild(build) && this.props.buildOpening
-										}
-										hostCode={
-											this.isActiveBuild(build) ? this.props.hostCode : ''
-										}
-										buildError={
-											buildError && buildError.for === build.id
-												? buildError.error
-												: null
-										}
-									/>
-								))}
-							</div>
-						)}
-						{buildList.length === 0 && (
-							<div className="no_builds">
-								Your SmashLadder account currently has no builds selected that can use Dolphin Launcher.
-							</div>
-						)}
-					</div>
+				{(!fetchingBuilds || buildList.length > 0) && (
+					<React.Fragment>
+						<SetMeleeIsoAlertBox
+							{...this.props}
+						/>
+						<div className="builds collection">
+							{buildList.length > 0 && (
+								<React.Fragment>
+									{buildList.map(build => (
+										<BuildComponent
+											key={build.dolphin_build_id}
+											{...this.props}
+											build={build}
+											buildOpen={
+												this.isActiveBuild(build) && this.props.buildOpen
+											}
+											buildOpening={
+												this.isActiveBuild(build) && this.props.buildOpening
+											}
+											hostCode={
+												this.isActiveBuild(build) ? this.props.hostCode : ''
+											}
+											buildError={
+												buildError && buildError.for === build.id
+													? buildError.error
+													: null
+											}
+											buildDownload={
+												this.props.buildsDownloading[build.id]
+											}
+										/>
+									))}
+								</React.Fragment>
+							)}
+							{buildList.length === 0 && (
+								<div className="no_builds">
+									Your SmashLadder account currently has no games selected that can use Dolphin
+									Launcher.
+								</div>
+							)}
+						</div>
+					</React.Fragment>
 				)}
 			</React.Fragment>
 		);

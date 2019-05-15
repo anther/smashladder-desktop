@@ -5,8 +5,8 @@ import {
 	LOGIN_BEGIN,
 	INVALID_LOGIN_KEY,
 	LOGOUT_BEGIN,
-	DISABLE_CONNECTION,
-	ENABLE_CONNECTION, ENABLE_DEVELOPMENT_URLS, ENABLE_PRODUCTION_URLS
+	ENABLE_DEVELOPMENT_URLS,
+	ENABLE_PRODUCTION_URLS
 } from '../actions/login';
 
 const defaultLoginState = {
@@ -27,7 +27,6 @@ const initialState = {
 	loginCode: loginDatas.loginCode,
 	sessionId: loginDatas.sessionId,
 	productionUrls: loginDatas.productionUrls,
-	connectionEnabled: true,
 	isLoggingIn: false,
 	showLoginButton: false
 };
@@ -47,16 +46,6 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				productionUrls: true
-			};
-		case ENABLE_CONNECTION:
-			return {
-				...state,
-				connectionEnabled: true
-			};
-		case DISABLE_CONNECTION:
-			return {
-				...state,
-				connectionEnabled: false
 			};
 		case LOGOUT_BEGIN:
 			electronSettings.set('login', defaultLoginState);

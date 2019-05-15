@@ -29,10 +29,10 @@ export const beginWatchingForReplayChanges = () => (dispatch, getState) => {
 	const authentication = getAuthenticationFromState(getState);
 	let { replayWatchProcess } = state.replayWatch;
 	const { replayWatchEnabled, replayWatchPaths, replayWatchProcessCounter } = state.replayWatch;
-	const { connectionEnabled } = state.login;
+	const { ladderWebsocketConnectionEnabled } = state.ladderWebsocket;
 
 	const builds = { ...state.builds.builds };
-	if (!connectionEnabled) {
+	if (!ladderWebsocketConnectionEnabled) {
 		console.log('connection is disabled');
 		return;
 	}
