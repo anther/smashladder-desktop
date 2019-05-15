@@ -137,6 +137,10 @@ export default class LadderWebsocket {
 			}
 		}
 
+		if (!ladderWebsocketConnectionEnabled) {
+			return;
+		}
+
 		if (!this.reconnectTimeout) {
 			console.error('should be warming up');
 			const nextRetry = this.connectionBackoff.next();
@@ -149,6 +153,7 @@ export default class LadderWebsocket {
 
 			this.reconnectTimeout = setTimeout(() => {
 				const { authentication } = this;
+				console.log('attempting reconnection??');
 				if (this.websocket) {
 					this.websocket.close();
 				}

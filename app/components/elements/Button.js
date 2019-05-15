@@ -7,7 +7,7 @@ export default class Button extends Component {
 	};
 
 	render() {
-		let { className, small, darkWaves, ...props } = this.props;
+		let { className, small, darkWaves, loading, ...props } = this.props;
 		const classes = new HtmlClassList(className);
 		classes.add('btn waves-effect');
 		classes.add(darkWaves ? 'waves-dark' : 'waves-light');

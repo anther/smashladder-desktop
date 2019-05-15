@@ -46,7 +46,7 @@ export default class WebsocketComponent extends Component {
 			return 'Connection Disabled';
 		}
 		if (secondsUntilRetry !== null) {
-			return `Reconnecting (${this.secondsUntilRetry}s)`;
+			return `Reconnecting (${secondsUntilRetry}s)`;
 		}
 
 		if (ladderWebsocketConnectionStable) {

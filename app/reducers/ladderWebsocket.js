@@ -39,6 +39,13 @@ export default (state = initialState, action) => {
 				ladderWebsocketForcedDisconnect: false,
 				ladderWebsocketConnectionStable: false
 			};
+		case LADDER_WEBSOCKET_CONNECTION_CLOSED:
+			return {
+				...state,
+				ladderWebsocketConnecting: false,
+				ladderWebsocketConnectionOpen: false,
+				ladderWebsocketConnectionStable: false
+			};
 		case LADDER_WEBSOCKET_OPENED:
 			return {
 				...state,
@@ -52,12 +59,7 @@ export default (state = initialState, action) => {
 				...state,
 				ladderWebsocketConnectionStable: true
 			};
-		case LADDER_WEBSOCKET_CONNECTION_CLOSED:
-			return {
-				...state,
-				ladderWebsocketConnectionOpen: false,
-				ladderWebsocketConnecting: false
-			};
+
 		case LADDER_WEBSOCKET_FORCED_TO_DISCONNECT:
 			return {
 				...state,
