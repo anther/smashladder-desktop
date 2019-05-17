@@ -78,6 +78,7 @@ export const ladderWebsocketConnectionStabilized = () => {
 	};
 };
 export const ladderWebsocketConnectionClosed = () => {
+	ladderWebsocket.updateWebsocketIfNecessary();
 	return {
 		type: LADDER_WEBSOCKET_CONNECTION_CLOSED
 	};

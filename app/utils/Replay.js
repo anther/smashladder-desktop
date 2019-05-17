@@ -223,13 +223,12 @@ export default class Replay extends CacheableDataObject {
 		});
 
 		this.parseMetadata();
-		this.startAt = this.metadata.startAt ? moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true) : this.getFileDate().clone();
+		this.startAt = this.metadata.startAt ? moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true) : 'N/A';
 		if (this.metadata.startAt) {
 			this.metadata.startAt = this.startAt;
 		}
 
 		this.stats.lastFrame = SlippiFrame.createFromFrameNumber(this.stats.lastFrame);
-		this.stats.endAt = this.startAt.clone().add(this.stats.lastFrame.seconds(), 'seconds');
 	}
 
 	getMetadata() {
@@ -297,7 +296,6 @@ export default class Replay extends CacheableDataObject {
 		if (this.metadata.startAt) {
 			this.metadata.startAt = moment(this.metadata.startAt, 'YYYY-MM-DDTHH:mm:ssZ', true);
 			this.metadata.lastFrame = SlippiFrame.createFromFrameNumber(this.metadata.lastFrame);
-			this.metadata.endAt = this.metadata.startAt.clone().add(this.metadata.lastFrame.seconds(), 'seconds');
 		}
 		this.updateSettings(); // We can update certain settings based on updated metadata
 	}

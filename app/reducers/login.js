@@ -37,12 +37,14 @@ export default (state = initialState, action) => {
 	switch (action.type) {
 		case ENABLE_DEVELOPMENT_URLS:
 			electronSettings.set('login.productionUrls', false);
+			defaultLoginState.productionUrls = false;
 			return {
 				...state,
 				productionUrls: false
 			};
 		case ENABLE_PRODUCTION_URLS:
 			electronSettings.set('login.productionUrls', true);
+			defaultLoginState.productionUrls = true;
 			return {
 				...state,
 				productionUrls: true

@@ -29,7 +29,8 @@ export default (state = initialState, action) => {
 		case LADDER_WEBSOCKET_BEGIN:
 			return {
 				...state,
-				ladderWebsocketConnecting: true
+				ladderWebsocketConnecting: true,
+				secondsUntilRetry: null
 			};
 		case LADDER_WEBSOCKET_END:
 			return {
@@ -52,7 +53,8 @@ export default (state = initialState, action) => {
 				ladderWebsocketConnecting: false,
 				ladderWebsocketConnectionOpen: true,
 				ladderWebsocketForcedDisconnect: false,
-				ladderWebsocketConnectionStable: false
+				ladderWebsocketConnectionStable: false,
+				secondsUntilRetry: null
 			};
 		case LADDER_WEBSOCKET_STABLE:
 			return {

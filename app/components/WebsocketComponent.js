@@ -45,9 +45,6 @@ export default class WebsocketComponent extends Component {
 		if (!ladderWebsocketConnectionEnabled) {
 			return 'Connection Disabled';
 		}
-		if (secondsUntilRetry !== null) {
-			return `Reconnecting (${secondsUntilRetry}s)`;
-		}
 
 		if (ladderWebsocketConnectionStable) {
 			return 'Connection Active';
@@ -57,6 +54,9 @@ export default class WebsocketComponent extends Component {
 		}
 		if (ladderWebsocketConnecting) {
 			return 'Connecting...';
+		}
+		if (secondsUntilRetry !== null) {
+			return `Reconnecting (${secondsUntilRetry}s)`;
 		}
 		return 'Auth Failure?';
 	}
