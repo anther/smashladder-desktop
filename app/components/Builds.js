@@ -93,9 +93,6 @@ export default class Builds extends Component {
 													? buildError.error
 													: null
 											}
-											buildDownload={
-												this.props.buildsDownloading[build.id]
-											}
 										/>
 									))}
 								</React.Fragment>

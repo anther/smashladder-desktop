@@ -79,6 +79,7 @@ export const SET_BUILD_PATH_BEGIN = 'SET_BUILD_PATH_BEGIN';
 export const SET_BUILD_PATH_SUCCESS = 'SET_BUILD_PATH_SUCCESS';
 export const SET_BUILD_PATH_FAIL = 'SET_BUILD_PATH_FAIL';
 
+export const DOWNLOAD_BUILD_ALREADY_ACTIVE = 'DOWNLOAD_BUILD_ALREADY_ACTIVE';
 export const DOWNLOAD_BUILD_BEGIN = 'DOWNLOAD_BUILD_BEGIN';
 export const DOWNLOAD_BUILD_SUCCESS = 'DOWNLOAD_BUILD_SUCCESS';
 export const DOWNLOAD_BUILD_ERROR = 'DOWNLOAD_BUILD_ERROR';
@@ -90,6 +91,7 @@ export const BUILD_DOWNLOAD_PROGRESS_UPDATE = 'BUILD_DOWNLOAD_PROGRESS_UPDATE';
 export const UPDATING_NEW_BUILDS_BEGIN = 'UPDATING_NEW_BUILDS_BEGIN';
 export const UPDATING_NEW_BUILDS_SUCCESS = 'UPDATING_NEW_BUILDS_SUCCESS';
 export const UPDATING_NEW_BUILDS_FAIL = 'UPDATING_NEW_BUILDS_FAIL';
+export const UPDATING_NEW_BUILDS_ALREADY_IN_PROGRESS = 'UPDATING_NEW_BUILDS_ALREADY_IN_PROGRESS';
 
 
 let buildLauncher = null;
@@ -105,6 +107,14 @@ export const initializeBuildLauncher = () => (dispatch) => {
 };
 
 export const retrieveBuildsAndInstall = () => (dispatch, getState) => {
+	if (getState().builds.downloadActive) {
+		dispatch({
+			type: UPDATING_NEW_BUILDS_ALREADY_IN_PROGRESS
+		});
+		return false;
+	}
+
+
 	fetchBuildsMainFunction(dispatch, getState)
 		.then(() => {
 			dispatch({
@@ -355,6 +365,13 @@ export const setBuildPath = (build: Build, newBuildPath) => (dispatch, getState)
 
 const installDolphinMainFunction = (build, dispatch, getState) => {
 	const { dolphinInstallPath } = getState().dolphinSettings;
+
+	if (getState().builds.downloadActive) {
+		dispatch({
+			type: DOWNLOAD_BUILD_ALREADY_ACTIVE
+		});
+		return false;
+	}
 
 	const basePath = path.join(dolphinInstallPath);
 	console.log('downloading from', build.download_file);

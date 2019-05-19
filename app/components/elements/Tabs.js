@@ -62,6 +62,11 @@ export default class Tabs extends Component {
 		this.onTabClick = this.onTabClick.bind(this);
 	}
 
+	componentDidMount() {
+		Tabs.checkUrlHashses = false;
+		this.tabsInstance = M.Tabs.init(this.tabsRef.current, {});
+	}
+
 	onTabClick(tab) {
 		const { onTabClick, onTabChange } = this.props;
 		this.tabsInstance.select(tab);
@@ -72,7 +77,6 @@ export default class Tabs extends Component {
 			onTabClick(tab);
 		}
 		if (onTabChange && tab !== slugify(this.state.selectedTab)) {
-			console.error('triggered change!?');
 			this.props.onTabChange(tab);
 		}
 	}
@@ -89,11 +93,6 @@ export default class Tabs extends Component {
 			};
 		}
 		return null;
-	}
-
-	componentDidMount() {
-		Tabs.checkUrlHashses = false;
-		this.tabsInstance = M.Tabs.init(this.tabsRef.current, {});
 	}
 
 	render() {

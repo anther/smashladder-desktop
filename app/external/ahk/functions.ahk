@@ -403,7 +403,7 @@ JoinNetplayLobby(joinGameUsername, loadedCode){
 
 	if(ErrorLevel == 1)
     {
-        SendToParent("jobby_join", "fail")
+        SendToParent("lobby_join", "fail")
     }
     else
     {

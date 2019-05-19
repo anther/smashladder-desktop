@@ -45,37 +45,13 @@ const initialState = {
 	buildSettingPath: null,
 	allBuildsDownloading: false,
 
-	buildsDownloading: {}
-	/**
-	 * download,
-	 * unzipping,
-	 * downloadErrors,
-	 * unzipErrors,
-	 */
+	downloadActive: null,
+	downloadingProgress: null,
+	downloading: null,
+	downloadError: null,
+	unzipStatus: null,
 };
 
-const updateBuildDownloading = (state, build, updates) => {
-	const newState = _.cloneDeep(state);
-	let buildsDownloadingForBuild = null;
-	const buildsDownloading = newState.buildsDownloading;
-
-	if (buildsDownloading[build.id]) {
-		buildsDownloadingForBuild = { ...buildsDownloading[build.id] };
-	} else {
-		buildsDownloadingForBuild = {};
-	}
-
-	if (updates) {
-		buildsDownloadingForBuild = {
-			...buildsDownloadingForBuild,
-			...updates
-		};
-		newState.buildsDownloading[build.id] = buildsDownloadingForBuild;
-	} else {
-		delete newState.buildsDownloading[build.id];
-	}
-	return newState;
-};
 export default (state = initialState, action) => {
 	switch (action.type) {
 		case MERGE_SETTINGS_INTO_BUILD_FAIL:
@@ -188,34 +164,48 @@ export default (state = initialState, action) => {
 				buildSettingPath: null
 			};
 		case DOWNLOAD_BUILD_BEGIN:
-			return updateBuildDownloading(state, action.payload.build, {
+			return {
+				...state,
+				downloadActive: action.payload.build.id,
 				downloading: action.payload.build.download_file
-			});
+			};
 		case DOWNLOAD_BUILD_SUCCESS:
 		case UNZIP_BUILD_BEGIN:
-			return updateBuildDownloading(state, action.payload.build, {
+			return {
+				...state,
 				downloading: 'Unzipping Build',
 				downloadingProgress: null
-			});
+			};
 		case DOWNLOAD_BUILD_ERROR:
-			return updateBuildDownloading(state, action.payload.build, {
+			return {
+				...state,
 				downloading: null,
-				error: action.payload.error
-			});
+				downloadError: action.payload.error
+			};
 		case UNZIP_BUILD_PROGRESS_UPDATE:
-			return updateBuildDownloading(state, action.payload.build, {
+			return {
+				...state,
 				unzipStatus: action.payload.path
-			});
+			};
 		case UNZIP_BUILD_SUCCESS:
-			return updateBuildDownloading(state, action.payload.build, null);
+			return {
+				...state,
+				downloadActive: null,
+				downloadingProgress: null,
+				downloading: null,
+				downloadError: null,
+				unzipStatus: null,
+			};
 		case UNZIP_BUILD_ERROR:
-			return updateBuildDownloading(state, action.payload.build, {
-				error: action.payload.error
-			});
+			return {
+				...state,
+				downloadError: action.payload.error
+			};
 		case BUILD_DOWNLOAD_PROGRESS_UPDATE:
-			return updateBuildDownloading(state, action.payload.build, {
+			return {
+				...state,
 				downloadingProgress: action.payload.percent
-			});
+			};
 		default:
 			return state;
 	}

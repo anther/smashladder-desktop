@@ -27,12 +27,24 @@ export default class BuildComponent extends Component {
 		hostCode: PropTypes.string.isRequired,
 		dolphinInstallPath: PropTypes.string.isRequired,
 		windowFocused: PropTypes.bool.isRequired,
-		buildDownload: PropTypes.object
+		buildDownload: PropTypes.object,
+		buildSettingPath: PropTypes.string,
+		downloadActive: PropTypes.number,
+		downloading: PropTypes.string,
+		downloadError: PropTypes.string,
+		downloadingProgress: PropTypes.number,
+		unzipStatus: PropTypes.string
 	};
 
 	static defaultProps = {
 		buildError: null,
-		buildDownload: null
+		buildDownload: null,
+		buildSettingPath: null,
+		downloadActive: null,
+		downloading: null,
+		downloadError: null,
+		downloadingProgress: null,
+		unzipStatus: null
 	};
 
 	constructor(props) {
@@ -200,13 +212,14 @@ export default class BuildComponent extends Component {
 			unsettingBuildPathView,
 			transitioning
 		} = this.state;
-		let { buildDownload } = this.props;
-		if (buildDownload) {
+		let buildDownload = null;
+		let { downloadActive, downloading, downloadError, downloadingProgress, unzipStatus } = this.props;
+		if (downloadActive !== build.id) {
+			downloading = null;
+			downloadError = null;
+			downloadingProgress = null;
+			unzipStatus = null;
 		}
-		if (!buildDownload) {
-			buildDownload = {};
-		}
-		const { downloading, downloadingProgress, unzipStatus } = buildDownload;
 
 
 		const error = this.state.error || buildError;
