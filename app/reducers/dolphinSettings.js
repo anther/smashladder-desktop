@@ -14,7 +14,10 @@ import {
 	SET_DOLPHIN_INSTALL_PATH_BEGIN,
 	SET_DOLPHIN_INSTALL_PATH_SUCCESS,
 	SET_DOLPHIN_INSTALL_PATH_FAIL,
-	UNSET_DOLPHIN_INSTALL_PATH, MELEE_ISO_VERIFY_SUCCESS, MELEE_ISO_VERIFY_FAIL, MELEE_ISO_VERIFY_BEGIN
+	UNSET_DOLPHIN_INSTALL_PATH,
+	MELEE_ISO_VERIFY_SUCCESS,
+	MELEE_ISO_VERIFY_FAIL,
+	MELEE_ISO_VERIFY_BEGIN
 } from '../actions/dolphinSettings';
 import defaultDolphinInstallPath from '../constants/defaultDolphinInstallPath';
 
@@ -32,7 +35,6 @@ const initialState = {
 };
 
 export default (state = initialState, action) => {
-
 	const newState = {
 		...state,
 		...action.payload
@@ -69,7 +71,8 @@ export default (state = initialState, action) => {
 			electronSettings.set('dolphinSettings.meleeIsoPath', null);
 			return {
 				...newState,
-				meleeIsoPath: null
+				meleeIsoPath: null,
+				meleeIsoVerified: false
 			};
 		case SET_MELEE_ISO_PATH_BEGIN:
 			return {
@@ -132,4 +135,4 @@ export default (state = initialState, action) => {
 		default:
 			return state;
 	}
-}
+};
