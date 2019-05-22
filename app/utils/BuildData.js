@@ -147,5 +147,6 @@ Build.prototype.serializeFields = [
 	'ladder_id',
 	'name',
 	'order',
-	'path'
+	'path',
+	'manuallyUnsetBuildPath',
 ];

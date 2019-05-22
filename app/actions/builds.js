@@ -122,7 +122,7 @@ export const retrieveBuildsAndInstall = () => (dispatch, getState) => {
 			});
 			const allBuilds = getState().builds.builds;
 			const buildsList = _.values(allBuilds).filter((build) => {
-				return !build.path && build.hasDownload();
+				return !build.path && build.hasDownload() && !build.manuallyUnsetBuildPath;
 			});
 
 
@@ -356,6 +356,9 @@ export const promptToSetBuildPath = (build: Build) => (dispatch) => {
 
 export const setBuildPath = (build: Build, newBuildPath) => (dispatch, getState) => {
 	build.path = newBuildPath;
+	if (newBuildPath === null) {
+		build.manuallyUnsetBuildPath = true;
+	}
 	dispatch(saveBuild(build, getState));
 	if (build.executablePath()) {
 		dispatch(mergeInitialSettingsIntoBuild(build));
