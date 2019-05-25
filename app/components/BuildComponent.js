@@ -58,7 +58,6 @@ export default class BuildComponent extends Component {
 			selectedGame: selectedGame ? selectedGame.id : null,
 			joinCode: '',
 			enterJoinCode: false,
-			submittingJoinCode: false,
 
 			glowing: true,
 			unsettingBuildPathView: false,
@@ -76,6 +75,7 @@ export default class BuildComponent extends Component {
 		this.joinCodeCancel = this.joinCodeCancel.bind(this);
 		this.joinCodeChange = this.joinCodeChange.bind(this);
 		this.joinCodeSubmit = this.joinCodeSubmit.bind(this);
+		this.joinCodeKeydown = this.joinCodeKeydown.bind(this);
 		this.onDownloadClick = this.downloadClick.bind(this);
 
 		this.onBuildNameClick = this.buildNameClick.bind(this);
@@ -116,22 +116,32 @@ export default class BuildComponent extends Component {
 		});
 	}
 
-	confirmUnsetBuildPath() {
-		const { setBuildPath, build } = this.props;
-		this.setState({
-			transitioning: true
-		});
-		setTimeout(() => {
+	doTransition() {
+		return new Promise((resolve) => {
 			this.setState({
-				unsettingBuildPathView: false
+				transitioning: true
 			});
-			setBuildPath(build, null);
 			setTimeout(() => {
+				resolve();
 				this.setState({
 					transitioning: false
 				});
-			}, 1000);
-		}, 1000);
+			}, 150);
+		});
+	}
+
+	confirmUnsetBuildPath() {
+		const { setBuildPath, build } = this.props;
+		this.doTransition()
+			.then(() => {
+				this.setState({
+					unsettingBuildPathView: false
+				});
+				setBuildPath(build, null);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
 	}
 
 	downloadClick() {
@@ -145,6 +155,12 @@ export default class BuildComponent extends Component {
 		});
 	}
 
+	joinCodeKeydown(event) {
+		if (event.key === 'Enter') {
+			this.joinCodeSubmit();
+		}
+	}
+
 	joinCodeChange(event) {
 		this.setState({
 			joinCode: event.target.value
@@ -154,8 +170,7 @@ export default class BuildComponent extends Component {
 	joinClick() {
 		this.setState({
 			enterJoinCode: true,
-			joinCode: '',
-			submittingJoinCode: false
+			joinCode: ''
 		});
 	}
 
@@ -183,19 +198,36 @@ export default class BuildComponent extends Component {
 	}
 
 	joinCodeSubmit() {
-		this.setState({
-			enterJoinCode: false,
-			submittingJoinCode: true
-		});
-		this.props.joinBuild(this.props.build, this.state.joinCode);
+		this.doTransition()
+			.then(() => {
+				this.setState({
+					enterJoinCode: false
+				});
+				this.props.joinBuild(this.props.build, this.state.joinCode);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
 	}
 
 	launchClick() {
-		return this.props.launchBuild(this.props.build);
+		return this.doTransition()
+			.then(() => {
+				this.props.launchBuild(this.props.build);
+			})
+			.catch((error) => {
+				console.error(error);
+			});
 	}
 
 	hostClick() {
-		this.props.hostBuild(this.props.build, this._getSelectedGame());
+		this.doTransition()
+			.then(() => {
+				this.props.hostBuild(this.props.build, this._getSelectedGame());
+			})
+			.catch((error) => {
+				console.error(error);
+			});
 	}
 
 	startGameClick() {
@@ -205,7 +237,6 @@ export default class BuildComponent extends Component {
 	render() {
 		const { build, buildOpen, buildOpening, hostCode, buildError, windowFocused, buildSettingPath } = this.props;
 		const {
-			submittingJoinCode,
 			glowing,
 			selectedGame,
 			enterJoinCode,
@@ -280,9 +311,21 @@ export default class BuildComponent extends Component {
 									<React.Fragment>
 										{!enterJoinCode &&
 										<React.Fragment>
-											<Button onClick={this.onLaunchClick}>Open</Button>
-											<Button onClick={this.onHostClick}>Host</Button>
-											<Button onClick={this.onJoinClick}>Join</Button>
+											<Button
+												disabled={transitioning}
+												onClick={this.onLaunchClick}>
+												Open
+											</Button>
+											<Button
+												disabled={transitioning}
+												onClick={this.onHostClick}>
+												Host
+											</Button>
+											<Button
+												disabled={transitioning}
+												onClick={this.onJoinClick}>
+												Join
+											</Button>
 										</React.Fragment>
 										}
 
@@ -291,21 +334,26 @@ export default class BuildComponent extends Component {
 											<div className="enter_join_code dolphin_actions col s6">
 												<input
 													className="join_code_input"
-													disabled={submittingJoinCode}
+													disabled={transitioning}
 													placeholder="Host Code Goes Here"
 													type="text"
 													value={this.state.joinCode}
 													onChange={this.joinCodeChange}
+													onKeyDown={this.joinCodeKeydown}
 												/>
 											</div>
 											<div className='buttons col s6'>
-												<Button className='go'
-												        onClick={this.joinCodeSubmit}
+												<Button
+													disabled={transitioning}
+													className='go'
+													onClick={this.joinCodeSubmit}
 												>
 													Go!
 												</Button>
-												<Button className='cancel error_button '
-												        onClick={this.joinCodeCancel}
+												<Button
+													disabled={transitioning}
+													className='cancel error_button '
+													onClick={this.joinCodeCancel}
 												>
 													Cancel
 												</Button>
