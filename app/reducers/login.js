@@ -15,11 +15,7 @@ const defaultLoginState = {
 	sessionId: null,
 	productionUrls: true
 };
-const loginDatas = { ...defaultLoginState };
-loginDatas.player = electronSettings.get('login.player', defaultLoginState.player);
-loginDatas.loginCode = electronSettings.get('login.loginCode', defaultLoginState.loginCode);
-loginDatas.sessionId = electronSettings.get('login.sessionId', defaultLoginState.sessionId);
-loginDatas.productionUrls = electronSettings.get('login.productionUrls', defaultLoginState.productionUrls);
+const loginDatas = electronSettings.get('login', defaultLoginState);
 
 const initialState = {
 	loginErrors: [],
@@ -75,7 +71,8 @@ export default (state = initialState, action) => {
 			electronSettings.set('login', {
 				loginCode: state.loginCode,
 				sessionId: sessionId,
-				player: player
+				player: player,
+				productionUrls: defaultLoginState.productionUrls
 			});
 			return {
 				...state,
