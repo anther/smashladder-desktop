@@ -159,7 +159,8 @@ export default class Replay extends CacheableDataObject {
 		return {
 			metadata: this.rawData.metadata,
 			stats: this.rawData.stats,
-			settings: this.rawData.settings
+			settings: this.rawData.settings,
+			gameEnd: this.getGameEnd()
 		};
 	}
 

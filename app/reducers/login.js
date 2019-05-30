@@ -16,7 +16,7 @@ const defaultLoginState = {
 	productionUrls: true
 };
 const loginDatas = electronSettings.get('login', defaultLoginState);
-
+defaultLoginState.productionUrls = loginDatas.productionUrls;
 const initialState = {
 	loginErrors: [],
 	player: loginDatas.player,
@@ -26,6 +26,7 @@ const initialState = {
 	isLoggingIn: false,
 	showLoginButton: false
 };
+
 
 console.log('what are login datas?', initialState.productionUrls, loginDatas);
 
