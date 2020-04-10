@@ -35,6 +35,13 @@ export const ladderWebsocketConnect = () => (dispatch, getState) => {
 	});
 };
 
+export const ladderWebsocketDisconnect = () => (dispatch) => {
+	ladderWebsocket.disconnect();
+	dispatch({
+		type: LADDER_WEBSOCKET_END
+	});
+};
+
 export const disableConnection = () => (dispatch) => {
 	dispatch({
 		type: DISABLE_CONNECTION
@@ -48,12 +55,7 @@ export const enableConnection = () => (dispatch) => {
 	ladderWebsocket.updateWebsocketIfNecessary();
 };
 
-export const ladderWebsocketDisconnect = () => (dispatch) => {
-	ladderWebsocket.disconnect();
-	dispatch({
-		type: LADDER_WEBSOCKET_END
-	});
-};
+
 
 export const updateSecondsUntilRetry = (seconds) => {
 	return ({
@@ -77,11 +79,11 @@ export const ladderWebsocketConnectionStabilized = () => {
 		type: LADDER_WEBSOCKET_STABLE
 	};
 };
-export const ladderWebsocketConnectionClosed = () => {
-	ladderWebsocket.updateWebsocketIfNecessary();
-	return {
+export const ladderWebsocketConnectionClosed = () => (dispatch) => {
+	dispatch({
 		type: LADDER_WEBSOCKET_CONNECTION_CLOSED
-	};
+	});
+	ladderWebsocket.updateWebsocketIfNecessary();
 };
 export const ladderWebsocketForcedToDisconnect = () => {
 	return {
@@ -89,5 +91,6 @@ export const ladderWebsocketForcedToDisconnect = () => {
 	};
 };
 
+console.log('here we are!?');
 const ladderWebsocket = new LadderWebsocket();
 

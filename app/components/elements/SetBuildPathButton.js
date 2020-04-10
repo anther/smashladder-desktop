@@ -50,7 +50,7 @@ export default class SetBuildPathButton extends Component {
 							windowFocused={this.props.windowFocused}
 						/>
 						}
-						{build.path ? 'Path Set' : 'Set Path'}
+						{build.path ? 'Path Set' : 'Set Dolphin.exe Path'}
 					</Button>
 				</span>
 			</div>

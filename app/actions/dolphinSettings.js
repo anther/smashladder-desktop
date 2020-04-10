@@ -154,16 +154,35 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 					console.log('the hash!', hash);
 					const hashes = require('../constants/meleeHashes.json');
 					const buildFound = hashes[hash];
+
 					if (buildFound) {
-						if (hash === '0e63d4223b01d9aba596259dc155a174') {
-							dispatch({
-								type: MELEE_ISO_VERIFY_SUCCESS
-							});
-						} else {
-							dispatch({
-								type: MELEE_ISO_VERIFY_FAIL,
-								payload: `Found the wrong melee build, the selected ISO is ${buildFound}`
-							});
+						switch (buildFound.valid) {
+							case 'YES':
+								dispatch({
+									type: MELEE_ISO_VERIFY_SUCCESS
+								});
+								break;
+							case 'MAYBE1':
+								dispatch({
+									type: MELEE_ISO_VERIFY_SUCCESS,
+									payload: 'This ISO is not a perfect match but has been found to be compatible'
+								});
+								break;
+							case 'MAYBE2':
+								dispatch({
+									type: MELEE_ISO_VERIFY_SUCCESS,
+									payload: 'This ISO is not a perfect match but seems to be compatible with the regular 1.02 build'
+								});
+								break;
+							case 'NO':
+								dispatch({
+									type: MELEE_ISO_VERIFY_FAIL,
+									payload: `Found the wrong melee build, the selected ISO is probably ${buildFound}`
+								});
+								break;
+							default:
+
+								break;
 						}
 					} else {
 						dispatch({
@@ -197,6 +216,11 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 			});
 		});
 };
+
+const updateMeleeIsoPathMessage = () => {
+
+};
+
 
 export const updateSearchRomSubdirectories = (checked: boolean) => {
 	return {

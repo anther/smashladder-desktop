@@ -19,7 +19,7 @@ export const endpoints = {
 	SET_ACTIVE_BUILDS: 'matchmaking/set_active_builds',
 	WEBSOCKET_URL: productionUrls =>
 		productionUrls === false
-			? 'ws://localhost:100'
+			? 'ws://localhost:3000'
 			: 'wss://www.smashladder.com',
 	LOGOUT: 'player/logout'
 };

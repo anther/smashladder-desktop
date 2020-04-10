@@ -76,6 +76,7 @@ export default class WebsocketComponent extends Component {
 					{!this.isConnected() && (
 						<ProgressIndeterminate
 							color={ladderWebsocketConnectionEnabled ? null : 'red'}
+							showAnimation={ladderWebsocketConnectionEnabled}
 							windowFocused={windowFocused}
 						/>
 					)}

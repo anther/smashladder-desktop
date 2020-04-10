@@ -1,10 +1,9 @@
 import _ from 'lodash';
+import io from 'socket.io-client';
 import { LinearBackoff } from 'simple-backoff';
 import { ipcRenderer } from 'electron';
-import urlSerialize from './urlSerialize';
 import { endpoints } from './SmashLadderAuthentication';
 
-const noResponseTimeoutInSeconds = 30;
 export default class LadderWebsocket {
 	constructor() {
 		this.websocket = null;
@@ -20,8 +19,6 @@ export default class LadderWebsocket {
 		this.reconnectTimeout = null;
 		this.retryingCounter = null;
 		this.connectedForABitTimeout = null;
-
-
 	}
 
 	setup(authentication, dispatch, getState, actions) {
@@ -89,16 +86,6 @@ export default class LadderWebsocket {
 		};
 	}
 
-	disconnect() {
-		this.clearTimers();
-		if (this.websocket) {
-			if (this.websocket.readyState !== 2 || this.websocket.readyState !== 3) {
-				this.websocket.onclose = null;
-				this.websocket.close();
-			}
-		}
-	}
-
 	connect() {
 		this.updateWebsocketIfNecessary();
 		ipcRenderer.removeAllListeners('websocket-message');
@@ -110,14 +97,21 @@ export default class LadderWebsocket {
 		});
 	}
 
+	disconnect() {
+		this.clearTimers();
+		if (this.websocket) {
+			this.websocket.disconnect();
+		}
+	}
+
 	fetchBuildFromDolphinVersion(dolphinVersion) {
 		return this.getState().builds.builds[dolphinVersion.id];
 	}
 
 	clearTimers() {
 		clearTimeout(this.reconnectTimeout);
-		clearTimeout(this.retryingCounter);
 		clearTimeout(this.potentialFailure);
+		clearInterval(this.retryingCounter);
 
 		this.reconnectTimeout = null;
 	}
@@ -126,13 +120,13 @@ export default class LadderWebsocket {
 		const { ladderWebsocketConnectionEnabled } = this.getState().ladderWebsocket;
 		if (this.websocket) {
 			if (!ladderWebsocketConnectionEnabled) {
-				this.websocket.close();
+				console.log('close!');
+				this.clearTimers();
+				this.websocket.disconnect();
 				return;
 			}
-			if (
-				this.websocket.readyState === WebSocket.OPEN ||
-				this.websocket.readyState === WebSocket.CONNECTING
-			) {
+			if (this.websocket.connected) {
+				console.log('connected so it is whateva');
 				return;
 			}
 		}
@@ -142,75 +136,67 @@ export default class LadderWebsocket {
 		}
 
 		if (!this.reconnectTimeout) {
-			console.error('should be warming up');
+			console.log('reinitializing reconnection');
 			const nextRetry = this.connectionBackoff.next();
 			const estimatedWhen = new Date(Date.now() + nextRetry);
 			this.retryingCounter = setInterval(() => {
 				const time = Math.floor((estimatedWhen.getTime() - Date.now()) / 1000);
-
 				this.actions.updateSecondsUntilRetry(time > 0 ? time : 0);
 			}, 1000);
 
+			// This gets cleared as soon as the timeout runs
 			this.reconnectTimeout = setTimeout(() => {
 				const { authentication } = this;
 				console.log('attempting reconnection??');
+				if (this.websocket && this.websocket.connected) {
+					console.log('somehow we are already connected!');
+				}
 				if (this.websocket) {
-					this.websocket.close();
+					this.websocket.disconnect();
 				}
 
 				this.clearTimers();
-				const connectData = {
-					access_token: authentication.getAccessCode(),
-					version: '1.0.0',
-					type: 5,
-					launcher_version: '2.0.0'
-				};
-				const parameters = urlSerialize(connectData);
+				console.log('creating a new websocket connection now');
+				this.websocket = io(authentication.fullEndpointUrl(endpoints.WEBSOCKET_URL), {
+					query: {
+						access_token: authentication.getAccessCode(),
+						version: '1.0.0',
+						type: 5, // 5 = Dolphin Launcher
+						launcher_version: '2.0.0'
+					},
+					forceNew: true,
+					transports: ['websocket']
+				});
+				this.websocket.on('connect', () => {
+					this.actions.ladderWebsocketConnectionInitialOpen();
+					this.connectedForABitTimeout = setTimeout(() => {
+						this.actions.ladderWebsocketConnectionStabilized();
+						this.connectionBackoff.reset();
+					}, 2000);
+				});
+				this.websocket.on('authenticated', () => {
+					console.log('Authenticated!!');
+				});
 
-				this.websocket = new WebSocket(
-					`${authentication.fullEndpointUrl(
-						endpoints.WEBSOCKET_URL
-					)}?${parameters}`
-				);
+				this.websocket.on('message', this.onControlMessage);
+
+				this.websocket.on('error', (evt) => {
+					console.error(evt);
+				});
+
+				this.websocket.on('disconnect', () => {
+					this.actions.ladderWebsocketConnectionClosed();
+					clearTimeout(this.connectedForABitTimeout);
+					clearTimeout(this.potentialFailure);
+				});
 
 				this.actions.ladderWebsocketBeginningConnection();
-
-				this.setWebsocketCallbacks();
 			}, nextRetry);
 		}
 	}
 
-	setWebsocketCallbacks() {
-		this.websocket.onopen = () => {
-			this.actions.ladderWebsocketConnectionInitialOpen();
-			this.connectedForABitTimeout = setTimeout(() => {
-				this.actions.ladderWebsocketConnectionStabilized();
-				this.connectionBackoff.reset();
-			}, 2000);
-			this.resetAlonenessTimer();
-		};
-
-		this.websocket.onmessage = this.onControlMessage;
-
-		this.websocket.onerror = evt => {
-			console.error(evt);
-		};
-
-		this.websocket.onclose = () => {
-			this.actions.ladderWebsocketConnectionClosed();
-			clearTimeout(this.connectedForABitTimeout);
-			clearTimeout(this.potentialFailure);
-		};
-	}
-
-	onControlMessage(event) {
-		this.resetAlonenessTimer(); // TODO Probably moev this only to the Smashladder connection on message
-		let message = {};
-		try {
-			message = JSON.parse(event.data);
-		} catch (error) {
-			console.error(error);
-		}
+	onControlMessage(message) {
+		// This used to be a little bit more complicated before socket.io >.>
 		this.processMessage(message);
 	}
 
@@ -244,15 +230,6 @@ export default class LadderWebsocket {
 			console.error('websocket message error');
 			console.error(error);
 		}
-	}
-
-	resetAlonenessTimer() {
-		clearTimeout(this.potentialFailure);
-
-		this.potentialFailure = setTimeout(() => {
-			this.actions.ladderWebsocketForcedToDisconnect();
-			this.websocket.close();
-		}, noResponseTimeoutInSeconds * 1000);
 	}
 
 }

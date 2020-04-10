@@ -1,7 +1,7 @@
 {
   "name": "smashladder-dolphin-launcher",
   "productName": "SmashLadder Dolphin Launcher",
-  "version": "2.7.0",
+  "version": "3.0.1",
   "description": "Interfaces with Smashladder.com",
   "scripts": {
     "build": "concurrently \"yarn build-main\" \"yarn build-renderer\"",
@@ -195,7 +195,7 @@
     "lint-staged": "^7.2.0",
     "mini-css-extract-plugin": "^0.4.1",
     "minimist": "^1.2.0",
-    "node-sass": "^4.9.2",
+    "node-sass": "^4.13.0",
     "npm-logical-tree": "^1.2.1",
     "optimize-css-assets-webpack-plugin": "^5.0.0",
     "prettier": "^1.14.0",
@@ -254,9 +254,11 @@
     "simple-backoff": "^1.1.0",
     "slp-parser-js": "^2.5.0",
     "slugify": "^1.3.1",
+    "socket.io": "^2.3.0",
     "source-map-support": "^0.5.6",
     "typeface-roboto": "^0.0.54",
     "unzipper": "^0.9.3",
+    "uws": "^100.0.1",
     "ws": "^6.1.2"
   },
   "devEngines": {
