@@ -102,7 +102,7 @@ export default class BuildLaunchAhk extends EventEmitter {
 		if (!hostCode) {
 			throw new Error('IP Address or Host code is required to join!');
 		}
-    hostCode = hostCode.trim();
+		hostCode = hostCode.trim();
 		console.log('the host code', hostCode);
 		console.error('how we get here');
 		const parameters = ['join'];
