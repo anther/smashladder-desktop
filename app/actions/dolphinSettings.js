@@ -147,7 +147,6 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 	dispatch({
 		type: SET_MELEE_ISO_PATH_BEGIN
 	});
-	console.log('what is this', onSuccessCallback);
 	Files.selectFile(meleeIsoPath || '', 'Select your Melee Iso!')
 		.then(selectedPath => {
 			if (!selectedPath) {
@@ -155,13 +154,11 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 			}
 			const theDirectory = path.dirname(selectedPath);
 
-			console.log('selectedPath', selectedPath);
 			dispatch({
 				type: MELEE_ISO_VERIFY_BEGIN
 			});
 			md5File(selectedPath)
 				.then((hash) => {
-					console.log('the path', selectedPath, hash);
 					dispatch({
 						type: MELEE_ISO_VERIFY_SUCCESS,
 						payload: {
