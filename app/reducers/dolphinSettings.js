@@ -17,9 +17,12 @@ import {
 	UNSET_DOLPHIN_INSTALL_PATH,
 	MELEE_ISO_VERIFY_SUCCESS,
 	MELEE_ISO_VERIFY_FAIL,
-	MELEE_ISO_VERIFY_BEGIN
+	MELEE_ISO_VERIFY_BEGIN, MELEE_ISO_PATH_ERROR_CONFIRMED
 } from '../actions/dolphinSettings';
 import defaultDolphinInstallPath from '../constants/defaultDolphinInstallPath';
+
+const evaluatePreviousHash = evaluateMeleeIsoHash(electronSettings.get('dolphinSettings.meleeIsoVerified', null));
+console.log('loaded?', evaluatePreviousHash);
 
 const initialState = {
 	romPaths: electronSettings.get('dolphinSettings.romPaths', {}),
@@ -27,11 +30,12 @@ const initialState = {
 	allowDolphinAnalytics: electronSettings.get('dolphinSettings.allowDolphinAnalytics', true),
 	meleeIsoPath: electronSettings.get('dolphinSettings.meleeIsoPath', null),
 	dolphinInstallPath: electronSettings.get('dolphinSettings.dolphinInstallPath', defaultDolphinInstallPath),
-	meleeIsoVerified: electronSettings.get('dolphinSettings.meleeIsoVerified', false),
+	meleeIsoVerified: evaluatePreviousHash.meleeIsoVerified,
 	settingMeleeIsoPath: false,
 	selectingRomPath: false,
 	settingDolphinInstallPath: false,
-	meleeIsoPathError: null
+	meleeIsoPathError: evaluatePreviousHash.meleeIsoPathError,
+	meleeIsoPathErrorHash: electronSettings.get('dolphinSettings.meleeIsoPathErrorHash', null)
 };
 
 export default (state = initialState, action) => {
@@ -62,9 +66,10 @@ export default (state = initialState, action) => {
 			electronSettings.set('dolphinSettings.allowDolphinAnalytics', action.payload.allowDolphinAnalytics);
 			return newState;
 		case SET_MELEE_ISO_PATH_SUCCESS:
-			electronSettings.set('dolphinSettings.meleeIsoPath', action.payload.meleeIsoPath);
+			electronSettings.set('dolphinSettings.meleeIsoPath', action.payload);
 			return {
 				...newState,
+				meleeIsoPath: action.payload,
 				settingMeleeIsoPath: false
 			};
 		case UNSET_MELEE_ISO_PATH:
@@ -72,7 +77,7 @@ export default (state = initialState, action) => {
 			return {
 				...newState,
 				meleeIsoPath: null,
-				meleeIsoVerified: false
+				meleeIsoVerified: null
 			};
 		case SET_MELEE_ISO_PATH_BEGIN:
 			return {
@@ -93,25 +98,36 @@ export default (state = initialState, action) => {
 			return {
 				...newState,
 				meleeIsoPathError: null,
-				meleeIsoVerified: false,
+				meleeIsoVerified: null,
 				verifyingMeleeIso: true
 			};
+		case MELEE_ISO_PATH_ERROR_CONFIRMED: {
+			electronSettings.set('dolphinSettings.meleeIsoPathErrorHash', state.meleeIsoVerified);
+			return {
+				...state,
+				meleeIsoPathErrorHash: state.meleeIsoVerified
+			};
+		}
 		case MELEE_ISO_VERIFY_FAIL:
 			electronSettings.set('dolphinSettings.meleeIsoVerified', false);
 			return {
 				...newState,
 				meleeIsoPathError: action.payload,
-				meleeIsoVerified: false,
+				meleeIsoVerified: null,
 				verifyingMeleeIso: false
 			};
-		case MELEE_ISO_VERIFY_SUCCESS:
-			electronSettings.set('dolphinSettings.meleeIsoVerified', true);
+		case MELEE_ISO_VERIFY_SUCCESS: {
+			const { hash } = action.payload;
+			const update = evaluateMeleeIsoHash(hash);
+
+			electronSettings.set('dolphinSettings.meleeIsoVerified', hash);
+			console.log('the update', update);
 			return {
 				...newState,
-				meleeIsoPathError: null,
-				meleeIsoVerified: true,
-				verifyingMeleeIso: false
+				verifyingMeleeIso: false,
+				...update
 			};
+		}
 		case SET_DOLPHIN_INSTALL_PATH_SUCCESS:
 			electronSettings.set('dolphinSettings.dolphinInstallPath', action.payload);
 			return {
@@ -136,3 +152,40 @@ export default (state = initialState, action) => {
 			return state;
 	}
 };
+
+function evaluateMeleeIsoHash(hash) {
+	if (hash === null || hash === false) {
+		return {
+			meleeIsoPathError: null,
+			meleeIsoVerified: null
+		};
+	}
+	const hashes = require('../constants/meleeHashes.json');
+	const buildFound = hashes[hash];
+	const update = {
+		meleeIsoPathError: null,
+		meleeIsoVerified: hash
+	};
+	console.log('found?', buildFound);
+	if (buildFound) {
+		switch (buildFound.valid) {
+			case 'YES':
+				break;
+			case 'MAYBE1':
+				update.meleeIsoPathError = 'This ISO is not a perfect match but has been found to be compatible';
+				break;
+			case 'MAYBE2':
+				update.meleeIsoPathError = 'This ISO is not a perfect match but seems to be compatible with the regular 1.02 build';
+				break;
+			case 'NO':
+				update.meleeIsoPathError = `Found the wrong melee build, the selected ISO is probably ${buildFound}`;
+				break;
+			default:
+
+				break;
+		}
+	} else {
+		update.meleeIsoPathError = 'File does not match a known Melee ISO';
+	}
+	return update;
+}

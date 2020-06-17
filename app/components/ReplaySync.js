@@ -7,6 +7,7 @@ import {
 } from '../utils/SmashLadderAuthentication';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
+import InputSwitch from './elements/InputSwitch';
 
 export default class ReplaySync extends Component {
 	static propTypes = {
@@ -100,17 +101,14 @@ export default class ReplaySync extends Component {
 					)}
 					<h6 className={`connection_state ${this.getSyncStatusStatement().isError ? 'error' : ''}`}>{this.getSyncStatusStatement().message}</h6>
 					<div className="switch">
-						<label>
-							<span>Disabled</span>
-							<input
-								onChange={this.enabledChange}
-								disabled={!ladderWebsocketConnectionEnabled}
-								checked={ladderWebsocketConnectionEnabled && replayWatchEnabled}
-								type="checkbox"
-							/>
-							<span className="lever"/>
-							<span>Enabled</span>
-						</label>
+						<InputSwitch
+							enabledText='Send Replay Results'
+							diabledText="Don't Send Results"
+							onChange={this.enabledChange}
+							disabled={!ladderWebsocketConnectionEnabled}
+							checked={ladderWebsocketConnectionEnabled && replayWatchEnabled}
+
+						/>
 					</div>
 					<span className="what_am_i">
 			            Compatible with Project Slippi. Your replay directory will be

@@ -104,7 +104,8 @@ export default class ReplayComponent extends Component {
 			settingMeleeIsoPath,
 			launchingReplay,
 			verifyingReplayFiles,
-			sendingReplay
+			sendingReplay,
+			showMeleeIsoWarning
 		} = this.props;
 
 		const { deleteQuestion } = this.state;
@@ -113,15 +114,24 @@ export default class ReplayComponent extends Component {
 		const stage = replay.getStage();
 		return (
 			<React.Fragment>
+				{!!showMeleeIsoWarning && !meleeIsoPath &&
+				<div className='set_melee_iso_path'>
+					<Button
+						className='btn-small not_set no_check'
+						disabled={settingMeleeIsoPath}
+						onClick={this.onSetMeleeIsoPathClick}
+					>
+						{settingMeleeIsoPath && <ProgressIndeterminate
+							windowFocused={this.props.windowFocused}
+						/>}
+						Set Melee ISO Path
+					</Button>
+					<span className='error center error_reason'>
+					Path needs to be set before you can play replays
+					</span>
+				</div>
+				}
 				<div className="replay_content">
-					{detailed && (
-						<Button
-							onClick={this.onDetailsClick}
-							className="back_button btn-small"
-						>
-							Back
-						</Button>
-					)}
 					<div className='watching_replay'>
 						{(isBeingWatched || isBeingUploaded) &&
 						<ProgressIndeterminate
@@ -129,8 +139,49 @@ export default class ReplayComponent extends Component {
 						/>
 						}
 					</div>
-					<div className="game_data">
-						<div className="stocks">
+					<a className="game_data waves-effect" onClick={this.onOpenInExplorer}>
+						<div className="details">
+							{stage && (
+								<div className="stage">
+									<img alt={stage.name} src={stage.imageUrl()}/>
+								</div>
+							)}
+							<div className="match_time">
+								<span className="when">
+									{isBeingWatched &&
+									<span>Started{' '}</span>
+									}
+									{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
+								</span>
+								{replay.metadataIsComplete() &&
+								<div className='match_time_display'>
+									{replay.getMatchTime() && <span>{replay.getMatchTime()}</span>}
+									{!replay.getMatchTime() && (
+										<div>
+											{isBeingUploaded &&
+											<span>Uploading Results...</span>
+											}
+											{isBeingWatched &&
+											<span>Waiting for Replay to Finish</span>
+											}
+											{!replay.isALittleGlitchy() && !isBeingWatched &&
+											<React.Fragment>
+												<div className="error error_reason">
+													Dolphin Closed Before Match Ended?
+												</div>
+											</React.Fragment>
+											}
+										</div>
+									)}
+								</div>
+								}
+								{replay.isEnded() &&
+								replay.getGameEnd().gameEndMethod === Replay.REPLAY_END_LRA_START &&
+								<div className='lra_start'>Exited by {replay.getLraStartPlayerName()}</div>
+								}
+							</div>
+						</div>
+						<div className='stocks_container'>
 							{replay.getPlayers().map((player) => {
 								if (!(player instanceof SlippiPlayer)) {
 									console.log(replay);
@@ -158,7 +209,7 @@ export default class ReplayComponent extends Component {
 										{detailed && (
 											<div className="detailed_stats">
 												{this.renderElement('Kills', player.overall.killCount)}
-												{this.renderElement(
+												{!!player.overall.openingsPerKill && this.renderElement(
 													'Openings Per Kill',
 													player.overall.openingsPerKill.ratio
 														? player.overall.openingsPerKill.ratio.toFixed(1)
@@ -202,50 +253,9 @@ export default class ReplayComponent extends Component {
 								);
 							})}
 						</div>
-						<a className="details waves-effect" onClick={this.onOpenInExplorer}>
-							{stage && (
-								<div className="stage">
-									<img alt={stage.name} src={stage.imageUrl()}/>
-								</div>
-							)}
-							<div className="match_time">
-								<span className="when">
-									{isBeingWatched &&
-									<span>Started{' '}</span>
-									}
-									{replay.getFileDate() ? replay.getFileDate().calendar() : ''}
-								</span>
-								{replay.metadataIsComplete() &&
-								<div className='match_time_display'>
-									{replay.getMatchTime() && <span>{replay.getMatchTime()}</span>}
-									{!replay.getMatchTime() && (
-										<div>
-											{isBeingUploaded &&
-											<span>Uploading Results...</span>
-											}
-											{isBeingWatched &&
-											<span>Waiting for Replay to Finish</span>
-											}
-											{!replay.isALittleGlitchy() && !isBeingWatched &&
-											<React.Fragment>
-												<div className="error error_reason">
-													Dolphin Closed Before Match Ended?
-												</div>
-											</React.Fragment>
-											}
-										</div>
-									)}
-								</div>
-								}
-								{replay.isEnded() &&
-								replay.getGameEnd().gameEndMethod === Replay.REPLAY_END_LRA_START &&
-								<div className='lra_start'>Exited by {replay.getLraStartPlayerName()}</div>
-								}
-							</div>
-						</a>
-					</div>
+					</a>
 
-					<div className="footer">
+					<div className="controls">
 						{meleeIsoPath && !stage &&
 						<div className="file_data">
 							<div className="file_name_holder">
@@ -256,96 +266,76 @@ export default class ReplayComponent extends Component {
 						</div>
 						}
 
-						{!meleeIsoPath &&
-						<div className='set_melee_iso_path'>
-							<Button
-								className='btn-small not_set no_check'
-								disabled={settingMeleeIsoPath}
-								onClick={this.onSetMeleeIsoPathClick}
-							>
-								{settingMeleeIsoPath && <ProgressIndeterminate
-									windowFocused={this.props.windowFocused}
-								/>}
-								Set Melee ISO Path
-							</Button>
-							<span className='error error_reason'>
-								Path needs to be set before you can open replays
-							</span>
-						</div>
-						}
-
-						<div className="action_buttons">
-							<div className="main_buttons">
-								{deleteQuestion && (
-									<React.Fragment>
-										<h6 className="title">Delete?</h6>
-										<div className="main_buttons">
-											<div className="input-field">
-												<Button
-													disabled={this.state.deleting}
-													onClick={this.onDeleteConfirmClick}
-													className="error_button btn-small"
-												>
-													Yes
-												</Button>
-											</div>
-											<div className="input-field">
-												<Button
-													disabled={this.state.deleting}
-													onClick={this.onCancelDeleteClick}
-													className="btn-small"
-												>
-													No
-												</Button>
-											</div>
-										</div>
-									</React.Fragment>
-								)}
-
-								{!deleteQuestion && (
-									<React.Fragment>
+						<div className={`main_buttons ${deleteQuestion ? 'deleting' : ''}`}>
+							{deleteQuestion && (
+								<React.Fragment>
+									<h6 className="title">Delete?</h6>
+									<div className="main_buttons">
 										<div className="input-field">
 											<Button
-												disabled={settingMeleeIsoPath || launchingReplay || !meleeIsoPath}
-												onClick={this.onReplayViewClick}
-												className={`btn-small ${
-													meleeIsoPath ? 'set no_check' : 'not_set no_check'}`}
+												disabled={this.state.deleting}
+												onClick={this.onDeleteConfirmClick}
+												className="error_button btn-small"
 											>
-												{launchingReplay && <span>...</span>}
-												{!launchingReplay && (
-													<i className="fa fa-caret-right"/>
-												)}
+												Yes
 											</Button>
 										</div>
-										{!replay.hasErrors && (
-											<div className="input-field">
-												<Button
-													onClick={this.onDetailsClick}
-													className="btn-small btn-flat"
-												>
-													<i className="fa fa-info-circle"/>
-												</Button>
-											</div>
-										)}
-
-										{false && (
-											<div className="input-field">
-												<Button onClick={this.onUploadReplayClick}>
-													Upload Replay
-												</Button>
-											</div>
-										)}
 										<div className="input-field">
 											<Button
-												onClick={this.onDeleteButtonClick}
-												className="btn-small error_button"
+												disabled={this.state.deleting}
+												onClick={this.onCancelDeleteClick}
+												className="btn-small"
 											>
-												<i className="fa fa-trash"/>
+												No
 											</Button>
 										</div>
-									</React.Fragment>
-								)}
-							</div>
+									</div>
+								</React.Fragment>
+							)}
+
+							{!deleteQuestion && (
+								<React.Fragment>
+									<div className="input-field">
+										<Button
+											disabled={settingMeleeIsoPath || launchingReplay || !meleeIsoPath}
+											onClick={this.onReplayViewClick}
+											className={`btn-small ${
+												meleeIsoPath ? 'set no_check' : 'not_set no_check'}`}
+										>
+											{launchingReplay && <span>...</span>}
+											{!launchingReplay && (
+												<i className="fa fa-caret-right"/>
+											)}
+										</Button>
+									</div>
+									{!replay.hasErrors && (
+										<div className="input-field">
+											<Button
+												onClick={this.onDetailsClick}
+												className="btn-small btn-flat"
+											>
+												<i className="fa fa-info-circle"/>
+											</Button>
+										</div>
+									)}
+
+									{false && (
+										<div className="input-field">
+											<Button onClick={this.onUploadReplayClick}>
+												Upload Replay
+											</Button>
+										</div>
+									)}
+									<div className="input-field">
+										<Button
+											onClick={this.onDeleteButtonClick}
+											className="btn-small error_button"
+										>
+											<i className="fa fa-trash"/>
+										</Button>
+									</div>
+								</React.Fragment>
+							)}
 						</div>
 					</div>
 				</div>

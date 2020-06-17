@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import ProgressDeterminate from './elements/ProgressDeterminate';
 import ProgressIndeterminate from './elements/ProgressIndeterminate';
+import InputSwitch from './elements/InputSwitch';
 
 export default class WebsocketComponent extends Component {
 	static propTypes = {
@@ -81,18 +82,11 @@ export default class WebsocketComponent extends Component {
 						/>
 					)}
 					<span className="connection_state">{this.websocketState()}</span>
-					<div className="switch">
-						<label>
-							<span>Disabled</span>
-							<input
-								onChange={this.enabledChange}
-								checked={ladderWebsocketConnectionEnabled}
-								type="checkbox"
-							/>
-							<span className="lever"/>
-							<span>Enabled</span>
-						</label>
-					</div>
+					<InputSwitch
+						onChange={this.enabledChange}
+						checked={ladderWebsocketConnectionEnabled}
+						type="checkbox"
+					/>
 					<span className="what_am_i">
 			            A connection to SmashLadder is required in order to trigger
 			            interactions with Dolphin from the Website.

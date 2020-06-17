@@ -23,6 +23,10 @@
 		"name": "1.2 NTSC",
 		"valid": "MAYBE2"
 	},
+	"0c793ca635a09fe632e970637df61d66": {
+		"name": "1.2 NTSC",
+		"valid": "MAYBE2"
+	},
 	"5e118fc2d85350b7b092d0192bfb0f1a": {
 		"name": "1.0 PAL",
 		"valid": "NO"

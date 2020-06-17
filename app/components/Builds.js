@@ -10,6 +10,8 @@ import Build from '../utils/BuildData';
 import AlertBox from './elements/AlertBox';
 import Button from './elements/Button';
 import SetMeleeIsoAlertBox from './SetMeleeIsoAlertBox';
+import WebsocketComponent from './WebsocketComponent';
+import ReplaySync from './ReplaySync';
 
 export default class Builds extends Component {
 	static propTypes = {
@@ -37,7 +39,8 @@ export default class Builds extends Component {
 		activeBuild: null,
 		buildError: null,
 		player: null,
-		hostCode: ''
+		hostCode: '',
+		offlineMode: false,
 	};
 
 	componentDidMount() {
@@ -54,7 +57,7 @@ export default class Builds extends Component {
 	}
 
 	render() {
-		const { buildList, buildError, fetchingBuilds } = this.props;
+		const { offlineMode, buildList, buildError, fetchingBuilds } = this.props;
 
 		return (
 			<React.Fragment>
@@ -104,6 +107,13 @@ export default class Builds extends Component {
 								</div>
 							)}
 						</div>
+						{!offlineMode &&
+						<div className="connections">
+							<h5>Connections</h5>
+							<WebsocketComponent {...this.props} />
+							<ReplaySync {...this.props} />
+						</div>
+						}
 					</React.Fragment>
 				)}
 			</React.Fragment>

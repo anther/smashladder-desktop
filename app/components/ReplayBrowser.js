@@ -81,7 +81,7 @@ export default class ReplayBrowser extends Component {
 				{activeBrowseReplays.length > 0 && (
 					<React.Fragment>
 						<h5>Latest Replays</h5>
-						<ReplayChecksToggle {...this.props} />
+						{false && <ReplayChecksToggle {...this.props} />}
 						{launchReplayError && <div className="error">{launchReplayError}</div>}
 						<div className="pagination_holder">
 							<Pagination
@@ -93,15 +93,18 @@ export default class ReplayBrowser extends Component {
 								hideFirstLastPages
 							/>
 						</div>
+
 						<div className="collection">
 							{updatingReplayList && (
 								<div className="replay_list_updating_progress">
 									<ProgressDeterminate percent={updatingReplayListPercent}/>
 								</div>
 							)}
-							{activeBrowseReplays.map((replay) => (
+							{activeBrowseReplays.map((replay, index) => (
 								<div key={replay.id} className="collection-item replay">
-									<ReplayComponent {...this.props} replay={replay}/>
+									<ReplayComponent
+										showMeleeIsoWarning={index===0}
+										{...this.props} replay={replay}/>
 								</div>
 							))}
 						</div>

@@ -25,17 +25,13 @@ import ReplayBrowser from '../components/ReplayBrowser';
 import AutoUpdates from '../components/AutoUpdates';
 import Tabs from '../components/elements/Tabs';
 import QuickSetup from '../components/QuickSetup';
+import Button from '../components/elements/Button';
 
 class BuildsPage extends Component<Props> {
 	static renderConnectionSettings(props) {
 		return (
 			<div className="connecties">
 				<div className="row">
-					<div className="connections col m6">
-						<h5>Connections</h5>
-						<WebsocketComponent {...props} />
-						<ReplaySync {...props} />
-					</div>
 					<div className="dolphin_settings col m6">
 						<h5>Dolphin Settings</h5>
 						<DolphinSettings {...props} />
@@ -86,14 +82,30 @@ class BuildsPage extends Component<Props> {
 			...this.props,
 			...this.state
 		};
-		const { activeUpdate, allReplays, viewingReplayDetails, player } = props;
+		const { activeUpdate, allReplays, viewReplayDetails, viewingReplayDetails, player } = props;
 
 		if (!player) {
 			return <Redirect to="/"/>;
 		}
 
 		const settingsAndSuch = BuildsPage.renderConnectionSettings(props);
-		const sideBar = <ReplayBrowser {...props} />;
+		const sideBar = (
+			<React.Fragment>
+				{!!viewingReplayDetails &&
+				<div className='replay_browser detailed'>
+					<div className='replay_content'>
+						<Button
+							onClick={viewReplayDetails.bind(null, viewingReplayDetails)}
+							className="back_button btn-small"
+						>
+							Back
+						</Button>
+					</div>
+				</div>
+				}
+				<ReplayBrowser {...props} />
+			</React.Fragment>
+		);
 		if (activeUpdate) {
 			return (
 				<div className="row">
@@ -112,12 +124,12 @@ class BuildsPage extends Component<Props> {
 					activeTab={this.props.currentTab}>
 					<div label='Home'>
 						{!viewingReplayDetails && (
-							<div className="col m8">
+							<div className="col m7">
 								<Builds {...props} />
 							</div>
 						)}
 						{viewingReplayDetails && <div className="col m12">{sideBar}</div>}
-						{!viewingReplayDetails && <div className="col m4 sidebar">{sideBar}</div>}
+						{!viewingReplayDetails && <div className="col m5 sidebar">{sideBar}</div>}
 					</div>
 					<div label='Settings'>
 						{settingsAndSuch}

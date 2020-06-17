@@ -27,6 +27,7 @@ export const SET_DOLPHIN_INSTALL_PATH_BEGIN = 'SET_DOLPHIN_INSTALL_PATH_BEGIN';
 export const SET_DOLPHIN_INSTALL_PATH_SUCCESS = 'SET_DOLPHIN_INSTALL_PATH_SUCCESS';
 export const SET_DOLPHIN_INSTALL_PATH_FAIL = 'SET_DOLPHIN_INSTALL_PATH_FAIL';
 export const UNSET_DOLPHIN_INSTALL_PATH = 'UNSET_DOLPHIN_INSTALL_PATH';
+export const MELEE_ISO_PATH_ERROR_CONFIRMED = 'MELEE_ISO_PATH_ERROR_CONFIRMED';
 
 
 export const addRomPath = path => (dispatch, getState) => {
@@ -120,6 +121,12 @@ export const setDolphinInstallPath = () => (dispatch, getState) => {
 
 };
 
+export const meleeIsoPathErrorConfirmed = () => {
+	return {
+		type: MELEE_ISO_PATH_ERROR_CONFIRMED
+	};
+};
+
 export const unsetMeleeIsoPath = () => {
 	return {
 		type: UNSET_MELEE_ISO_PATH
@@ -128,7 +135,10 @@ export const unsetMeleeIsoPath = () => {
 export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) => {
 	const state = getState();
 
-	if (state.dolphinSettings.settingMeleeIsoPath) {
+	const dolphinSettings = state.dolphinSettings;
+	const { settingMeleeIsoPath, meleeIsoPath } = dolphinSettings;
+
+	if (settingMeleeIsoPath) {
 		dispatch({
 			type: SET_MELEE_ISO_PATH_ACTIVE_ALREADY
 		});
@@ -137,59 +147,27 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 	dispatch({
 		type: SET_MELEE_ISO_PATH_BEGIN
 	});
-
-	Files.selectFile('', 'Select your Melee Iso!')
+	console.log('what is this', onSuccessCallback);
+	Files.selectFile(meleeIsoPath || '', 'Select your Melee Iso!')
 		.then(selectedPath => {
 			if (!selectedPath) {
 				throw new Error('No path was selected');
 			}
 			const theDirectory = path.dirname(selectedPath);
 
-			console.log('selectedPath');
+			console.log('selectedPath', selectedPath);
 			dispatch({
 				type: MELEE_ISO_VERIFY_BEGIN
 			});
 			md5File(selectedPath)
 				.then((hash) => {
-					console.log('the hash!', hash);
-					const hashes = require('../constants/meleeHashes.json');
-					const buildFound = hashes[hash];
-
-					if (buildFound) {
-						switch (buildFound.valid) {
-							case 'YES':
-								dispatch({
-									type: MELEE_ISO_VERIFY_SUCCESS
-								});
-								break;
-							case 'MAYBE1':
-								dispatch({
-									type: MELEE_ISO_VERIFY_SUCCESS,
-									payload: 'This ISO is not a perfect match but has been found to be compatible'
-								});
-								break;
-							case 'MAYBE2':
-								dispatch({
-									type: MELEE_ISO_VERIFY_SUCCESS,
-									payload: 'This ISO is not a perfect match but seems to be compatible with the regular 1.02 build'
-								});
-								break;
-							case 'NO':
-								dispatch({
-									type: MELEE_ISO_VERIFY_FAIL,
-									payload: `Found the wrong melee build, the selected ISO is probably ${buildFound}`
-								});
-								break;
-							default:
-
-								break;
+					console.log('the path', selectedPath, hash);
+					dispatch({
+						type: MELEE_ISO_VERIFY_SUCCESS,
+						payload: {
+							hash
 						}
-					} else {
-						dispatch({
-							type: MELEE_ISO_VERIFY_FAIL,
-							payload: 'File does not match a known Melee ISO'
-						});
-					}
+					});
 				})
 				.catch((error) => {
 					console.error(error);
@@ -200,11 +178,10 @@ export const requestMeleeIsoPath = (onSuccessCallback) => (dispatch, getState) =
 				});
 			dispatch({
 				type: SET_MELEE_ISO_PATH_SUCCESS,
-				payload: {
-					meleeIsoPath: selectedPath
-				}
+				payload: selectedPath
 			});
 			dispatch(addRomPath(theDirectory));
+
 			if (onSuccessCallback) {
 				dispatch(onSuccessCallback());
 			}

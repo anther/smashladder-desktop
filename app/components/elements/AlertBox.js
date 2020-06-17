@@ -10,9 +10,13 @@ export default class AlertBox extends PureComponent {
 	}
 
 	closeClick() {
+		const { onClose } = this.props;
 		this.setState({
 			open: false
 		});
+		if (onClose) {
+			onClose();
+		}
 	}
 
 	render() {

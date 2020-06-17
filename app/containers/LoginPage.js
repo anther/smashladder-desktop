@@ -64,7 +64,10 @@ class LoginPage extends Component<Props> {
 					}
 					{buildsOpen &&
 					<div className='col m8'>
-						<Builds {...props} />
+						<Builds
+							{...props}
+							offlineMode={true}
+						/>
 					</div>
 					}
 				</div>
@@ -77,7 +80,8 @@ class LoginPage extends Component<Props> {
 const mapStateToProps = state => ({
 	...state.login,
 	...state.builds,
-	...state.dolphinSettings
+	...state.dolphinSettings,
+	buildList: BuildActions.getSortedBuilds(state)
 });
 
 function mapDispatchToProps(dispatch) {

@@ -207,11 +207,15 @@ const fetchBuildsMainFunction = (dispatch, getState) => {
 		.then(() => {
 			// Get real data
 			return getAuthenticationFromState(getState)
-				.apiGet(endpoints.DOLPHIN_BUILDS, { default_game: Constants.MELEE_SMASHLADDER_GAME_ID });
+				.apiGet(endpoints.DOLPHIN_BUILDS, { default_game: Constants.MELEE_SMASHLADDER_GAME_ID })
+				.catch((error) => {
+					console.error(error);
+					throw new Error('ERROR RETRIEVING DATA FROM THE SERVER, going to try to use the cache');
+				});
 		})
 		.then((response) => {
 			console.log('what is the response', response);
-			return convertBuildResponse(response.builds);
+			return convertBuildResponse(response ? response.builds : null);
 		})
 		.catch((error) => {
 			console.error(error);
@@ -843,6 +847,7 @@ const getBuilds = (state) => state.builds.builds;
 export const getSortedBuilds = createSelector(
 	[getBuilds],
 	(builds) => {
+		console.log('getting sorted builds!', builds);
 		return _.values(builds).sort((a, b) => {
 			if (a.path && !b.path) {
 				return -1;

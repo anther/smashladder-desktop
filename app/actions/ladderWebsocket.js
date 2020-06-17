@@ -91,6 +91,5 @@ export const ladderWebsocketForcedToDisconnect = () => {
 	};
 };
 
-console.log('here we are!?');
 const ladderWebsocket = new LadderWebsocket();
 

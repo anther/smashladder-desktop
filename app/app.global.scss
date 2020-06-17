@@ -25,8 +25,12 @@ $ladder-highlight: #ff6c60;
 
 .alert-box {
 	&.danger {
+		a {
+			@extend .blue-text, .text-darken-4;
+		}
+
 		.card {
-			@extend .red, .darken-2;
+			@extend .red, .lighten-2;
 		}
 
 		.card-content {
@@ -503,11 +507,15 @@ h6 {
 		}
 	}
 
+	.stocks_container {
+		display: flex;
+		flex-direction: column;
+		flex-wrap: wrap;
+	}
+
 	.stocks {
 		display: flex;
 		flex-direction: row;
-		cursor: default;
-		justify-content: space-between;
 		flex-wrap: wrap;
 
 		.stock_icon {
@@ -536,7 +544,16 @@ h6 {
 	}
 
 	&.detailed {
+		.controls {
+			order: -1;
+		}
+
 		.replay_content {
+			flex-direction: column;
+			.main_buttons {
+				flex-direction: row;
+			}
+
 			.back_button {
 				margin-bottom: 16px;
 			}
@@ -564,8 +581,12 @@ h6 {
 
 	.replay_content {
 		display: flex;
-		flex-direction: column;
+		flex-direction: row;
 		width: 100%;
+
+		&:not(.detailed):hover {
+			@extend .grey, .lighten-5;
+		}
 
 		.watching_replay .progress {
 			position: absolute;
@@ -575,9 +596,23 @@ h6 {
 			left: 0;
 		}
 
+		.controls {
+			display: flex;
+
+			.input-field {
+				margin: 0;
+			}
+		}
+
 		.game_data {
 			display: flex;
-			flex-direction: column;
+			flex-direction: row;
+			flex: 1;
+
+			.controls {
+				display: flex;
+				flex: 1;
+			}
 
 			.stage {
 				margin-right: 16px;
@@ -585,8 +620,9 @@ h6 {
 
 			.details {
 				display: flex;
-				flex-direction: row;
+				flex-direction: column;
 				justify-content: space-between;
+				padding: 0 8px 0 0;
 			}
 
 			.match_time {
@@ -595,8 +631,11 @@ h6 {
 				align-self: center;
 			}
 
-			.when {
+			.lra_start,
+			.when,
+			.match_time_display {
 				font-size: smaller;
+				padding-left: 6px;
 			}
 		}
 
@@ -621,56 +660,57 @@ h6 {
 		}
 	}
 
-	.action_buttons {
+	.main_buttons {
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
 		justify-content: space-between;
+		width: 100%;
+		flex-wrap: wrap;
+		flex: 1;
 
 		.btn {
 			@extend .btn-flat;
 			border-radius: 0;
 		}
 
-		.main_buttons {
+		.input-field {
+			margin-bottom: 0;
+
+			i {
+				width: 22px;
+				display: block;
+			}
+		}
+
+		.title {
+			flex: 1 0 100%;
+		}
+
+		.file_name_holder {
+			flex: 1;
 			display: flex;
-			flex-direction: row;
-			justify-content: space-between;
-			width: 100%;
-			flex-wrap: wrap;
+			flex-direction: column;
+			justify-content: flex-end;
+		}
 
-			.input-field {
-				margin-bottom: 0;
-			}
-
-			.title {
-				flex: 1 0 100%;
-			}
-
-			.file_name_holder {
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				justify-content: flex-end;
-			}
-
-			.file_name {
-			}
+		.file_name {
 		}
 	}
 
 	.stage {
 		img {
 			height: 64px;
-			border-radius: 4px;
 		}
 	}
 
 	.collection-item {
 		display: flex;
+		padding: 0;
+		flex-direction: column;
 
 		.input-field {
 			margin-top: 0;
-			margin-bottom: 4px;
+			text-align: right;
 		}
 
 		.secondary-content {
