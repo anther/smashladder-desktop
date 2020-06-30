@@ -1,7 +1,7 @@
 {
   "name": "smashladder-dolphin-launcher",
   "productName": "SmashLadder Dolphin Launcher",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Interfaces with Smashladder.com",
   "main": "./main.prod.js",
   "author": {
