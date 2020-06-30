@@ -297,7 +297,7 @@ export default class ReplayComponent extends Component {
 								<React.Fragment>
 									<div className="input-field">
 										<Button
-											disabled={settingMeleeIsoPath || launchingReplay || !meleeIsoPath}
+											disabled={true || settingMeleeIsoPath || launchingReplay || !meleeIsoPath}
 											onClick={this.onReplayViewClick}
 											className={`btn-small ${
 												meleeIsoPath ? 'set no_check' : 'not_set no_check'}`}

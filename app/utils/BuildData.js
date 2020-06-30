@@ -118,6 +118,7 @@ export default class Build extends CacheableDataObject {
 	}
 
 	setSlippiToRecord() {
+		return;
 		const { settings, codeIniLocation } = this._retrieveSlippiSetup();
 		if(!settings){
 			return false;

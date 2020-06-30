@@ -15,8 +15,6 @@ import * as LoginActions from '../actions/login';
 import * as WindowActions from '../actions/window';
 import * as LadderWebsocketActions from '../actions/ladderWebsocket';
 import * as TabActions from '../actions/tabs';
-import WebsocketComponent from '../components/WebsocketComponent';
-import ReplaySync from '../components/ReplaySync';
 import DolphinSettings from '../components/DolphinSettings';
 import { SmashLadderAuthentication } from '../utils/SmashLadderAuthentication';
 import Header from '../components/common/Header';
@@ -24,7 +22,6 @@ import Layout from '../components/common/Layout';
 import ReplayBrowser from '../components/ReplayBrowser';
 import AutoUpdates from '../components/AutoUpdates';
 import Tabs from '../components/elements/Tabs';
-import QuickSetup from '../components/QuickSetup';
 import Button from '../components/elements/Button';
 
 class BuildsPage extends Component<Props> {
@@ -32,7 +29,7 @@ class BuildsPage extends Component<Props> {
 		return (
 			<div className="connecties">
 				<div className="row">
-					<div className="dolphin_settings col m6">
+					<div className="dolphin_settings col m12">
 						<h5>Dolphin Settings</h5>
 						<DolphinSettings {...props} />
 					</div>

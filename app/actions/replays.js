@@ -28,6 +28,10 @@ export const launchReplay = (params) => (dispatch, getState) => {
 	const replayPath = replay.filePath;
 	const dolphinInstallPath = state.dolphinSettings.dolphinInstallPath;
 
+
+
+	return;
+
 	const replayStatusPayload = {
 		build,
 		replayPath
